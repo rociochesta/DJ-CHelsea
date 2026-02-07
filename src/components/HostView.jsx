@@ -88,29 +88,34 @@ function HostView({ roomCode, currentUser, roomState }) {
     await remove(songRef);
   };
 
-  const handleMoveSongUp = async (song, currentIndex) => {
-    if (currentIndex === 0) return;
-    const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
-    const prevSong = sortedQueue[currentIndex - 1];
-    
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
-    const prevSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${prevSong.id}/addedAt`);
-    
-    await set(songRef, prevSong.addedAt);
-    await set(prevSongRef, song.addedAt);
-  };
+const handleMoveSongUp = async (song, currentIndex) => {
+  const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+  if (currentIndex === 0) return;
 
-  const handleMoveSongDown = async (song, currentIndex) => {
-    const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
-    if (currentIndex === sortedQueue.length - 1) return;
-    const nextSong = sortedQueue[currentIndex + 1];
-    
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
-    const nextSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`);
-    
-    await set(songRef, nextSong.addedAt);
-    await set(nextSongRef, song.addedAt);
-  };
+  const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
+  const prevSong = sortedQueue[currentIndex - 1];
+
+  const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
+  const prevSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${prevSong.id}/addedAt`);
+
+  await set(songRef, prevSong.addedAt);
+  await set(prevSongRef, song.addedAt);
+};
+
+const handleMoveSongDown = async (song, currentIndex) => {
+  const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+  const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
+  if (currentIndex === sortedQueue.length - 1) return;
+
+  const nextSong = sortedQueue[currentIndex + 1];
+
+  const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
+  const nextSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`);
+
+  await set(songRef, nextSong.addedAt);
+  await set(nextSongRef, song.addedAt);
+};
+
 
   const setParticipantMute = async (participantName, muted) => {
     const muteRef = ref(database, `karaoke-rooms/${roomCode}/participantMutes/${participantName}`);
