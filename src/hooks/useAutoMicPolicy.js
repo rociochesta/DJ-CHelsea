@@ -1,6 +1,9 @@
 import { useEffect, useMemo } from "react";
 
-export function useAutoMicPolicy(room, { currentSong, currentUserName, enabled = true } = {}) {
+export function useAutoMicPolicy(
+  room,
+  { currentSong, currentUserName, enabled = true } = {}
+) {
   const singerName = useMemo(() => {
     const s = currentSong?.requestedBy || currentSong?.singerName || "";
     return String(s).trim();
@@ -10,22 +13,54 @@ export function useAutoMicPolicy(room, { currentSong, currentUserName, enabled =
 
   useEffect(() => {
     if (!enabled) return;
-    if (!room) return;
+    if (!room?.localParticipant) return;
 
-    const shouldBeAllowed = singerName && myName && singerName === myName;
+    const lp = room.localParticipant;
 
-    try {
-      room.localParticipant.setMicrophoneEnabled(!!shouldBeAllowed);
-    } catch {}
+    const computeAllowed = () => {
+      if (!singerName || !myName) return false;
+      return singerName === myName;
+    };
 
-    if (shouldBeAllowed) return;
+    const enforce = async () => {
+      const allowed = computeAllowed();
+      const wantsEnabled = !!allowed;
 
-    const interval = setInterval(() => {
+      // only touch the mic if it’s not already in the desired state
       try {
-        room.localParticipant.setMicrophoneEnabled(false);
-      } catch {}
-    }, 700);
+        if (!!lp.isMicrophoneEnabled !== wantsEnabled) {
+          await lp.setMicrophoneEnabled(wantsEnabled);
+        }
+      } catch {
+        // swallow errors; we don't want UI crashes from policy
+      }
+    };
 
-    return () => clearInterval(interval);
+    // enforce immediately on changes
+    enforce();
+
+    // if user tries to unmute while not allowed, snap it back off
+    const onMicChanged = () => {
+      enforce();
+    };
+
+    // LiveKit emits events on participant
+    lp.on?.("trackPublished", onMicChanged);
+    lp.on?.("trackUnpublished", onMicChanged);
+    lp.on?.("trackMuted", onMicChanged);
+    lp.on?.("trackUnmuted", onMicChanged);
+
+    // also handle reconnects / room events (safe, low frequency)
+    const onReconnected = () => enforce();
+    room.on?.("reconnected", onReconnected);
+
+    return () => {
+      lp.off?.("trackPublished", onMicChanged);
+      lp.off?.("trackUnpublished", onMicChanged);
+      lp.off?.("trackMuted", onMicChanged);
+      lp.off?.("trackUnmuted", onMicChanged);
+
+      room.off?.("reconnected", onReconnected);
+    };
   }, [room, singerName, myName, enabled]);
 }

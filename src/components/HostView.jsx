@@ -4,6 +4,7 @@ import { enableAutoMicComp } from "../utils/autoMicComp";
 
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
+
 import VideoPlayer from "./VideoPlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
@@ -105,9 +106,9 @@ function HostView({ roomCode, currentUser, roomState }) {
       videoId: null,
     });
 
-    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
-    if (queue.length > 0) {
-      const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
+    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
+    if (queueArr.length > 0) {
+      const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
       const nextSong = sortedQueue[0];
       setTimeout(() => handlePlaySong(nextSong), 500);
     }
@@ -119,10 +120,10 @@ function HostView({ roomCode, currentUser, roomState }) {
   };
 
   const handleMoveSongUp = async (song, currentIndex) => {
-    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
     if (currentIndex === 0) return;
 
-    const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
+    const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
     const prevSong = sortedQueue[currentIndex - 1];
 
     const songRef = ref(
@@ -139,8 +140,8 @@ function HostView({ roomCode, currentUser, roomState }) {
   };
 
   const handleMoveSongDown = async (song, currentIndex) => {
-    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
-    const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
+    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
+    const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
     if (currentIndex === sortedQueue.length - 1) return;
 
     const nextSong = sortedQueue[currentIndex + 1];
@@ -159,15 +160,15 @@ function HostView({ roomCode, currentUser, roomState }) {
   };
 
   const handleMuteAll = async () => {
-    const participants = roomState?.participants
+    const participantsArr = roomState?.participants
       ? Object.values(roomState.participants)
       : [];
     const currentSinger =
       roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
 
-    for (const participant of participants) {
-      if (participant.name !== currentSinger) {
-        await setParticipantMute(participant.name, true);
+    for (const p of participantsArr) {
+      if (p.name !== currentSinger) {
+        await setParticipantMute(p.name, true);
       }
     }
   };
@@ -176,27 +177,31 @@ function HostView({ roomCode, currentUser, roomState }) {
   const participants = roomState?.participants
     ? Object.values(roomState.participants)
     : [];
+
   const currentSong = roomState?.currentSong || null;
   const participantMutes = roomState?.participantMutes || {};
+
+  // ✅ mic policy (local mic forced off unless you're singer)
   useAutoMicPolicy(room, {
-  currentSong,
-  currentUserName: currentUser?.name,
-  enabled: true,
-});
+    currentSong,
+    currentUserName: currentUser?.name,
+    enabled: true,
+  });
 
   // ✅ Auto latency comp: only enable when HOST is the current singer
+  // ✅ Memory-safe: DOES NOT depend on whole roomState/currentSong object
   useEffect(() => {
     if (!room) return;
 
     const singerName =
-      roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+      currentSong?.requestedBy || currentSong?.singerName || "";
 
     const amISinging =
       singerName &&
       currentUser?.name &&
       String(singerName).trim() === String(currentUser.name).trim();
 
-    // stop previous
+    // stop previous graph
     if (stopAutoMicRef.current) {
       try {
         stopAutoMicRef.current();
@@ -206,26 +211,44 @@ function HostView({ roomCode, currentUser, roomState }) {
 
     if (!amISinging) return;
 
+    let cancelled = false;
+
     (async () => {
       try {
-        stopAutoMicRef.current = await enableAutoMicComp(room, {
+        const stop = await enableAutoMicComp(room, {
           safetyMargin: 60,
           maxDelay: 250,
           alpha: 0.2,
         });
+
+        // if effect re-ran while awaiting, kill the new graph immediately
+        if (cancelled) {
+          try {
+            stop?.();
+          } catch {}
+          return;
+        }
+
+        stopAutoMicRef.current = stop;
       } catch (e) {
-        // keep UI alive even if audio graph fails
         console.error("enableAutoMicComp failed:", e);
       }
     })();
 
     return () => {
+      cancelled = true;
       try {
         stopAutoMicRef.current?.();
       } catch {}
       stopAutoMicRef.current = null;
     };
-  }, [room, roomState?.currentSong, currentUser?.name]);
+  }, [
+    room,
+    currentUser?.name,
+    currentSong?.videoId,       // ✅ restart only when song changes
+    currentSong?.requestedBy,   // ✅ singer identity changed (primitive string)
+    currentSong?.singerName,    // ✅ singer identity changed (primitive string)
+  ]);
 
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
@@ -234,10 +257,8 @@ function HostView({ roomCode, currentUser, roomState }) {
       <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.18),transparent_55%)]" />
 
-      {/* tighter padding on mobile */}
       <div className="relative p-3 sm:p-4">
         <div className="max-w-[1800px] mx-auto">
-          {/* Banner */}
           <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-4 sm:mb-6">
             <div className="relative bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
               <div className="relative px-4 py-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
@@ -277,9 +298,7 @@ function HostView({ roomCode, currentUser, roomState }) {
             </div>
           </div>
 
-          {/* Layout */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-            {/* Main column */}
             <div className="xl:col-span-2 space-y-4 sm:space-y-6">
               <VideoPlayer
                 currentSong={currentSong}
@@ -288,7 +307,6 @@ function HostView({ roomCode, currentUser, roomState }) {
                 isHost={true}
               />
 
-              {/* ✅ Mobile-only Queue right under video */}
               <div className="xl:hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
                 <SongQueue
                   queue={queue}
@@ -308,6 +326,8 @@ function HostView({ roomCode, currentUser, roomState }) {
                 onMuteToggle={setParticipantMute}
                 onMuteAll={handleMuteAll}
                 queue={queue}
+                currentUser={currentUser}
+                showControls={true}
               />
 
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
@@ -326,7 +346,6 @@ function HostView({ roomCode, currentUser, roomState }) {
               </div>
             </div>
 
-            {/* Desktop-only right column Queue */}
             <div className="hidden xl:block space-y-6">
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
                 <SongQueue
