@@ -112,7 +112,7 @@ const normalizeParticipant = (p, idx) => {
     <div className="card">
       <h3 className="text-xl font-bold mb-4">Find a track</h3>
 
-      <form onSubmit={handleSearch} className="mb-4 flex gap-3">
+    <form onSubmit={handleSearch} className="mb-4 flex flex-col sm:flex-row gap-3">
         <input
           type="text"
           value={searchQuery}
@@ -120,9 +120,13 @@ const normalizeParticipant = (p, idx) => {
           placeholder='Search YouTube... (e.g. "Mr Brightside karaoke")'
           className="flex-1 p-3 rounded-lg bg-karaoke-bg border border-gray-600 text-white focus:border-karaoke-accent focus:outline-none"
         />
-        <button type="submit" disabled={isLoading} className="btn-primary">
-          {isLoading ? "Searching..." : "Search"}
-        </button>
+        <button
+  type="submit"
+  disabled={isLoading}
+  className="btn-primary w-full sm:w-auto"
+>
+  {isLoading ? "Searching..." : "Search"}
+</button>
       </form>
 
       <div className="text-sm text-gray-400 mb-4">
@@ -139,23 +143,28 @@ const normalizeParticipant = (p, idx) => {
         {searchResults.map((video) => (
           <div
             key={video.id}
-            className="flex gap-3 items-center p-3 rounded-lg bg-karaoke-bg border border-gray-700"
+            className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-karaoke-bg border border-gray-700"
           >
             <img
               src={video.thumbnail}
               alt={video.title}
               className="w-20 h-14 rounded object-cover"
             />
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-white truncate">{video.title}</div>
-              <div className="text-sm text-gray-400 truncate">{video.channelTitle}</div>
-            </div>
-            <button
-              onClick={() => openPicker(video)}
-              className="btn-secondary whitespace-nowrap"
-            >
-              Add to Queue
-            </button>
+<div className="flex-1 min-w-0">
+  <div className="font-semibold text-white line-clamp-2">
+    {video.title}
+  </div>
+  <div className="text-sm text-gray-400 truncate">
+    {video.channelTitle}
+  </div>
+</div>
+         <button
+  onClick={() => openPicker(video)}
+  className="btn-secondary w-full sm:w-auto whitespace-nowrap"
+>
+  Add to Queue
+</button>
+         
           </div>
         ))}
       </div>
