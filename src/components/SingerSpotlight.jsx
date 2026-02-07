@@ -11,7 +11,6 @@ function ParticipantTile({
 }) {
   if (!participant) return null;
 
-  // These may not exist depending on SDK version / participant state
   const videoPub = participant.videoTracks?.values
     ? participant.videoTracks.values().next().value
     : null;
@@ -27,7 +26,7 @@ function ParticipantTile({
           : isNext
           ? "border-yellow-500/50 ring-2 ring-yellow-500/20"
           : "border-white/10"
-      } bg-black aspect-video group`}
+      } bg-black aspect-[4/3] sm:aspect-video group`}
     >
       {/* Video or Avatar */}
       {videoTrack ? (
@@ -45,31 +44,36 @@ function ParticipantTile({
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-fuchsia-900/30 to-indigo-900/30">
           <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-indigo-600 flex items-center justify-center text-2xl font-bold mx-auto mb-2">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-indigo-600 flex items-center justify-center text-xl sm:text-2xl font-bold mx-auto mb-2">
               {participantName?.charAt(0)?.toUpperCase() || "?"}
             </div>
-            <p className="text-sm text-white/70">{participantName}</p>
-            <p className="text-xs text-white/40 mt-1">Camera off</p>
+            <p className="text-xs sm:text-sm text-white/70 truncate max-w-[10rem] mx-auto">
+              {participantName}
+            </p>
+            <p className="text-[10px] sm:text-xs text-white/40 mt-1">
+              Camera off
+            </p>
           </div>
         </div>
       )}
 
       {/* Info Overlay */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-        <div className="flex items-center justify-between">
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
+        {/* ✅ this row must be justify-between so mic button doesn't overlap */}
+        <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-sm font-semibold truncate">
+            <span className="text-xs sm:text-sm font-semibold truncate">
               {participantName}
             </span>
 
             {isSinging && (
-              <span className="px-2 py-0.5 rounded-full bg-fuchsia-500 text-xs font-bold whitespace-nowrap animate-pulse">
+              <span className="px-2 py-0.5 rounded-full bg-fuchsia-500 text-[10px] sm:text-xs font-bold whitespace-nowrap">
                 🎤 SINGING
               </span>
             )}
 
             {isNext && !isSinging && (
-              <span className="px-2 py-0.5 rounded-full bg-yellow-500/80 text-xs font-bold whitespace-nowrap">
+              <span className="px-2 py-0.5 rounded-full bg-yellow-500/80 text-[10px] sm:text-xs font-bold whitespace-nowrap">
                 ⏭️ NEXT
               </span>
             )}
@@ -79,7 +83,7 @@ function ParticipantTile({
           {canControlMics && (
             <button
               onClick={() => onMuteToggle(participantName, !isMuted)}
-              className={`p-1.5 rounded-lg transition ${
+              className={`p-1 sm:p-1.5 rounded-lg transition shrink-0 ${
                 isMuted
                   ? "bg-red-500/90 hover:bg-red-500"
                   : "bg-emerald-500/90 hover:bg-emerald-500"
@@ -88,7 +92,7 @@ function ParticipantTile({
             >
               {isMuted ? (
                 <svg
-                  className="w-4 h-4"
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -100,7 +104,7 @@ function ParticipantTile({
                 </svg>
               ) : (
                 <svg
-                  className="w-4 h-4"
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -136,7 +140,6 @@ function SingerSpotlight({
   queue,
   canControlMics = true,
 }) {
-  // LiveKit participants (real video tiles)
   const liveKitParticipants = useParticipants();
 
   const currentSinger = currentSong?.requestedBy || currentSong?.singerName;
@@ -148,19 +151,21 @@ function SingerSpotlight({
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
           <div className="text-xs tracking-widest uppercase text-white/50">
             Live Video
           </div>
 
-          <h3 className="text-2xl font-extrabold">
+          <h3 className="text-xl sm:text-2xl font-extrabold leading-tight">
             {currentSinger ? (
               <>
                 <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff)]">
                   {currentSinger}
                 </span>
-                <span className="text-white/60 text-lg ml-2">is singing</span>
+                <span className="text-white/60 text-base sm:text-lg ml-2">
+                  is singing
+                </span>
               </>
             ) : (
               <span className="text-white/60">Participants</span>
@@ -177,11 +182,20 @@ function SingerSpotlight({
           )}
         </div>
 
-        {/* Emergency Mute All (host only) */}
         {canControlMics && (
           <button
             onClick={onMuteAll}
-            className="px-4 py-2 rounded-xl font-bold bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition flex items-center gap-2"
+            className="
+              w-full sm:w-auto
+              inline-flex items-center justify-center gap-2
+              rounded-2xl
+              px-4 py-3 sm:py-2
+              border border-white/10
+              bg-white/6 hover:bg-rose-500/10 hover:border-rose-400/30
+              text-white/85
+              backdrop-blur-xl
+              transition
+            "
             title="Mute everyone except current singer"
           >
             <svg
@@ -203,13 +217,12 @@ function SingerSpotlight({
                 d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
               />
             </svg>
-            <span className="text-xs">Mute All</span>
+            <span className="text-sm font-semibold">Mute All</span>
           </button>
         )}
       </div>
 
-      {/* Video Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
         {liveKitParticipants.map((participant) => {
           const participantName = participant.name || participant.identity;
           const isSinging = participantName === currentSinger;
@@ -240,7 +253,6 @@ function SingerSpotlight({
         </div>
       )}
 
-      {/* Legend */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs text-white/50">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded border-2 border-fuchsia-500 ring-2 ring-fuchsia-500/30" />

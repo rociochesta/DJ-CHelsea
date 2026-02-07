@@ -86,56 +86,68 @@ const queuedBy = asName(song.addedByName) || null;
                     </div>
                   </div>
 
-                  {isHost && (
-                    <div className="flex items-center gap-2">
-                      {/* Reorder buttons */}
-                      <div className="flex flex-col gap-1">
-                        <button
-                          onClick={() => onMoveSongUp?.(song, index)}
-                          disabled={index === 0}
-                          className="p-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition"
-                          title="Move up"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => onMoveSongDown?.(song, index)}
-                          disabled={index === sortedQueue.length - 1}
-                          className="p-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition"
-                          title="Move down"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                      </div>
+             {isHost && (
+  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2 shrink-0">
+    {/* Top row (mobile): Play Now full width */}
+    <button
+      onClick={() => onPlaySong?.(song)}
+      className="
+        w-full sm:w-auto
+        px-4 py-2 rounded-xl font-bold
+        bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)]
+        hover:opacity-95 active:scale-[0.99] transition
+        border border-white/10
+        shadow-[0_18px_60px_rgba(255,0,153,0.14)]
+        whitespace-nowrap
+      "
+    >
+      Play Now
+    </button>
 
-                      {/* Delete button */}
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Remove "${song.title}" from queue?`)) {
-                            onDeleteSong?.(song.id);
-                          }
-                        }}
-                        className="p-2 rounded bg-red-500/20 hover:bg-red-500/30 transition"
-                        title="Delete"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+    {/* Bottom row (mobile): reorder + delete in a compact bar */}
+    <div className="flex items-center justify-between sm:justify-start gap-2">
+      {/* Reorder buttons */}
+      <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
+        <button
+          onClick={() => onMoveSongUp?.(song, index)}
+          disabled={index === 0}
+          className="p-2 sm:p-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition"
+          title="Move up"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
 
-                      {/* Play button */}
-                      <button
-                        onClick={() => onPlaySong?.(song)}
-                        className="px-4 py-2 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 active:scale-[0.99] transition border border-white/10 shadow-[0_18px_60px_rgba(255,0,153,0.14)] whitespace-nowrap"
-                      >
-                        Play Now
-                      </button>
-                    </div>
-                  )}
+        <button
+          onClick={() => onMoveSongDown?.(song, index)}
+          disabled={index === sortedQueue.length - 1}
+          className="p-2 sm:p-1 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition"
+          title="Move down"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Delete button */}
+      <button
+        onClick={() => {
+          if (window.confirm(`Remove "${song.title}" from queue?`)) {
+            onDeleteSong?.(song.id);
+          }
+        }}
+        className="p-2 rounded bg-red-500/20 hover:bg-red-500/30 transition"
+        title="Delete"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+)}
                 </div>
               </div>
             );
