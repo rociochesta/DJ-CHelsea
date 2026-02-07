@@ -14,7 +14,6 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
 
   const currentSong = roomState?.currentSong || null;
   const participantMutes = roomState?.participantMutes || {};
-  const participants = roomState?.participants ? Object.values(roomState.participants) : [];
 
   // --- LiveKit token fetch (Netlify function) ---
   useEffect(() => {
@@ -121,12 +120,10 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
               <SingerSpotlight
                 roomCode={roomCode}
                 currentSong={currentSong}
-                participants={participants}
                 participantMutes={participantMutes}
                 onMuteToggle={noopMuteToggle}
                 onMuteAll={noopMuteAll}
                 queue={queue}
-                // 👇 add this prop in SingerSpotlight (tiny patch below)
                 canControlMics={false}
               />
             </div>

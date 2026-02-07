@@ -35,8 +35,14 @@ const normalizeParticipant = (p, idx) => {
     role: p?.role || "participant",
   };
 };
-  const sortedParticipants = useMemo(() => {
-  const list = Array.isArray(participants) ? participants : [];
+ const sortedParticipants = useMemo(() => {
+  const list =
+    Array.isArray(participants)
+      ? participants
+      : participants && typeof participants === "object"
+      ? Object.entries(participants).map(([id, p]) => ({ ...p, id }))
+      : [];
+
   const normalized = list.map(normalizeParticipant);
 
   return normalized.sort((a, b) => {

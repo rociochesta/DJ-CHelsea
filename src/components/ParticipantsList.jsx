@@ -23,6 +23,7 @@ function ParticipantsList({ currentUser }) {
   }, [liveKitParticipants]);
 
   const youName = String(currentUser?.name || "").trim();
+  const youId = String(currentUser?.id || currentUser?.identity || "").trim(); // ✅ better match
   const count = normalized.length || (youName ? 1 : 0);
 
   return (
@@ -56,7 +57,8 @@ function ParticipantsList({ currentUser }) {
           </div>
         ) : (
           normalized.map((p) => {
-            const isYou = youName && p.name === youName;
+            const isYou =
+              (youId && p.id === youId) || (youName && p.name === youName); // ✅ safer
 
             return (
               <div
