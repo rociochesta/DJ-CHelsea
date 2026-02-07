@@ -5,7 +5,7 @@ import VideoPlayer from "./VideoPlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import SingerSpotlight from "./SingerSpotlight";
-import DebugPanel from "./DebugPanel";
+import DebugPanel from "./Debugpanel";
 
 function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
