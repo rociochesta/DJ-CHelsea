@@ -5,9 +5,15 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [roomCode, setRoomCode] = useState("");
   const [userName, setUserName] = useState("");
 
+  // ✅ Keep old “DJ unlock” system for later (commented in UI below)
   const [adminName, setAdminName] = useState("");
   const [adminPass, setAdminPass] = useState("");
   const [adminUnlocked, setAdminUnlocked] = useState(false);
+
+  const getDJName = () => {
+    const n = userName.trim();
+    return n || "DJ";
+  };
 
   const handleJoinSubmit = (e) => {
     e.preventDefault();
@@ -155,8 +161,26 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                   </p>
                 </div>
 
-                <div className="flex flex-col md:items-end gap-3">
-                  {/* Admin unlock */}
+                <div className="flex flex-col md:items-end gap-3 w-full md:w-auto">
+                  {/* ✅ Simple "try it now" name input */}
+                  <div className="w-full md:w-auto">
+                    <label className="block text-xs tracking-widest uppercase text-white/50 mb-2">
+                      Your name (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder='Leave empty = "DJ"'
+                      className="w-full md:w-80 px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:outline-none focus:border-fuchsia-400/60"
+                    />
+                    <div className="mt-2 text-xs text-white/45">
+                      You’ll be spinning. Make sure you’re sober. Or at least emotionally licensed. 😇
+                    </div>
+                  </div>
+
+                  {/* ✅ Keep old admin unlock for later (do NOT delete) */}
+                  {/*
                   {!adminUnlocked ? (
                     <form
                       onSubmit={handleAdminLogin}
@@ -189,20 +213,20 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       DJ Unlocked
                     </div>
                   )}
+                  */}
 
-                  <div className="flex gap-3 flex-wrap md:justify-end">
+                  <div className="flex gap-3 flex-wrap md:justify-end w-full">
                     <button
-                      onClick={() => onCreateRoom(userName)}
-                      disabled={!adminUnlocked}
-                      title={!adminUnlocked ? "Unlock DJ to host" : "Create the room"}
-                      className="px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-95 active:scale-[0.99] transition shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_18px_60px_rgba(255,0,153,0.20)]"
+                      onClick={() => onCreateRoom(getDJName())}
+                      title="Create the room"
+                      className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 active:scale-[0.99] transition shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_18px_60px_rgba(255,0,153,0.20)]"
                     >
-                      Create Room
+                      Start a Room
                     </button>
 
                     <button
                       onClick={() => setMode("join")}
-                      className="px-6 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/15 active:scale-[0.99] transition border border-white/10"
+                      className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/15 active:scale-[0.99] transition border border-white/10"
                     >
                       Join Room
                     </button>
@@ -214,17 +238,24 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               {mode === "join" && (
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
                   <div className="md:col-span-2">
-                    <button onClick={() => setMode(null)} className="text-white/70 hover:text-white transition">
+                    <button
+                      onClick={() => setMode(null)}
+                      className="text-white/70 hover:text-white transition"
+                    >
                       ← Back
                     </button>
                     <h2 className="mt-3 text-2xl font-bold">Join the room</h2>
-                    <p className="mt-2 text-white/60">Enter your name + the 6-character code.</p>
+                    <p className="mt-2 text-white/60">
+                      Enter your name + the 6-character code.
+                    </p>
                   </div>
 
                   <div className="md:col-span-3 rounded-2xl border border-white/10 bg-black/30 p-5 md:p-6 backdrop-blur-xl">
                     <form onSubmit={handleJoinSubmit} className="space-y-4">
                       <div>
-                        <label className="block text-sm font-semibold text-white/80 mb-2">Your name</label>
+                        <label className="block text-sm font-semibold text-white/80 mb-2">
+                          Your name
+                        </label>
                         <input
                           type="text"
                           value={userName}
@@ -236,11 +267,15 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-semibold text-white/80 mb-2">Room code</label>
+                        <label className="block text-sm font-semibold text-white/80 mb-2">
+                          Room code
+                        </label>
                         <input
                           type="text"
                           value={roomCode}
-                          onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                          onChange={(e) =>
+                            setRoomCode(e.target.value.toUpperCase())
+                          }
                           placeholder="ABC123"
                           maxLength={6}
                           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-indigo-400/70 focus:ring-2 focus:ring-indigo-400/20 text-center text-2xl font-mono tracking-[0.35em]"
@@ -264,12 +299,26 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               {mode !== "join" && (
                 <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    { t: "Sad Song Court", d: "Bring your tragic bangers. We will judge lovingly and cry privately." },
-                    { t: "Horny, but respectful", d: "Flirty tracks allowed. No inspirational speeches. No emotional jump scares." },
-                    { t: "Why this song?", d: "Optional. But if it’s unhinged, you owe us a one-line explanation." },
+                    {
+                      t: "Sad Song Court",
+                      d: "Bring your tragic bangers. We will judge lovingly and cry privately.",
+                    },
+                    {
+                      t: "Always respectful",
+                      d: "Flirty tracks allowed. No inspirational speeches. No emotional jump scares.",
+                    },
+                    {
+                      t: "Why this song?",
+                      d: "Optional. But if it’s unhinged, you owe us a one-line explanation.",
+                    },
                   ].map((x) => (
-                    <div key={x.t} className="rounded-2xl border border-white/10 bg-black/25 p-5 backdrop-blur-xl">
-                      <div className="text-sm font-bold text-white/90">{x.t}</div>
+                    <div
+                      key={x.t}
+                      className="rounded-2xl border border-white/10 bg-black/25 p-5 backdrop-blur-xl"
+                    >
+                      <div className="text-sm font-bold text-white/90">
+                        {x.t}
+                      </div>
                       <div className="mt-2 text-white/60">{x.d}</div>
                     </div>
                   ))}
