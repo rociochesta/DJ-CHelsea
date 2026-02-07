@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { RoomAudioRenderer } from "@livekit/components-react";
 
 function ParticipantTile({
   participant,

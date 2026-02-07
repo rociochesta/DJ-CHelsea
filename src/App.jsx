@@ -7,6 +7,7 @@ import { generateRoomCode, generateUserId } from "./utils/helpers";
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
 import ParticipantView from "./components/ParticipantView";
+import { RoomAudioRenderer } from "@livekit/components-react";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
