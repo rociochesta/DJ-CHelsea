@@ -65,9 +65,15 @@ function App() {
     );
   }
 
-  // Initialize user on mount
+  // Initialize user on mount - PERSISTENT ID
   useEffect(() => {
-    const userId = generateUserId();
+    // Get or create persistent user ID (prevents duplicates)
+    let userId = localStorage.getItem("karaoke-userid");
+    if (!userId) {
+      userId = generateUserId();
+      localStorage.setItem("karaoke-userid", userId);
+    }
+
     const userName = localStorage.getItem("karaoke-username") || "Guest";
 
     setCurrentUser({
