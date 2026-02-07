@@ -1,16 +1,37 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { useParticipants } from "@livekit/components-react";
 
-function ParticipantsList({ participants = [], currentUser }) {
+function ParticipantsList({ currentUser }) {
+  const liveKitParticipants = useParticipants();
+
+  const normalized = useMemo(() => {
+    const list = Array.isArray(liveKitParticipants) ? liveKitParticipants : [];
+
+    const mapped = list.map((p, idx) => {
+      const name = String(p?.name || p?.identity || `Guest ${idx + 1}`).trim();
+      const id = String(p?.identity || p?.sid || `p-${idx}-${name}`);
+      return { id, name };
+    });
+
+    // remove duplicates
+    const seen = new Set();
+    return mapped.filter((x) => {
+      if (seen.has(x.id)) return false;
+      seen.add(x.id);
+      return true;
+    });
+  }, [liveKitParticipants]);
+
+  const youName = String(currentUser?.name || "").trim();
+  const count = normalized.length || (youName ? 1 : 0);
+
   return (
     <div>
       <div className="flex items-end justify-between gap-4 mb-4">
         <div>
-          <div className="text-xs tracking-widest uppercase text-white/50">
-            Room
-          </div>
+          <div className="text-xs tracking-widest uppercase text-white/50">Room</div>
           <h3 className="text-xl md:text-2xl font-extrabold">
-            Participants{" "}
-            <span className="text-white/60 font-semibold">({participants.length})</span>
+            Participants <span className="text-white/60 font-semibold">({count})</span>
           </h3>
         </div>
 
@@ -21,36 +42,49 @@ function ParticipantsList({ participants = [], currentUser }) {
       </div>
 
       <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-        {participants.map((participant) => {
-          const name = participant?.name || "Anonymous Legend";
-          const isYou = currentUser?.name && name === currentUser.name;
+        {normalized.length === 0 && youName ? (
+          <div className="rounded-2xl border border-white/10 bg-black/25 p-3 flex items-center justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-full border border-white/10 bg-gradient-to-br from-fuchsia-500/40 to-indigo-500/40 flex items-center justify-center font-extrabold">
+                {youName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div className="font-bold">{youName}</div>
+                <div className="text-xs text-white/50">You (alone but iconic)</div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          normalized.map((p) => {
+            const isYou = youName && p.name === youName;
 
-          return (
-            <div
-              key={name}
-              className="rounded-2xl border border-white/10 bg-black/25 p-3 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-full border border-white/10 bg-[linear-gradient(135deg,rgba(255,42,161,0.35),rgba(124,58,237,0.35))] flex items-center justify-center font-extrabold shadow-[0_0_24px_rgba(255,0,153,0.12)]">
-                  {name.charAt(0).toUpperCase()}
-                </div>
+            return (
+              <div
+                key={p.id}
+                className="rounded-2xl border border-white/10 bg-black/25 p-3 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full border border-white/10 bg-gradient-to-br from-fuchsia-500/40 to-indigo-500/40 flex items-center justify-center font-extrabold">
+                    {p.name.charAt(0).toUpperCase()}
+                  </div>
 
-                <div className="min-w-0">
-                  <div className="font-bold truncate">{name}</div>
-                  <div className="text-xs text-white/50 truncate">
-                    {isYou ? "You (main character energy)" : "In the room"}
+                  <div className="min-w-0">
+                    <div className="font-bold truncate">{p.name}</div>
+                    <div className="text-xs text-white/50">
+                      {isYou ? "You" : "In the room"}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {isYou && (
-                <span className="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/10">
-                  You
-                </span>
-              )}
-            </div>
-          );
-        })}
+                {isYou && (
+                  <span className="text-xs px-2 py-1 rounded-full border border-white/10 bg-white/10">
+                    You
+                  </span>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
