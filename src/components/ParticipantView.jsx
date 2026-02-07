@@ -92,18 +92,17 @@ export default function ParticipantView({ roomCode, currentUser, roomState }) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-6">
           <VideoPlayer currentSong={currentSong} playbackState={roomState?.playbackState} isHost={false} />
-
-          <SingerSpotlight
-            roomCode={roomCode}
-            currentSong={currentSong}
-            participantMutes={participantMutes}
-            onMuteToggle={noopMuteToggle}
-            onMuteAll={noopMuteAll}
-            queue={queue}
-            canControlMics={false}
-            currentUser={currentUser}
-            showControls={true}
-          />
+<SingerSpotlight
+  roomCode={roomCode}
+  currentSong={currentSong}
+  participantMutes={participantMutes}
+  onMuteToggle={noopMuteToggle}
+  onMuteAll={noopMuteAll}
+  queue={queue}
+  canControlMics={false}
+  currentUser={currentUser}
+  showControls={true}
+/>
         </div>
 
         <div className="space-y-6">

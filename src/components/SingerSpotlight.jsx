@@ -1,164 +1,117 @@
-import React, { useState } from "react";
+import React from "react";
+import { useParticipants } from "@livekit/components-react";
+import ParticipantTile from "./ParticipantTile";
 
-export default function ParticipantTile({
-  participant,
-  isSinging,
-  isNext,
-  isMuted,
+export default function SingerSpotlight({
+  roomCode,
+  currentSong,
+  participantMutes,
   onMuteToggle,
+  onMuteAll,
+  queue,
   canControlMics = true,
-  isCurrentUser = false,
+  currentUser,
   showControls = false,
 }) {
-  if (!participant) return null;
+  const liveKitParticipants = useParticipants();
 
-  const [isCameraOn, setIsCameraOn] = useState(true);
-
-  const videoPub = participant.videoTracks?.values
-    ? participant.videoTracks.values().next().value
-    : null;
-
-  const videoTrack = videoPub?.videoTrack || null;
-  const participantName = participant.name || participant.identity || "Unknown";
-
-  // ✅ real mic state from LiveKit (no local isMicOn state)
-  const isMicOn = !!participant.isMicrophoneEnabled;
-
-  // ✅ policy: only singer can unmute (AUTO mode)
-  const isLocal = !!participant.isLocal;
-  const micAllowedByPolicy = !!isSinging;
-
-  const handleToggleCamera = async () => {
-    try {
-      await participant.setCameraEnabled(!isCameraOn);
-      setIsCameraOn(!isCameraOn);
-    } catch (e) {
-      console.error("Failed to toggle camera:", e);
-    }
-  };
-
-  const handleToggleMic = async () => {
-    try {
-      const next = !participant.isMicrophoneEnabled;
-      await participant.setMicrophoneEnabled(next);
-    } catch (e) {
-      console.error("Failed to toggle mic:", e);
-    }
-  };
+  const currentSinger = currentSong?.requestedBy || currentSong?.singerName || "";
+  const nextSong =
+    queue && queue.length > 0
+      ? [...queue].sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0))[0]
+      : null;
+  const nextSinger = nextSong?.requestedBy || nextSong?.singerName || "";
 
   return (
-    <div
-      className={`relative rounded-2xl overflow-hidden border ${
-        isSinging
-          ? "border-fuchsia-500 ring-4 ring-fuchsia-500/30"
-          : isNext
-          ? "border-yellow-500/50 ring-2 ring-yellow-500/20"
-          : "border-white/10"
-      } bg-black aspect-[4/3] sm:aspect-video group`}
-    >
-      {videoTrack ? (
-        <video
-          ref={(el) => {
-            if (el && videoTrack) videoTrack.attach(el);
-          }}
-          autoPlay
-          playsInline
-          muted={participant.isLocal}
-          className={`w-full h-full object-cover ${
-            participant.isLocal ? "scale-x-[-1]" : ""
-          }`}
-        />
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-fuchsia-900/30 to-indigo-900/30">
-          <div className="text-center">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-indigo-600 flex items-center justify-center text-xl sm:text-2xl font-bold mx-auto mb-2">
-              {participantName?.charAt(0)?.toUpperCase() || "?"}
+    <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+          <div className="text-xs tracking-widest uppercase text-white/50">
+            Live Video
+          </div>
+
+          <h3 className="text-xl sm:text-2xl font-extrabold leading-tight">
+            {currentSinger ? (
+              <>
+                <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff)]">
+                  {currentSinger}
+                </span>
+                <span className="text-white/60 text-base sm:text-lg ml-2">
+                  is singing
+                </span>
+              </>
+            ) : (
+              <span className="text-white/60">Participants</span>
+            )}
+          </h3>
+
+          {nextSinger ? (
+            <div className="mt-1 text-sm text-white/50">
+              Up next:{" "}
+              <span className="text-fuchsia-400 font-semibold">
+                {nextSinger}
+              </span>
             </div>
-            <p className="text-xs sm:text-sm text-white/70 truncate max-w-[10rem] mx-auto">
-              {participantName}
-            </p>
-            <p className="text-[10px] sm:text-xs text-white/40 mt-1">Camera off</p>
-          </div>
+          ) : null}
         </div>
-      )}
 
-      {isCurrentUser && showControls && (
-        <div className="absolute top-2 right-2 flex gap-2">
+        {canControlMics && (
           <button
-            onClick={handleToggleCamera}
-            className={`p-2 rounded-lg backdrop-blur-xl transition ${
-              isCameraOn ? "bg-white/20 hover:bg-white/30" : "bg-red-500/80 hover:bg-red-500"
-            }`}
-            title={isCameraOn ? "Turn camera off" : "Turn camera on"}
+            onClick={onMuteAll}
+            className="
+              w-full sm:w-auto
+              inline-flex items-center justify-center gap-2
+              rounded-2xl
+              px-4 py-3 sm:py-2
+              border border-white/10
+              bg-white/6 hover:bg-rose-500/10 hover:border-rose-400/30
+              text-white/85
+              backdrop-blur-xl
+              transition
+            "
+            title="Mute everyone except current singer"
           >
-            {isCameraOn ? "📷" : "🚫"}
+            <span className="text-sm font-semibold">Mute All</span>
           </button>
-
-          <button
-            onClick={handleToggleMic}
-            disabled={isLocal && !micAllowedByPolicy}
-            className={`p-2 rounded-lg backdrop-blur-xl transition ${
-              isLocal && !micAllowedByPolicy
-                ? "bg-red-600/70 cursor-not-allowed"
-                : isMicOn
-                ? "bg-emerald-500/80 hover:bg-emerald-500"
-                : "bg-white/20 hover:bg-white/30"
-            }`}
-            title={
-              isLocal && !micAllowedByPolicy
-                ? "Muted by policy (only singer can unmute)"
-                : isMicOn
-                ? "Mute mic"
-                : "Unmute mic (if allowed)"
-            }
-          >
-            {isMicOn ? "🎙️" : "🔇"}
-          </button>
-        </div>
-      )}
-
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:p-3">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs sm:text-sm font-semibold truncate">
-              {participantName}
-            </span>
-
-            {isSinging && (
-              <span className="px-2 py-0.5 rounded-full bg-fuchsia-500 text-[10px] sm:text-xs font-bold whitespace-nowrap">
-                🎤 SINGING
-              </span>
-            )}
-
-            {isNext && !isSinging && (
-              <span className="px-2 py-0.5 rounded-full bg-yellow-500/80 text-[10px] sm:text-xs font-bold whitespace-nowrap">
-                ⏭️ NEXT
-              </span>
-            )}
-
-            {isLocal && !micAllowedByPolicy && (
-              <span className="px-2 py-0.5 rounded-full bg-red-600/80 text-[10px] sm:text-xs font-bold whitespace-nowrap">
-                🔒 MUTED BY POLICY
-              </span>
-            )}
-          </div>
-
-          {canControlMics && (
-            <button
-              onClick={() => onMuteToggle(participantName, !isMuted)}
-              className={`p-1 sm:p-1.5 rounded-lg transition shrink-0 ${
-                isMuted ? "bg-red-500/90 hover:bg-red-500" : "bg-emerald-500/90 hover:bg-emerald-500"
-              }`}
-              title={isMuted ? "Unmute" : "Mute"}
-            >
-              {isMuted ? "🔇" : "🎙️"}
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
-      {isSinging && (
-        <div className="absolute inset-0 pointer-events-none border-4 border-fuchsia-500 rounded-2xl animate-pulse" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        {liveKitParticipants.map((p) => {
+          const participantName = p.name || p.identity;
+          const isSinging = !!currentSinger && participantName === currentSinger;
+          const isNext = !!nextSinger && participantName === nextSinger;
+          const isMuted = participantMutes?.[participantName] === true;
+
+          // ✅ local user check (match by identity OR name)
+          const isCurrentUser =
+            !!currentUser &&
+            (participantName === currentUser.name || p.identity === currentUser.id);
+
+          return (
+            <ParticipantTile
+              key={p.identity}
+              participant={p}
+              isSinging={isSinging}
+              isNext={isNext}
+              isMuted={isMuted}
+              onMuteToggle={onMuteToggle}
+              canControlMics={canControlMics}
+              isCurrentUser={isCurrentUser}
+              showControls={showControls}
+            />
+          );
+        })}
+      </div>
+
+      {liveKitParticipants.length === 0 && (
+        <div className="rounded-2xl border border-white/10 bg-black/25 p-8 text-center mt-4">
+          <div className="text-5xl mb-3">👻</div>
+          <div className="text-lg font-bold">No participants yet</div>
+          <div className="mt-1 text-white/60 text-sm">
+            Share the room code for people to join
+          </div>
+        </div>
       )}
     </div>
   );
