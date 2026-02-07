@@ -12,15 +12,38 @@ function SongSearch({ onAddToQueue, participants = [] }) {
   const [pickedVideo, setPickedVideo] = useState(null);
   const [pickedUserId, setPickedUserId] = useState("");
   const [customName, setCustomName] = useState("");
+const normalizeParticipant = (p, idx) => {
+  if (!p) return { id: `p-${idx}`, name: "Guest", role: "participant" };
 
+  const name =
+    typeof p === "string" ? p :
+    typeof p?.name === "string" ? p.name :
+    typeof p?.name === "object" && p?.name?.name ? String(p.name.name) :
+    typeof p?.identity === "string" ? p.identity :
+    "Guest";
+
+  const id = typeof p?.id === "string" && p.id
+    ? p.id
+    : typeof p?.identity === "string" && p.identity
+    ? p.identity
+    : `p-${idx}-${name}`;
+
+  return {
+    id,
+    name,
+    role: p?.role || "participant",
+  };
+};
   const sortedParticipants = useMemo(() => {
-    const list = Array.isArray(participants) ? participants : [];
-    return [...list].sort((a, b) => {
-      if (a.role === "host" && b.role !== "host") return -1;
-      if (b.role === "host" && a.role !== "host") return 1;
-      return String(a.name || "").localeCompare(String(b.name || ""));
-    });
-  }, [participants]);
+  const list = Array.isArray(participants) ? participants : [];
+  const normalized = list.map(normalizeParticipant);
+
+  return normalized.sort((a, b) => {
+    if (a.role === "host" && b.role !== "host") return -1;
+    if (b.role === "host" && a.role !== "host") return 1;
+    return String(a.name || "").localeCompare(String(b.name || ""));
+  });
+}, [participants]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -49,7 +72,7 @@ function SongSearch({ onAddToQueue, participants = [] }) {
     setCustomName("");
 
     // default select first participant if exists
-    setPickedUserId(sortedParticipants[0]?.id || "");
+  setPickedUserId(sortedParticipants[0]?.id || "__custom__");
     setPickOpen(true);
   };
 
@@ -60,19 +83,21 @@ function SongSearch({ onAddToQueue, participants = [] }) {
     setCustomName("");
   };
 
-  const confirmPick = () => {
-    let chosen =
-      sortedParticipants.find((p) => p.id === pickedUserId) || null;
+ const confirmPick = () => {
+  let chosen = null;
 
-    // fallback: custom name
-    if (!chosen) {
-      const name = customName.trim();
-      chosen = name ? { id: null, name } : { id: null, name: "Someone" };
-    }
+  if (pickedUserId !== "__custom__") {
+    chosen = sortedParticipants.find((p) => p.id === pickedUserId) || null;
+  }
 
-    onAddToQueue?.(pickedVideo, chosen);
-    closePicker();
-  };
+  if (!chosen) {
+    const name = String(customName || "").trim();
+    chosen = { id: null, name: name || "Someone", role: "participant" };
+  }
+
+  onAddToQueue?.(pickedVideo, chosen);
+  closePicker();
+};
 
   return (
     <div className="card">
@@ -164,10 +189,10 @@ function SongSearch({ onAddToQueue, participants = [] }) {
                         {p.name || "Guest"}{p.role === "host" ? " (DJ)" : ""}
                       </option>
                     ))}
-                    <option value="">Someone else…</option>
+                  <option value="__custom__">Someone else…</option>
                   </select>
 
-                  {!pickedUserId && (
+                {pickedUserId === "__custom__" && (
                     <input
                       value={customName}
                       onChange={(e) => setCustomName(e.target.value)}
