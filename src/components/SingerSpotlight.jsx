@@ -1,5 +1,5 @@
-import React from "react";
-import { useParticipants } from "@livekit/components-react";
+import React, { useState } from "react";
+import { useParticipants, useLocalParticipant } from "@livekit/components-react";
 
 function ParticipantTile({
   participant,
@@ -8,8 +8,13 @@ function ParticipantTile({
   isMuted,
   onMuteToggle,
   canControlMics = true,
+  isCurrentUser = false,
+  showControls = false,
 }) {
   if (!participant) return null;
+
+  const [isCameraOn, setIsCameraOn] = useState(true);
+  const [isMicOn, setIsMicOn] = useState(false);
 
   const videoPub = participant.videoTracks?.values
     ? participant.videoTracks.values().next().value
@@ -17,6 +22,24 @@ function ParticipantTile({
 
   const videoTrack = videoPub?.videoTrack || null;
   const participantName = participant.name || participant.identity || "Unknown";
+
+  const handleToggleCamera = async () => {
+    try {
+      await participant.setCameraEnabled(!isCameraOn);
+      setIsCameraOn(!isCameraOn);
+    } catch (e) {
+      console.error("Failed to toggle camera:", e);
+    }
+  };
+
+  const handleToggleMic = async () => {
+    try {
+      await participant.setMicrophoneEnabled(!isMicOn);
+      setIsMicOn(!isMicOn);
+    } catch (e) {
+      console.error("Failed to toggle mic:", e);
+    }
+  };
 
   return (
     <div
@@ -54,6 +77,51 @@ function ParticipantTile({
               Camera off
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Camera/Mic Controls (for current user only) */}
+      {isCurrentUser && showControls && (
+        <div className="absolute top-2 right-2 flex gap-2">
+          <button
+            onClick={handleToggleCamera}
+            className={`p-2 rounded-lg backdrop-blur-xl transition ${
+              isCameraOn
+                ? "bg-white/20 hover:bg-white/30"
+                : "bg-red-500/80 hover:bg-red-500"
+            }`}
+            title={isCameraOn ? "Turn camera off" : "Turn camera on"}
+          >
+            {isCameraOn ? (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+            )}
+          </button>
+
+          <button
+            onClick={handleToggleMic}
+            className={`p-2 rounded-lg backdrop-blur-xl transition ${
+              isMicOn
+                ? "bg-emerald-500/80 hover:bg-emerald-500"
+                : "bg-white/20 hover:bg-white/30"
+            }`}
+            title={isMicOn ? "Mute mic" : "Unmute mic (if allowed)"}
+          >
+            {isMicOn ? (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
         </div>
       )}
 
@@ -139,6 +207,8 @@ function SingerSpotlight({
   onMuteAll,
   queue,
   canControlMics = true,
+  currentUser,
+  showControls = false,
 }) {
   const liveKitParticipants = useParticipants();
 
@@ -228,6 +298,7 @@ function SingerSpotlight({
           const isSinging = participantName === currentSinger;
           const isNext = participantName === nextSinger;
           const isMuted = participantMutes?.[participantName] === true;
+          const isCurrentUser = currentUser && (participantName === currentUser.name || participant.identity === currentUser.id);
 
           return (
             <ParticipantTile
@@ -238,6 +309,8 @@ function SingerSpotlight({
               isMuted={isMuted}
               onMuteToggle={onMuteToggle}
               canControlMics={canControlMics}
+              isCurrentUser={isCurrentUser}
+              showControls={showControls}
             />
           );
         })}

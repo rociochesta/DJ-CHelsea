@@ -1,12 +1,22 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant } from "@livekit/components-react";
+import { database, ref, push, set } from "../utils/firebase";
+import { searchKaraokeVideos } from "../utils/youtube";
 import VideoPlayer from "./VideoPlayer";
 import SongQueue from "./SongQueue";
 import SingerSpotlight from "./SingerSpotlight";
+import SongSearch from "./SongSearch";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
   const [token, setToken] = useState("");
   const [lkError, setLkError] = useState("");
+
+  // Song search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [cooldownMessage, setCooldownMessage] = useState("");
 
   const queue = useMemo(() => {
     return roomState?.queue ? Object.values(roomState.queue) : [];
@@ -14,6 +24,61 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
 
   const currentSong = roomState?.currentSong || null;
   const participantMutes = roomState?.participantMutes || {};
+
+  // Check if current user already has a song in queue
+  const userHasSongInQueue = useMemo(() => {
+    return queue.some(song => song.requestedBy === currentUser?.name);
+  }, [queue, currentUser?.name]);
+
+  // Handle search
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    setIsSearching(true);
+    setHasSearched(true);
+    const results = await searchKaraokeVideos(searchQuery);
+    setSearchResults(results);
+    setIsSearching(false);
+  };
+
+  // Handle adding to queue
+  const handleAddToQueue = async (video) => {
+    // Check if user already has a song
+    if (userHasSongInQueue) {
+      const messages = [
+        "Whoa there, champ. One song at a time. 🎤",
+        "Easy tiger. You've already got one queued. 🐯",
+        "Chill. Your masterpiece is already in line. 😎",
+        "Slow down, Beyoncé. One per person. 👑",
+        "Patience, grasshopper. You're already on the list. 🦗",
+        "Nice try. Queue limit: 1. Current status: maxed out. 🚫",
+      ];
+      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+      setCooldownMessage(randomMsg);
+      setTimeout(() => setCooldownMessage(""), 4000);
+      return;
+    }
+
+    // Add song to queue
+    const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
+    const newSongRef = push(queueRef);
+
+    await set(newSongRef, {
+      id: newSongRef.key,
+      videoId: video.id,
+      title: video.title,
+      thumbnail: video.thumbnail,
+      addedBy: currentUser.id,
+      requestedBy: currentUser.name,
+      addedAt: Date.now(),
+    });
+
+    // Clear search
+    setSearchQuery("");
+    setSearchResults([]);
+    setHasSearched(false);
+  };
 
   // --- LiveKit token fetch (Netlify function) ---
   useEffect(() => {
@@ -125,13 +190,56 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
                 onMuteAll={noopMuteAll}
                 queue={queue}
                 canControlMics={false}
+                currentUser={currentUser}
+                showControls={true}
               />
             </div>
 
-            {/* Right: Queue (view only) */}
+            {/* Right: Queue + Song Search */}
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
                 <SongQueue queue={queue} isHost={false} />
+              </div>
+
+              {/* Song Search for Participants */}
+              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
+                <div className="mb-4">
+                  <div className="text-xs tracking-widest uppercase text-white/50">Request</div>
+                  <h3 className="text-xl md:text-2xl font-extrabold">
+                    Add Your Song
+                  </h3>
+                  {userHasSongInQueue ? (
+                    <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
+                      <span className="text-xs font-semibold text-emerald-400">
+                        ✓ You have 1 song queued
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="mt-2 text-sm text-white/60">
+                      You can queue 1 song at a time
+                    </div>
+                  )}
+                </div>
+
+                {cooldownMessage && (
+                  <div className="mb-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-center">
+                    <div className="text-yellow-400 font-bold">{cooldownMessage}</div>
+                  </div>
+                )}
+
+                <SongSearch
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  onSearch={handleSearch}
+                  isSearching={isSearching}
+                  searchResults={searchResults}
+                  onAddToQueue={handleAddToQueue}
+                  hasSearched={hasSearched}
+                  roomCode={roomCode}
+                  currentUser={currentUser}
+                  participants={[]}
+                  isParticipant={true}
+                />
               </div>
             </div>
           </div>

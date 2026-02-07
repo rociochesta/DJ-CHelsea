@@ -258,6 +258,7 @@ function HostView({ roomCode, currentUser, roomState }) {
                   hasSearched={hasSearched}
                   roomCode={roomCode}
                   currentUser={currentUser}
+                  participants={participants}
                 />
               </div>
             </div>

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { searchKaraokeVideos } from "../utils/youtube";
 import { logSearchEvent } from "../utils/netlifySearchLog";
 
-function SongSearch({ onAddToQueue, participants = [], roomCode, currentUser }) {
+function SongSearch({ onAddToQueue, participants = [], roomCode, currentUser, isParticipant = false }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -165,7 +165,7 @@ const normalizeParticipant = (p, idx) => {
   </div>
 </div>
          <button
-  onClick={() => openPicker(video)}
+  onClick={() => isParticipant ? onAddToQueue(video) : openPicker(video)}
   className="btn-secondary w-full sm:w-auto whitespace-nowrap"
 >
   Add to Queue
@@ -175,8 +175,8 @@ const normalizeParticipant = (p, idx) => {
         ))}
       </div>
 
-      {/* ✅ Who requested? modal */}
-      {pickOpen && (
+      {/* ✅ Who requested? modal (host only) */}
+      {!isParticipant && pickOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0b0b18] p-4 shadow-2xl">
             <div className="flex items-start justify-between gap-3">
