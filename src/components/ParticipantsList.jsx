@@ -10,14 +10,21 @@ function ParticipantsList({ currentUser }) {
     const mapped = list.map((p, idx) => {
       const name = String(p?.name || p?.identity || `Guest ${idx + 1}`).trim();
       const id = String(p?.identity || p?.sid || `p-${idx}-${name}`);
-      return { id, name };
+      return { id, name, participant: p };
     });
 
-    // remove duplicates
-    const seen = new Set();
+    // remove duplicates by ID first, then by name
+    const seenIds = new Set();
+    const seenNames = new Set();
     return mapped.filter((x) => {
-      if (seen.has(x.id)) return false;
-      seen.add(x.id);
+      // Skip if we've seen this exact ID
+      if (seenIds.has(x.id)) return false;
+      
+      // Skip if same name AND it's not "Guest" (allow multiple Guests)
+      if (x.name !== "Guest" && seenNames.has(x.name.toLowerCase())) return false;
+      
+      seenIds.add(x.id);
+      seenNames.add(x.name.toLowerCase());
       return true;
     });
   }, [liveKitParticipants]);

@@ -65,9 +65,9 @@ function App() {
     );
   }
 
-  // Initialize user on mount - PERSISTENT ID
+  // Initialize user on mount - PERSISTENT ID (prevents duplicates)
   useEffect(() => {
-    // Get or create persistent user ID (prevents duplicates)
+    // Get or create persistent user ID
     let userId = localStorage.getItem("karaoke-userid");
     if (!userId) {
       userId = generateUserId();
@@ -154,6 +154,10 @@ function App() {
 
     setDjName(chosenDj);
     localStorage.setItem("karaoke-djname", chosenDj);
+    localStorage.setItem("karaoke-username", chosenDj); // ✅ FIX: Also save as username for consistency
+
+    // ✅ FIX: Update currentUser with DJ name immediately
+    setCurrentUser({ ...currentUser, name: chosenDj });
 
     setRoomCode(code);
     setIsHost(true);
