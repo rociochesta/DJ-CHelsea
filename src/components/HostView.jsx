@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useRoomContext } from "@livekit/components-react";
+import { enableAutoMicComp } from "../utils/autoMicComp";
+
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 import VideoPlayer from "./VideoPlayer";
@@ -6,6 +9,7 @@ import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import SingerSpotlight from "./SingerSpotlight";
 import DebugPanel from "./Debugpanel";
+import { useAutoMicPolicy } from "../hooks/useAutoMicPolicy";
 
 function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -13,15 +17,25 @@ function HostView({ roomCode, currentUser, roomState }) {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // ✅ LiveKit room (provided by a parent <LiveKitRoom> context)
+  const room = useRoomContext();
+
+  // ✅ auto-mic compensation lifecycle
+  const stopAutoMicRef = useRef(null);
+
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
     setHasSearched(true);
-    const results = await searchKaraokeVideos(searchQuery);
-    setSearchResults(results);
-    setIsSearching(false);
+
+    try {
+      const results = await searchKaraokeVideos(searchQuery);
+      setSearchResults(results);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleAddToQueue = async (video, requestedBy) => {
@@ -77,6 +91,7 @@ function HostView({ roomCode, currentUser, roomState }) {
   const handleSkipSong = async () => {
     const currentSinger =
       roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+
     if (currentSinger) {
       await setParticipantMute(currentSinger, true);
     }
@@ -161,8 +176,56 @@ function HostView({ roomCode, currentUser, roomState }) {
   const participants = roomState?.participants
     ? Object.values(roomState.participants)
     : [];
-  const currentSong = roomState?.currentSong;
+  const currentSong = roomState?.currentSong || null;
   const participantMutes = roomState?.participantMutes || {};
+  useAutoMicPolicy(room, {
+  currentSong,
+  currentUserName: currentUser?.name,
+  enabled: true,
+});
+
+  // ✅ Auto latency comp: only enable when HOST is the current singer
+  useEffect(() => {
+    if (!room) return;
+
+    const singerName =
+      roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+
+    const amISinging =
+      singerName &&
+      currentUser?.name &&
+      String(singerName).trim() === String(currentUser.name).trim();
+
+    // stop previous
+    if (stopAutoMicRef.current) {
+      try {
+        stopAutoMicRef.current();
+      } catch {}
+      stopAutoMicRef.current = null;
+    }
+
+    if (!amISinging) return;
+
+    (async () => {
+      try {
+        stopAutoMicRef.current = await enableAutoMicComp(room, {
+          safetyMargin: 60,
+          maxDelay: 250,
+          alpha: 0.2,
+        });
+      } catch (e) {
+        // keep UI alive even if audio graph fails
+        console.error("enableAutoMicComp failed:", e);
+      }
+    })();
+
+    return () => {
+      try {
+        stopAutoMicRef.current?.();
+      } catch {}
+      stopAutoMicRef.current = null;
+    };
+  }, [room, roomState?.currentSong, currentUser?.name]);
 
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
@@ -176,7 +239,6 @@ function HostView({ roomCode, currentUser, roomState }) {
         <div className="max-w-[1800px] mx-auto">
           {/* Banner */}
           <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-4 sm:mb-6">
-            {/* remove fixed height on mobile, keep desktop look */}
             <div className="relative bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
               <div className="relative px-4 py-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                 <div>
@@ -202,7 +264,7 @@ function HostView({ roomCode, currentUser, roomState }) {
                 <div className="sm:text-right text-left">
                   <div className="text-[10px] sm:text-xs text-white/50">Host</div>
                   <div className="font-bold text-base sm:text-lg">
-                    {currentUser.name} 🎤
+                    {currentUser?.name || "Host"} 🎤
                   </div>
 
                   <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
@@ -280,6 +342,7 @@ function HostView({ roomCode, currentUser, roomState }) {
           </div>
         </div>
       </div>
+
       <DebugPanel currentUser={currentUser} roomState={roomState} />
     </div>
   );

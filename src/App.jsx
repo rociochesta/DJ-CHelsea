@@ -252,41 +252,51 @@ function App() {
   }
 
   // Host screen
-  if (screen === "host" && isHost) {
-    return (
-      <LiveKitRoom
-        token={lkToken}
-        serverUrl={import.meta.env.VITE_LIVEKIT_URL}
-        connect={true}
-        audio={true}
-        video={true}
-        style={{ height: "100vh" }}
-      >
-        <HostView
-          roomCode={roomCode}
-          currentUser={currentUser}
-          roomState={roomState}
-          djName={roomState?.meta?.djName || roomState?.hostName || currentUser.name}
-        />
-      </LiveKitRoom>
-    );
-  }
+ if (screen === "host" && isHost) {
+  return (
+    <LiveKitRoom
+      token={lkToken}
+      serverUrl={import.meta.env.VITE_LIVEKIT_URL}
+      connect={true}
+      audio={true}
+      video={true}
+      style={{ height: "100vh" }}
+      data-lk-theme="default"
+    >
+      <RoomAudioRenderer />
 
-  // Participant screen
-  if (screen === "participant") {
-    return (
-      <LiveKitRoom
-        token={lkToken}
-        serverUrl={import.meta.env.VITE_LIVEKIT_URL}
-        connect={true}
-        audio={true}
-        video={true}
-        style={{ height: "100vh" }}
-      >
-        <ParticipantView roomCode={roomCode} currentUser={currentUser} roomState={roomState} />
-      </LiveKitRoom>
-    );
-  }
+      <HostView
+        roomCode={roomCode}
+        currentUser={currentUser}
+        roomState={roomState}
+        djName={roomState?.meta?.djName || roomState?.hostName || currentUser.name}
+      />
+    </LiveKitRoom>
+  );
+}
+
+// Participant screen
+if (screen === "participant") {
+  return (
+    <LiveKitRoom
+      token={lkToken}
+      serverUrl={import.meta.env.VITE_LIVEKIT_URL}
+      connect={true}
+      audio={true}
+      video={true}
+      style={{ height: "100vh" }}
+      data-lk-theme="default"
+    >
+      <RoomAudioRenderer />
+
+      <ParticipantView
+        roomCode={roomCode}
+        currentUser={currentUser}
+        roomState={roomState}
+      />
+    </LiveKitRoom>
+  );
+}
 
   return null;
 }

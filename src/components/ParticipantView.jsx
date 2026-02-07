@@ -1,16 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { LiveKitRoom, RoomAudioRenderer, useLocalParticipant } from "@livekit/components-react";
+import React, { useMemo, useState } from "react";
 import { database, ref, push, set } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 import VideoPlayer from "./VideoPlayer";
 import SongQueue from "./SongQueue";
 import SingerSpotlight from "./SingerSpotlight";
 import SongSearch from "./SongSearch";
+import { useRoomContext } from "@livekit/components-react";
+import { useAutoMicPolicy } from "../hooks/useAutoMicPolicy";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
-  const [token, setToken] = useState("");
-  const [lkError, setLkError] = useState("");
-
   // Song search states
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -24,27 +22,32 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
 
   const currentSong = roomState?.currentSong || null;
   const participantMutes = roomState?.participantMutes || {};
-
-  // Check if current user already has a song in queue
+  useAutoMicPolicy(room, {
+  currentSong,
+  currentUserName: currentUser?.name,
+  enabled: true,
+});
+const room = useRoomContext();
   const userHasSongInQueue = useMemo(() => {
-    return queue.some(song => song.requestedBy === currentUser?.name);
+    return queue.some((song) => song.requestedBy === currentUser?.name);
   }, [queue, currentUser?.name]);
 
-  // Handle search
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
     setHasSearched(true);
-    const results = await searchKaraokeVideos(searchQuery);
-    setSearchResults(results);
-    setIsSearching(false);
+
+    try {
+      const results = await searchKaraokeVideos(searchQuery);
+      setSearchResults(results);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
-  // Handle adding to queue
   const handleAddToQueue = async (video) => {
-    // Check if user already has a song
     if (userHasSongInQueue) {
       const messages = [
         "Whoa there, champ. One song at a time. 🎤",
@@ -60,7 +63,6 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
       return;
     }
 
-    // Add song to queue
     const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
     const newSongRef = push(queueRef);
 
@@ -74,51 +76,16 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
       addedAt: Date.now(),
     });
 
-    // Clear search
     setSearchQuery("");
     setSearchResults([]);
     setHasSearched(false);
   };
 
-  // --- LiveKit token fetch (Netlify function) ---
-  useEffect(() => {
-    let cancelled = false;
-
-    async function getToken() {
-      try {
-        setLkError("");
-        setToken("");
-
-        const res = await fetch("/.netlify/functions/livekit-token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            room: roomCode,
-            name: currentUser?.name || "Guest",
-          }),
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Failed to fetch LiveKit token");
-
-        if (!cancelled) setToken(data.token);
-      } catch (e) {
-        if (!cancelled) setLkError(String(e?.message || e));
-      }
-    }
-
-    if (roomCode && currentUser?.name) getToken();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [roomCode, currentUser?.name]);
-
   // Participant should not control mutes (host-only).
   const noopMuteToggle = async () => {};
   const noopMuteAll = async () => {};
 
-  const content = (
+  return (
     <div className="min-h-screen relative overflow-hidden text-white">
       <div className="absolute inset-0 bg-[#070712]" />
       <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl opacity-50 bg-fuchsia-600" />
@@ -165,16 +132,9 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
             </div>
           </div>
 
-          {/* LiveKit error (non-blocking UI) */}
-          {lkError && (
-            <div className="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200">
-              LiveKit error: {lkError}
-            </div>
-          )}
-
-          {/* Layout like HostView */}
+          {/* Layout */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Left: Video + Participants */}
+            {/* Left: Video + Spotlight */}
             <div className="xl:col-span-2 space-y-6">
               <VideoPlayer
                 currentSong={currentSong}
@@ -201,13 +161,11 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
                 <SongQueue queue={queue} isHost={false} />
               </div>
 
-              {/* Song Search for Participants */}
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
                 <div className="mb-4">
                   <div className="text-xs tracking-widest uppercase text-white/50">Request</div>
-                  <h3 className="text-xl md:text-2xl font-extrabold">
-                    Add Your Song
-                  </h3>
+                  <h3 className="text-xl md:text-2xl font-extrabold">Add Your Song</h3>
+
                   {userHasSongInQueue ? (
                     <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
                       <span className="text-xs font-semibold text-emerald-400">
@@ -215,9 +173,7 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
                       </span>
                     </div>
                   ) : (
-                    <div className="mt-2 text-sm text-white/60">
-                      You can queue 1 song at a time
-                    </div>
+                    <div className="mt-2 text-sm text-white/60">You can queue 1 song at a time</div>
                   )}
                 </div>
 
@@ -246,23 +202,6 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
         </div>
       </div>
     </div>
-  );
-
-  // Wrap in LiveKitRoom only when we have a token
-  if (!token) return content;
-
-  return (
-    <LiveKitRoom
-      token={token}
-      serverUrl={import.meta.env.VITE_LIVEKIT_URL}
-      connect={true}
-      video={true}
-      audio={true}
-      data-lk-theme="default"
-    >
-      <RoomAudioRenderer />
-      {content}
-    </LiveKitRoom>
   );
 }
 
