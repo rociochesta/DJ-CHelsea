@@ -2,11 +2,16 @@ import React from 'react';
 import { useParticipants, useLocalParticipant, useTracks } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 
+
 function ParticipantTile({ participant, isSinging, isNext, isMuted, onMuteToggle }) {
-  const videoTrack = participant.videoTracks.values().next().value;
-  const audioTrack = participant.audioTracks.values().next().value;
-  
-  const participantName = participant.name || participant.identity;
+  if (!participant) return null;
+
+  // These may not exist depending on SDK version / participant state
+  const videoPub = participant.videoTracks?.values ? participant.videoTracks.values().next().value : null;
+  const audioPub = participant.audioTracks?.values ? participant.audioTracks.values().next().value : null;
+
+  const videoTrack = videoPub?.videoTrack || null;
+  const participantName = participant.name || participant.identity || "Unknown";
 
   return (
     <div
@@ -19,18 +24,16 @@ function ParticipantTile({ participant, isSinging, isNext, isMuted, onMuteToggle
       } bg-black aspect-video group`}
     >
       {/* Video or Avatar */}
-      {videoTrack?.videoTrack ? (
-        <video
-          ref={(el) => {
-            if (el && videoTrack.videoTrack) {
-              videoTrack.videoTrack.attach(el);
-            }
-          }}
-          autoPlay
-          playsInline
-          muted={participant.isLocal}
-          className={`w-full h-full object-cover ${participant.isLocal ? 'scale-x-[-1]' : ''}`}
-        />
+{videoTrack ? (
+  <video
+    ref={(el) => {
+      if (el && videoTrack) videoTrack.attach(el);
+    }}
+    autoPlay
+    playsInline
+    muted={participant.isLocal}
+    className={`w-full h-full object-cover ${participant.isLocal ? "scale-x-[-1]" : ""}`}
+  />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-fuchsia-900/30 to-indigo-900/30">
           <div className="text-center">
