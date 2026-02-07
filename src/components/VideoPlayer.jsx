@@ -195,7 +195,7 @@ if (ps.startTime > Date.now()) return; // wait for scheduled start
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5 md:p-7">
       {/* Title */}
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
+     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
         <div>
           <div className="text-xs tracking-widest uppercase text-white/50">
             Now Playing
@@ -211,14 +211,32 @@ if (ps.startTime > Date.now()) return; // wait for scheduled start
           </div>
         </div>
 
-        {isHost && (
-          <button
-            onClick={onSkip}
-            className="px-4 py-2 rounded-xl font-bold bg-[linear-gradient(90deg,#ef4444,#f97316)] hover:opacity-95 active:scale-[0.99] transition border border-white/10 shadow-[0_18px_60px_rgba(239,68,68,0.16)]"
-          >
-            Skip ⏭️
-          </button>
-        )}
+      {isHost && (
+  <button
+    onClick={onSkip}
+    className="
+      w-full md:w-auto
+      md:shrink-0
+      inline-flex items-center justify-center gap-2
+      rounded-2xl
+      px-4 py-3 md:py-2.5
+      text-sm font-semibold
+      border border-white/10
+      bg-white/6
+      text-white/85
+      backdrop-blur-xl
+      shadow-[0_10px_40px_rgba(0,0,0,0.25)]
+      transition
+      hover:bg-rose-500/10 hover:border-rose-400/30 hover:text-white
+      active:scale-[0.99]
+      focus:outline-none focus:ring-2 focus:ring-rose-400/30
+    "
+    aria-label="Skip current song"
+  >
+    <span className="opacity-95">Skip</span>
+    <span className="text-white/60">⏭️</span>
+  </button>
+)}
       </div>
 
       {/* Player Frame */}
