@@ -23,20 +23,27 @@ function HostView({ roomCode, currentUser, roomState }) {
     setIsSearching(false);
   };
 
-  const handleAddToQueue = async (video, requestedBy) => {
-    const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
-    const newSongRef = push(queueRef);
+const handleAddToQueue = async (video, requestedBy) => {
+  const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
+  const newSongRef = push(queueRef);
 
-    await set(newSongRef, {
-      id: newSongRef.key,
-      videoId: video.id,
-      title: video.title,
-      thumbnail: video.thumbnail,
-      addedBy: currentUser.id,
-      requestedBy: requestedBy || "Someone",
-      addedAt: Date.now(),
-    });
-  };
+  const requestedByName =
+    typeof requestedBy === "string"
+      ? requestedBy
+      : typeof requestedBy?.name === "string"
+      ? requestedBy.name
+      : "Someone";
+
+  await set(newSongRef, {
+    id: newSongRef.key,
+    videoId: video.id,
+    title: video.title,
+    thumbnail: video.thumbnail,
+    addedBy: currentUser.id,
+    requestedBy: requestedByName, // ✅ always string
+    addedAt: Date.now(),
+  });
+};
 
   const handlePlaySong = async (song) => {
     const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);

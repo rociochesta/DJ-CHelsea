@@ -190,24 +190,30 @@ function App() {
     setScreen("host");
   };
 
-  const handleJoinRoom = (code, userName) => {
-    const upper = code.toUpperCase();
-    setRoomCode(upper);
+ const handleJoinRoom = (code, userName) => {
+  const upper = code.toUpperCase();
+  setRoomCode(upper);
 
-    // Update user name
-    const updatedUser = { ...currentUser, name: userName };
-    setCurrentUser(updatedUser);
-    localStorage.setItem("karaoke-username", userName);
+  // Update user name
+  const updatedUser = { ...currentUser, name: userName };
+  setCurrentUser(updatedUser);
+  localStorage.setItem("karaoke-username", userName);
 
-    // Add participant to room
-    const participantRef = ref(database, `karaoke-rooms/${upper}/participants/${currentUser.id}`);
-    set(participantRef, {
-      name: userName,
-      joinedAt: Date.now(),
-    });
+  // Add participant to room (WITH id)
+  const participantRef = ref(
+    database,
+    `karaoke-rooms/${upper}/participants/${currentUser.id}`
+  );
 
-    setScreen("participant");
-  };
+  set(participantRef, {
+    id: currentUser.id,      // ✅ IMPORTANT
+    name: userName,
+    role: "participant",     // optional but recommended
+    joinedAt: Date.now(),
+  });
+
+  setScreen("participant");
+};
 
   // Loading state
   if (!currentUser) {

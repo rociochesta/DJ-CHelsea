@@ -33,9 +33,14 @@ function SongQueue({ queue, onPlaySong, onDeleteSong, onMoveSongUp, onMoveSongDo
       ) : (
         <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
           {sortedQueue.map((song, index) => {
-            const requestedBy = song.requestedBy?.trim() || "Someone";
-            const queuedBy = song.addedByName?.trim() || null; // optional (if you store it later)
+           const asName = (v) => {
+  if (typeof v === "string") return v.trim();
+  if (v && typeof v === "object") return String(v.name || v.identity || "").trim();
+  return "";
+};
 
+const requestedBy = asName(song.requestedBy) || "Someone";
+const queuedBy = asName(song.addedByName) || null;
             return (
               <div
                 key={song.id}
