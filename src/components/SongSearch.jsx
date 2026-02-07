@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { searchKaraokeVideos } from "../utils/youtube";
+import { logSearchEvent } from "../utils/netlifySearchLog";
 
-function SongSearch({ onAddToQueue, participants = [] }) {
+function SongSearch({ onAddToQueue, participants = [], roomCode, currentUser }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +56,14 @@ const normalizeParticipant = (p, idx) => {
     try {
       const videos = await searchKaraokeVideos(searchQuery);
       setSearchResults(videos);
+        // 🔎 LOG SEARCH TO NETLIFY
+  await logSearchEvent({
+    roomCode: roomCode || "",       // pass via props if you want
+    userName: currentUser?.name || "", // optional
+    query: searchQuery,
+    results: videos.length,
+    timestamp: Date.now(),
+  });
 
       if (videos.length === 0) {
         setError("No videos found. Try adding 'karaoke', 'instrumental', or 'lyrics'.");

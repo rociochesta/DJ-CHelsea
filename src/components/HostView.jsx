@@ -216,6 +216,8 @@ const handleMoveSongDown = async (song, currentIndex) => {
                   searchResults={searchResults}
                   onAddToQueue={handleAddToQueue}
                   hasSearched={hasSearched}
+                    roomCode={roomCode}
+  currentUser={currentUser}
                 />
               </div>
             </div>
