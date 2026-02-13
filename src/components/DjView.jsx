@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRoomContext } from "@livekit/components-react";
 
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
@@ -9,10 +10,10 @@ import SongSearch from "./SongSearch";
 import ParticipantsList from "./ParticipantsList";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
-import DebugPanel from "./DebugPanel";
-import SingerSpotlight from "./SingerSpotlight";
+import DebugPanel from "./Debugpanel";
 
 function DJView({ roomCode, currentUser, roomState, isHost }) {
+  const room = useRoomContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -42,14 +43,14 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
         ? requestedBy
         : typeof requestedBy?.name === "string"
         ? requestedBy.name
-        : currentUser?.name || "Guest";
+        : currentUser.name;
 
     await set(newSongRef, {
       id: newSongRef.key,
       videoId: video.id,
       title: video.title,
       thumbnail: video.thumbnail,
-      addedBy: currentUser?.id || "unknown",
+      addedBy: currentUser.id,
       requestedBy: requestedByName,
       addedAt: Date.now(),
     });
@@ -80,7 +81,6 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
       videoId: null,
     });
 
-    // NOTE: If you want "NO autoplay ever", delete everything below this line.
     const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
     if (queueArr.length > 0) {
       const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
@@ -101,14 +101,8 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
     const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
     const prevSong = sortedQueue[currentIndex - 1];
 
-    const songRef = ref(
-      database,
-      `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`
-    );
-    const prevSongRef = ref(
-      database,
-      `karaoke-rooms/${roomCode}/queue/${prevSong.id}/addedAt`
-    );
+    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
+    const prevSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${prevSong.id}/addedAt`);
 
     await set(songRef, prevSong.addedAt);
     await set(prevSongRef, song.addedAt);
@@ -121,39 +115,11 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
 
     const nextSong = sortedQueue[currentIndex + 1];
 
-    const songRef = ref(
-      database,
-      `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`
-    );
-    const nextSongRef = ref(
-      database,
-      `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`
-    );
+    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
+    const nextSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`);
 
     await set(songRef, nextSong.addedAt);
     await set(nextSongRef, song.addedAt);
-  };
-
-  // ✅ FORCE MUTE (client-enforced via your app logic)
-  // Uses roomState.participantMutes as the source of truth.
-  const handleMuteToggle = async (name) => {
-    if (!name) return;
-    const current = !!roomState?.participantMutes?.[name];
-    const muteRef = ref(database, `karaoke-rooms/${roomCode}/participantMutes/${name}`);
-    await set(muteRef, !current);
-  };
-
-  const handleMuteAll = async () => {
-    const participantsArr = roomState?.participants ? Object.values(roomState.participants) : [];
-    const updatesObj = {};
-
-    participantsArr.forEach((p) => {
-      const nm = p?.name || p?.identity;
-      if (nm) updatesObj[`karaoke-rooms/${roomCode}/participantMutes/${nm}`] = true;
-    });
-
-    // multi-location update
-    await update(ref(database), updatesObj);
   };
 
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
@@ -194,9 +160,7 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
                 </div>
 
                 <div className="sm:text-right text-left">
-                  <div className="text-[10px] sm:text-xs text-white/50">
-                    {isHost ? "Host" : "Participant"}
-                  </div>
+                  <div className="text-[10px] sm:text-xs text-white/50">{isHost ? "Host" : "Participant"}</div>
                   <div className="font-bold text-base sm:text-lg">
                     {currentUser?.name || "Guest"} {isHost ? "🎧" : "🎵"}
                   </div>
@@ -220,21 +184,6 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
                 onSkip={isHost ? handleSkipSong : null}
                 isHost={isHost}
               />
-
-              {/* ✅ Mute controls + singer spotlight */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
-                <SingerSpotlight
-                  roomCode={roomCode}
-                  currentSong={currentSong}
-                  participantMutes={roomState?.participantMutes || {}}
-                  onMuteToggle={isHost ? handleMuteToggle : null}
-                  onMuteAll={isHost ? handleMuteAll : null}
-                  queue={queue}
-                  canControlMics={isHost}
-                  currentUser={currentUser}
-                  showControls={true}
-                />
-              </div>
 
               {/* Mobile queue */}
               <div className="xl:hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
@@ -264,7 +213,7 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
                 />
               </div>
 
-              {/* Participants list (keep if you still want it) */}
+              {/* Participants list */}
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
                 <ParticipantsList currentUser={currentUser} />
               </div>
@@ -287,11 +236,7 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
         </div>
       </div>
 
-      <ChatPanel
-        roomCode={roomCode}
-        currentUser={currentUser}
-        currentSong={currentSong}
-      />
+      <ChatPanel roomCode={roomCode} currentUser={currentUser} currentSong={currentSong} />
       <EmojiReactions roomCode={roomCode} currentUser={currentUser} />
       {isHost && <DebugPanel currentUser={currentUser} roomState={roomState} />}
     </div>
