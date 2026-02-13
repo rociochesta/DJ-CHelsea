@@ -2,11 +2,11 @@ import React from 'react';
 import { useParticipants } from '@livekit/components-react';
 
 function ParticipantThumb({ participant, currentUser }) {
-  const videoTrack = participant.videoTracks.values().next().value;
-  const participantName = participant.name || participant.identity;
-  const isCurrentUser = currentUser?.name === participantName || currentUser?.id === participant.identity;
-  const isMicOn = participant.isMicrophoneEnabled;
-  const isCameraOn = participant.isCameraEnabled;
+  const videoTrack = participant?.videoTracks?.values?.()?.next?.()?.value || null;
+  const participantName = participant?.name || participant?.identity || "Guest";
+  const isCurrentUser = currentUser?.name === participantName || currentUser?.id === participant?.identity;
+  const isMicOn = !!participant?.isMicrophoneEnabled;
+  const isCameraOn = !!participant?.isCameraEnabled;
 
   return (
     <div className="relative flex-shrink-0 w-32 h-24 sm:w-40 sm:h-28 rounded-xl overflow-hidden border border-white/10 bg-black group">
@@ -14,14 +14,18 @@ function ParticipantThumb({ participant, currentUser }) {
       {videoTrack?.videoTrack && isCameraOn ? (
         <video
           ref={(el) => {
-            if (el && videoTrack.videoTrack) {
-              videoTrack.videoTrack.attach(el);
+            if (el && videoTrack?.videoTrack) {
+              try {
+                videoTrack.videoTrack.attach(el);
+              } catch (e) {
+                console.warn('Failed to attach video track:', e);
+              }
             }
           }}
           autoPlay
           playsInline
-          muted={participant.isLocal}
-          className={`w-full h-full object-cover ${participant.isLocal ? 'scale-x-[-1]' : ''}`}
+          muted={participant?.isLocal}
+          className={`w-full h-full object-cover ${participant?.isLocal ? 'scale-x-[-1]' : ''}`}
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-fuchsia-900/30 to-indigo-900/30">
@@ -62,7 +66,7 @@ function ParticipantThumb({ participant, currentUser }) {
 }
 
 function ZoomStyleGrid({ currentUser }) {
-  const liveKitParticipants = useParticipants();
+  const liveKitParticipants = useParticipants() || [];
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4">
