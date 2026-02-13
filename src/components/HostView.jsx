@@ -10,6 +10,8 @@ import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import SingerSpotlight from "./SingerSpotlight";
 import DebugPanel from "./Debugpanel";
+import ChatPanel from "./ChatPanel";
+import EmojiReactions from "./Emojireactions";
 import { useAutoMicPolicy } from "../hooks/useAutoMicPolicy";
 
 function HostView({ roomCode, currentUser, roomState }) {
@@ -362,6 +364,8 @@ function HostView({ roomCode, currentUser, roomState }) {
         </div>
       </div>
 
+      <ChatPanel roomCode={roomCode} currentUser={currentUser} currentSong={currentSong} />
+      <EmojiReactions roomCode={roomCode} currentUser={currentUser} />
       <DebugPanel currentUser={currentUser} roomState={roomState} />
     </div>
   );

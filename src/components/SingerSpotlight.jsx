@@ -1,6 +1,7 @@
 import React from "react";
 import { useParticipants } from "@livekit/components-react";
 import ParticipantTile from "./ParticipantTile";
+import EmojiReactions from "./Emojireactions";
 
 export default function SingerSpotlight({
   roomCode,
@@ -48,14 +49,18 @@ export default function SingerSpotlight({
           )}
         </div>
 
-        {canControlMics && (
-          <button
-            onClick={onMuteAll}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 sm:py-2 border border-white/10 bg-white/6 hover:bg-rose-500/10 hover:border-rose-400/30 text-white/85 backdrop-blur-xl transition"
-          >
-            <span className="text-sm font-semibold">Mute All</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <EmojiReactions roomCode={roomCode} currentUser={currentUser} />
+          
+          {canControlMics && (
+            <button
+              onClick={onMuteAll}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 sm:py-2 border border-white/10 bg-white/6 hover:bg-rose-500/10 hover:border-rose-400/30 text-white/85 backdrop-blur-xl transition"
+            >
+              <span className="text-sm font-semibold">Mute All</span>
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
