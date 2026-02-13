@@ -96,11 +96,8 @@ function EmojiReactions({ roomCode, currentUser }) {
   return (
     <>
       {/* Floating reactions overlay */}
-<div className="fixed inset-0 pointer-events-none z-50">
+      <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden">
         {recentReactions.map((reaction) => {
-          const age = Date.now() - reaction.timestamp;
-          const progress = Math.min(age / 5000, 1); // 0 to 1 over 5 seconds
-
           return (
             <div
               key={reaction.id}
@@ -110,7 +107,7 @@ function EmojiReactions({ roomCode, currentUser }) {
                 bottom: '10%',
                 fontSize: '3rem',
                 textShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                animation: 'float-up-smooth 5s ease-out forwards',
+                animation: `float-up-smooth 5s ease-out forwards`,
                 animationDelay: '0s',
               }}
             >
@@ -121,14 +118,14 @@ function EmojiReactions({ roomCode, currentUser }) {
       </div>
 
       {/* Reaction picker button */}
-<div className="fixed bottom-4 right-4 z-40">
+      <div className="fixed bottom-4 right-4 z-40">
         {!showPicker ? (
           <button
             onClick={() => setShowPicker(true)}
-            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition backdrop-blur-xl"
+            className="px-4 py-3 rounded-2xl bg-gradient-to-r from-amber-600/90 to-orange-600/90 hover:from-amber-600 hover:to-orange-600 border border-white/20 transition backdrop-blur-xl shadow-2xl hover:scale-105 active:scale-95"
             title="Send a reaction"
           >
-            <span className="text-xl">😊</span>
+            <span className="text-2xl">😊</span>
           </button>
         ) : (
           <div className="absolute bottom-full mb-2 right-0 rounded-2xl border border-white/20 bg-black/95 backdrop-blur-2xl shadow-2xl p-3 animate-scale-in">

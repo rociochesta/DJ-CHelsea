@@ -18,7 +18,7 @@ const throttle = (func, limit) => {
 function ChatPanel({ roomCode, currentUser, currentSong }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -113,7 +113,7 @@ const [isOpen, setIsOpen] = useState(true);
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 left-4 z-40 px-4 py-3 rounded-2xl bg-gradient-to-r from-fuchsia-600/90 to-indigo-600/90 hover:from-fuchsia-600 hover:to-indigo-600 text-white font-bold shadow-2xl border border-white/20 backdrop-blur-xl transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-4 left-4 z-50 px-4 py-3 rounded-2xl bg-gradient-to-r from-fuchsia-600/90 to-indigo-600/90 hover:from-fuchsia-600 hover:to-indigo-600 text-white font-bold shadow-2xl border border-white/20 backdrop-blur-xl transition-all hover:scale-105 active:scale-95"
       >
         <div className="flex items-center gap-2">
           <span className="text-xl">💬</span>
@@ -129,9 +129,9 @@ const [isOpen, setIsOpen] = useState(true);
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-40 w-80 sm:w-96 h-[32rem] rounded-3xl border border-white/20 bg-black/95 backdrop-blur-2xl shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed bottom-4 left-4 z-50 w-80 sm:w-96 max-h-[85vh] rounded-3xl border border-white/20 bg-black/95 backdrop-blur-2xl shadow-2xl flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-fuchsia-900/40 to-indigo-900/40">
+      <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-fuchsia-900/40 to-indigo-900/40 shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-xl">💬</span>
           <h3 className="font-bold text-lg">Chat</h3>
@@ -147,7 +147,7 @@ const [isOpen, setIsOpen] = useState(true);
       {/* Messages */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3"
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0"
         style={{ 
           scrollbarWidth: 'thin',
           scrollbarColor: 'rgba(255,255,255,0.2) transparent'
@@ -201,7 +201,7 @@ const [isOpen, setIsOpen] = useState(true);
       </div>
 
       {/* Emoji Quick Reactions */}
-      <div className="px-4 py-2 border-t border-white/10 bg-black/50">
+      <div className="px-4 py-2 border-t border-white/10 bg-black/50 shrink-0">
         <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
           {EMOJI_REACTIONS.map((emoji) => (
             <button
@@ -217,7 +217,7 @@ const [isOpen, setIsOpen] = useState(true);
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-black/50">
+      <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-black/50 shrink-0">
         <div className="flex gap-2">
           <input
             type="text"
@@ -230,7 +230,7 @@ const [isOpen, setIsOpen] = useState(true);
           <button
             type="submit"
             disabled={!message.trim()}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold"
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold shrink-0"
           >
             Send
           </button>

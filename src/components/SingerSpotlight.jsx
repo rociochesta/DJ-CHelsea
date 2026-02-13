@@ -1,7 +1,6 @@
 import React from "react";
 import { useParticipants } from "@livekit/components-react";
 import ParticipantTile from "./ParticipantTile";
-import EmojiReactions from "./EmojiReactions";
 
 export default function SingerSpotlight({
   roomCode,
@@ -50,8 +49,6 @@ export default function SingerSpotlight({
         </div>
 
         <div className="flex items-center gap-2">
-          <EmojiReactions roomCode={roomCode} currentUser={currentUser} />
-          
           {canControlMics && (
             <button
               onClick={onMuteAll}
