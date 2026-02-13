@@ -3,7 +3,9 @@ import { database, ref, push, set } from "../utils/firebase";
 import VideoPlayer from "./VideoPlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
-import ZoomStyleGrid from "./ZoomStyleGrid";
+import SingerSpotlight from "./SingerSpotlight";
+import ChatPanel from "./ChatPanel";
+import EmojiReactions from "./EmojiReactions";
 import { searchKaraokeVideos } from "../utils/youtube";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
@@ -15,6 +17,13 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
 
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
   const currentSong = roomState?.currentSong;
+  const participantMutes = roomState?.participantMutes || {};
+
+  // Memoize user object to prevent Chat/Reactions re-renders
+  const memoizedUser = useMemo(() => ({
+    id: currentUser?.id,
+    name: currentUser?.name
+  }), [currentUser?.id, currentUser?.name]);
 
   // Check if user already has a song in queue
   const userHasSongInQueue = useMemo(() => {
@@ -111,9 +120,19 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
 
           <VideoPlayer currentSong={currentSong} playbackState={roomState?.playbackState} isHost={false} />
 
-          {/* Zoom-style participants */}
+          {/* Singer Spotlight - same as HostView but without controls */}
           <div className="mt-6">
-            <ZoomStyleGrid currentUser={currentUser} />
+            <SingerSpotlight
+              roomCode={roomCode}
+              currentSong={currentSong}
+              participantMutes={participantMutes}
+              onMuteToggle={() => {}} // No-op for participants
+              onMuteAll={() => {}} // No-op for participants
+              queue={queue}
+              canControlMics={false} // Participants can't control mics
+              currentUser={currentUser}
+              showControls={true} // Participants can control their own camera/mic
+            />
           </div>
 
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -142,6 +161,10 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
           </div>
         </div>
       </div>
+
+      {/* Chat and Reactions */}
+      <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
+      <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { generateRoomCode, generateUserId } from "./utils/helpers";
 
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
+import ParticipantView from "./components/ParticipantView";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -280,13 +281,19 @@ function App() {
     >
       {isKaraoke && <RoomAudioRenderer />}
 
-      <HostView
-        roomCode={roomCode}
-        currentUser={currentUser}
-        roomState={roomState}
-        isHost={isHost} // ✅ one prop controls privileges
-        djName={roomState?.meta?.djName || roomState?.hostName || djName || currentUser.name}
-      />
+      {isHost ? (
+        <HostView
+          roomCode={roomCode}
+          currentUser={currentUser}
+          roomState={roomState}
+        />
+      ) : (
+        <ParticipantView
+          roomCode={roomCode}
+          currentUser={currentUser}
+          roomState={roomState}
+        />
+      )}
     </LiveKitRoom>
   );
 }

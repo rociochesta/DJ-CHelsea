@@ -97,7 +97,7 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
           <div className="mt-1 text-white/60">
             Singer:{" "}
             <span className="font-bold text-white bg-black/30 px-2 py-1 rounded-lg border border-white/10">
-              {currentSong.singerName}
+              {currentSong.requestedBy || currentSong.singerName || "Someone"}
             </span>
           </div>
         </div>
