@@ -6,7 +6,7 @@ import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
-import Emojireactions from "./Emojireactions";
+import EmojiReactions from "./EmojiReactions";
 import DebugPanel from "./Debugpanel";
 
 function HostView({ roomCode, currentUser, roomState }) {
