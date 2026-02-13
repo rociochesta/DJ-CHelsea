@@ -67,11 +67,14 @@ function HostView({ roomCode, currentUser, roomState, djName }) {
     // remove from queue once it starts
     await remove(ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}`));
 
-    await update(ref(database, `karaoke-rooms/${roomCode}/playbackState`), {
-      isPlaying: true,
-      videoId: song.videoId,
-      startTime: Date.now(),
-    });
+await update(ref(database, `karaoke-rooms/${roomCode}`), {
+  currentSong: song,
+  playbackState: {
+    isPlaying: true,
+    videoId: song.videoId,
+    startTime: Date.now()
+  }
+});
 
     // ✅ mic policy uses this (we’ll implement inside VideoChat next)
     await set(ref(database, `karaoke-rooms/${roomCode}/activeSingerId`), song.requestedById || null);

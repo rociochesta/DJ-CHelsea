@@ -9,7 +9,7 @@ import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import ParticipantsList from "./ParticipantsList";
 import ChatPanel from "./ChatPanel";
-import EmojiReactions from "./EmojiReactions";
+import EmojiReactions from "./Emojireactions";
 import DebugPanel from "./Debugpanel";
 
 function DJView({ roomCode, currentUser, roomState, isHost }) {
@@ -76,10 +76,14 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
     await set(currentSongRef, null);
 
     const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
-    await update(playbackRef, {
-      isPlaying: false,
-      videoId: null,
-    });
+await update(ref(database, `karaoke-rooms/${roomCode}`), {
+  currentSong: song,
+  playbackState: {
+    isPlaying: true,
+    videoId: song.videoId,
+    startTime: Date.now()
+  }
+});
 
     const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
     if (queueArr.length > 0) {

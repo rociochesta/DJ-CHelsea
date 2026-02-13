@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   LiveKitRoom,
   VideoConference,
@@ -23,21 +23,16 @@ export default function VideoChat({
   canModerate = false,
 }) {
   const livekitUrl = import.meta.env.VITE_LIVEKIT_URL;
-
   const roomName = useMemo(() => makeRoomName(roomCode), [roomCode]);
 
   const [token, setToken] = useState(null);
   const [error, setError] = useState(null);
-
-  // ✅ mic policy from Firebase
-  const [micPolicy, setMicPolicy] = useState("auto"); // "auto" | "open"
+  const [micPolicy, setMicPolicy] = useState("auto");
   const [activeSingerName, setActiveSingerName] = useState(null);
   const [participantMutes, setParticipantMutes] = useState({});
-
-  // ✅ hold the connected LiveKit room instance
   const [lkRoom, setLkRoom] = useState(null);
 
-  // 1) Listen to Firebase mic state
+  // 1) Persistent Firebase Listeners
   useEffect(() => {
     if (!roomCode) return;
 
@@ -45,205 +40,121 @@ export default function VideoChat({
     const singerRef = ref(database, `karaoke-rooms/${roomCode}/activeSingerName`);
     const mutesRef = ref(database, `karaoke-rooms/${roomCode}/participantMutes`);
 
-    const unsubPolicy = onValue(policyRef, (snap) => {
-      const v = snap.val();
-      setMicPolicy(v === "open" ? "open" : "auto");
-    });
-
-    const unsubSinger = onValue(singerRef, (snap) => {
-      const v = snap.val();
-      setActiveSingerName(v || null);
-    });
-
-    const unsubMutes = onValue(mutesRef, (snap) => {
-      setParticipantMutes(snap.val() || {});
-    });
+    const unsubPolicy = onValue(policyRef, (snap) => setMicPolicy(snap.val() === "open" ? "open" : "auto"));
+    const unsubSinger = onValue(singerRef, (snap) => setActiveSingerName(snap.val() || null));
+    const unsubMutes = onValue(mutesRef, (snap) => setParticipantMutes(snap.val() || {}));
 
     return () => {
-      unsubPolicy?.();
-      unsubSinger?.();
-      unsubMutes?.();
+      unsubPolicy();
+      unsubSinger();
+      unsubMutes();
     };
   }, [roomCode]);
 
-  // 2) Fetch LiveKit token
+  // 2) Token Fetching - Stable logic to prevent loops
   useEffect(() => {
-    let cancelled = false;
-
+    let isMounted = true;
     async function getToken() {
-      setError(null);
-      setToken(null);
-
+      if (!roomName || !userName) return;
       try {
         const res = await fetch("/.netlify/functions/livekit-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            room: roomName,
-            name: userName || "Guest",
-          }),
+          body: JSON.stringify({ room: roomName, name: userName }),
         });
-
         const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Token request failed");
-        if (!cancelled) setToken(data.token);
+        if (isMounted) {
+          if (!res.ok) throw new Error(data?.error || "Token failed");
+          setToken(data.token);
+        }
       } catch (e) {
-        if (!cancelled) setError(String(e?.message || e));
+        if (isMounted) setError(e.message);
       }
     }
-
-    if (roomName && userName) getToken();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [roomName, userName]);
+    getToken();
+    return () => { isMounted = false; };
+  }, [roomName, userName]); // Only refetch if identity or room changes
 
   const localParticipantKey = useMemo(
     () => String(currentUserId || userName || "Guest").trim(),
     [currentUserId, userName]
   );
 
-  // 3) Enforce mic rule (AUTO mode + force-mute)
+  // 3) Optimized Mic Control
   useEffect(() => {
     if (!lkRoom) return;
 
-    const localName = String(userName || "Guest").trim();
-    const singerName = String(activeSingerName || "").trim();
-    const isForceMuted = Boolean(participantMutes?.[localParticipantKey]);
+    const enforcePolicy = () => {
+      const isSinger = activeSingerName && String(userName).trim() === String(activeSingerName).trim();
+      const isForceMuted = !!participantMutes?.[localParticipantKey];
+      
+      const shouldBeEnabled = (micPolicy === "open" || isSinger) && !isForceMuted;
 
-    const shouldBeAllowedByPolicy =
-      micPolicy === "open" || (!!singerName && localName === singerName);
-    const shouldBeAllowed = shouldBeAllowedByPolicy && !isForceMuted;
+      lkRoom.localParticipant.setMicrophoneEnabled(shouldBeEnabled).catch(() => {});
+    };
 
-    // apply immediately (best effort)
-    try {
-      lkRoom.localParticipant.setMicrophoneEnabled(shouldBeAllowed);
-    } catch {}
-
-    // if AUTO and you're not the singer (or force-muted), keep forcing mute
-    if (shouldBeAllowed) return;
-
-    const interval = setInterval(() => {
-      try {
-        lkRoom.localParticipant.setMicrophoneEnabled(false);
-      } catch {}
-    }, 800);
-
+    enforcePolicy();
+    // Use a slightly longer interval to prevent "Spamming" the LiveKit agent
+    const interval = setInterval(enforcePolicy, 2000);
     return () => clearInterval(interval);
   }, [lkRoom, micPolicy, activeSingerName, participantMutes, localParticipantKey, userName]);
 
-  const toggleParticipantMute = async (participantKey) => {
-    if (!roomCode || !participantKey) return;
-    const isMuted = Boolean(participantMutes?.[participantKey]);
-    await set(
-      ref(database, `karaoke-rooms/${roomCode}/participantMutes/${participantKey}`),
-      !isMuted
-    );
-  };
-
-  const muteAllParticipants = async () => {
+  const toggleParticipantMute = useCallback(async (pKey) => {
     if (!roomCode) return;
-    const updates = {};
-    participants.forEach((participant) => {
-      const participantKey = String(participant?.id || participant?.name || "").trim();
-      if (participantKey && participantKey !== localParticipantKey) {
-        updates[participantKey] = true;
-      }
-    });
-    await set(ref(database, `karaoke-rooms/${roomCode}/participantMutes`), updates);
-  };
+    const isMuted = !!participantMutes?.[pKey];
+    await set(ref(database, `karaoke-rooms/${roomCode}/participantMutes/${pKey}`), !isMuted);
+  }, [roomCode, participantMutes]);
 
-  if (!livekitUrl) {
-    return (
-      <div className="rounded-2xl border border-red-500/30 bg-red-900/20 p-6 text-center">
-        <div className="text-4xl mb-3">⚠️</div>
-        <p className="text-red-400 font-semibold mb-2">Missing VITE_LIVEKIT_URL</p>
-        <p className="text-sm text-white/70">
-          Add it to your .env and Netlify env vars.
-        </p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-2xl border border-red-500/30 bg-red-900/20 p-6 text-center">
-        <div className="text-4xl mb-3">⚠️</div>
-        <p className="text-red-400 font-semibold mb-2">Video failed</p>
-        <p className="text-sm text-white/70">{error}</p>
-      </div>
-    );
-  }
-
-  if (!token) {
-    return (
-      <div className="rounded-2xl border border-white/10 bg-black/30 p-6 text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-500 mx-auto mb-3" />
-        <p className="text-white/70">Connecting to LiveKit…</p>
-      </div>
-    );
-  }
+  if (!livekitUrl) return <div className="p-6 text-red-400">Missing LiveKit URL</div>;
+  if (error) return <div className="p-6 text-red-400">Error: {error}</div>;
+  if (!token) return <div className="p-6 text-center animate-pulse">Establishing Secure Connection...</div>;
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/30">
-      <LiveKitRoom
-        serverUrl={livekitUrl}
-        token={token}
-        connect={true}
-        video={true}
-        audio={true}
-        data-lk-theme="default"
-        style={{ height: "60vh", minHeight: 420 }}
-        onConnected={(room) => setLkRoom(room)}
-        onDisconnected={() => setLkRoom(null)}
-      >
-        <RoomAudioRenderer />
-        <VideoConference />
-      </LiveKitRoom>
-
-      <div className="px-3 py-2 text-xs text-white/50 border-t border-white/10 bg-black/30">
-        Mode: <span className="text-white/80">{isDJ ? "DJ" : "Participant"}</span>
-        {" • "}
-        Mic policy: <span className="text-white/80">{micPolicy.toUpperCase()}</span>
-        {micPolicy === "auto" && (
-          <>
-            {" "}• Singer: <span className="text-white/80">{activeSingerName || "—"}</span>
-          </>
-        )}
+    <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/30 flex flex-col">
+      <div className="flex-1 min-h-[400px] relative">
+        <LiveKitRoom
+          serverUrl={livekitUrl}
+          token={token}
+          connect={true}
+          video={true}
+          audio={true}
+          onConnected={setLkRoom}
+          onDisconnected={() => setLkRoom(null)}
+          style={{ height: '100%' }}
+        >
+          <VideoConference />
+          <RoomAudioRenderer />
+        </LiveKitRoom>
       </div>
 
+      {/* Stats Bar */}
+      <div className="px-4 py-2 text-[10px] uppercase tracking-widest text-white/40 bg-black/50 border-t border-white/10 flex justify-between">
+        <span>Mode: {isDJ ? "DJ / Host" : "Singer"}</span>
+        <span>Mic: {micPolicy} {micPolicy === 'auto' && `(Singer: ${activeSingerName || 'None'})`}</span>
+      </div>
+
+      {/* Moderation Panel (Only for DJ) */}
       {canModerate && (
-        <div className="border-t border-white/10 bg-black/20 p-3">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-semibold text-white">DJ moderation</p>
-            <button
-              onClick={muteAllParticipants}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-500/80 hover:bg-red-500"
-            >
-              Mute all
-            </button>
-          </div>
-          <div className="space-y-2 max-h-32 overflow-y-auto pr-1">
-            {participants
-              .filter((participant) => participant?.name)
-              .map((participant) => {
-                const name = participant.name;
-                const participantKey = String(participant?.id || participant?.name || "").trim();
-                if (!participantKey || participantKey === localParticipantKey) return null;
-                const isMuted = Boolean(participantMutes?.[participantKey]);
-                return (
-                  <div key={participantKey} className="flex items-center justify-between text-sm">
-                    <span className="text-white/80 truncate">{name}</span>
-                    <button
-                      onClick={() => toggleParticipantMute(participantKey)}
-                      className="px-2.5 py-1 rounded-lg border border-white/20 hover:bg-white/10"
-                    >
-                      {isMuted ? "Give mic" : "Force mute"}
-                    </button>
-                  </div>
-                );
-              })}
+        <div className="p-4 bg-black/40 border-t border-white/10">
+          <p className="text-xs font-bold text-fuchsia-400 mb-3 uppercase tracking-wider">DJ Moderation</p>
+          <div className="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+            {participants.map((p) => {
+              const pKey = String(p?.id || p?.name || "").trim();
+              if (!pKey || pKey === localParticipantKey) return null;
+              return (
+                <div key={pKey} className="flex items-center justify-between bg-white/5 p-2 rounded-lg">
+                  <span className="text-sm truncate pr-2">{p.name}</span>
+                  <button
+                    onClick={() => toggleParticipantMute(pKey)}
+                    className={`text-[10px] px-3 py-1 rounded-full font-bold transition ${
+                      participantMutes?.[pKey] ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50" : "bg-red-500/20 text-red-400 border border-red-500/50"
+                    }`}
+                  >
+                    {participantMutes?.[pKey] ? "ENABLE MIC" : "FORCE MUTE"}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

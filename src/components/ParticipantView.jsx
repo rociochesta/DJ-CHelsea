@@ -86,9 +86,10 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
           </div>
 
           <VideoPlayer
-            currentSong={currentSong}
-            playbackState={roomState?.playbackState}
-            isHost={false}
+key={roomState?.currentSong?.id || roomState?.currentSong?.videoId || 'no-video'}
+  currentSong={roomState?.currentSong} 
+  playbackState={roomState?.playbackState} 
+  isHost={false}
           />
 
           {/* Video Chat */}

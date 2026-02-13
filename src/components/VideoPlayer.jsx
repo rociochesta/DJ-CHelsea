@@ -278,17 +278,24 @@ const [countdown, setCountdown] = useState(null);
   );
 }
 
+/**
+ * REPLACING THE areEqual FUNCTION AND EXPORT
+ * -----------------------------------------
+ * We are removing the strict comparison logic because it often 
+ * prevents the player from updating if the object structure 
+ * changes slightly (e.g., requestedBy vs singerName).
+ */
+
+// 1. We significantly simplify or remove the memo check. 
+// For now, let's keep it simple: only memoize if the videoId and playing state are identical.
 function areEqual(prev, next) {
   return (
-    prev.isHost === next.isHost &&
+    prev.currentSong?.id === next.currentSong?.id &&
     prev.currentSong?.videoId === next.currentSong?.videoId &&
-    prev.currentSong?.title === next.currentSong?.title &&
-    prev.currentSong?.singerName === next.currentSong?.singerName &&
-    prev.currentSong?.requestedByName === next.currentSong?.requestedByName &&
     prev.playbackState?.isPlaying === next.playbackState?.isPlaying &&
-    prev.playbackState?.videoId === next.playbackState?.videoId &&
-    prev.playbackState?.startTime === next.playbackState?.startTime
+    prev.isHost === next.isHost
   );
 }
 
+// 2. Export the component
 export default React.memo(VideoPlayer, areEqual);
