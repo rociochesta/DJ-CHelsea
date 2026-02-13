@@ -5,47 +5,35 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   const [player, setPlayer] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [embedError, setEmbedError] = useState(false);
-  const [countdown, setCountdown] = useState(null);
-  const [videoVolume, setVideoVolume] = useState(40); // 40% default so mics audible
 
   // ✅ prevents double-firing (YouTube sometimes fires onEnd weirdly)
   const lastEndRef = useRef(0);
 
-  // ✅ store latest refs so intervals don't go stale
-  const playbackRef = useRef(playbackState);
-  const songRef = useRef(currentSong);
-  const isHostRef = useRef(isHost);
-
   useEffect(() => {
-    playbackRef.current = playbackState;
-  }, [playbackState]);
+    if (!player || !playerReady || !playbackState) return;
 
-  useEffect(() => {
-    songRef.current = currentSong;
-  }, [currentSong]);
+    try {
+      if (playbackState.isPlaying && playbackState.videoId) {
+        const elapsedSeconds = Math.floor((Date.now() - playbackState.startTime) / 1000);
+        player.seekTo(elapsedSeconds, true);
+        player.playVideo();
+      } else {
+        player.pauseVideo();
+      }
+    } catch (error) {
+      console.error("Error syncing playback:", error);
+    }
+  }, [player, playerReady, playbackState]);
 
-  useEffect(() => {
-    isHostRef.current = isHost;
-  }, [isHost]);
-
-  // ✅ reset on new song
   useEffect(() => {
     setEmbedError(false);
     setPlayerReady(false);
   }, [currentSong?.videoId]);
 
   const onReady = (event) => {
-    const playerInstance = event.target;
-    setPlayer(playerInstance);
+    setPlayer(event.target);
     setPlayerReady(true);
     setEmbedError(false);
-    
-    // ✅ Set lower volume so mics can be heard
-    try {
-      playerInstance.setVolume(videoVolume);
-    } catch (e) {
-      console.error("Failed to set volume:", e);
-    }
   };
 
   const onError = (event) => {
@@ -53,107 +41,14 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
     if (event.data === 101 || event.data === 150) setEmbedError(true);
   };
 
-  // ✅ AUTO-PLAY NEXT (host only)
+  // ✅ AUTO-PLAY NEXT
   const onEnd = () => {
-    if (!isHost) return;
+    if (!isHost) return; // only host advances queue
     const now = Date.now();
     if (now - lastEndRef.current < 1500) return; // debounce
     lastEndRef.current = now;
+
     onSkip?.();
-  };
-
-  // ✅ 1) Immediate sync on playback changes
-  useEffect(() => {
-    if (!player || !playerReady || !playbackState) return;
-
-    try {
-      if (playbackState.isPlaying && playbackState.videoId) {
-        const msUntilStart = playbackState.startTime - Date.now();
-
-        // ⏳ FUTURE START → countdown mode
-        if (msUntilStart > 0) {
-          const seconds = Math.ceil(msUntilStart / 1000);
-          setCountdown(seconds);
-
-          const t = setTimeout(() => {
-            setCountdown(null);
-          }, msUntilStart);
-
-          return () => clearTimeout(t);
-        }
-
-        // ▶️ START NOW (after countdown)
-        const elapsedSeconds = Math.floor(
-          (Date.now() - playbackState.startTime) / 1000
-        );
-
-        player.seekTo(elapsedSeconds, true);
-        player.playVideo();
-        setCountdown(null);
-      } else {
-        player.pauseVideo();
-        setCountdown(null);
-      }
-    } catch (error) {
-      console.error("Error syncing playback:", error);
-    }
-  }, [player, playerReady, playbackState]);
-
-  // ✅ 2) Continuous drift correction (only sync time, don't force play/pause)
-  useEffect(() => {
-    if (!player || !playerReady) return;
-
-    const SYNC_INTERVAL = 1200; // ms
-    const MAX_DRIFT = 1.2; // seconds
-
-    const tick = () => {
-      const ps = playbackRef.current;
-      const song = songRef.current;
-      if (ps.startTime > Date.now()) return; // wait for scheduled start
-      if (!ps || !song?.videoId) return;
-
-      // If not playing globally, pause everyone
-      if (!ps.isPlaying) {
-        try {
-          player.pauseVideo();
-        } catch {}
-        return;
-      }
-
-      // Expected global time from Firebase startTime
-      const expected = Math.max(0, (Date.now() - ps.startTime) / 1000);
-
-      let current = 0;
-      try {
-        current = player.getCurrentTime?.() || 0;
-      } catch {}
-
-      const drift = Math.abs(current - expected);
-
-      // If drift too big → force seek back to global time
-      if (drift > MAX_DRIFT) {
-        try {
-          player.seekTo(expected, true);
-        } catch {}
-      }
-
-      // Only force play for HOST
-      if (isHostRef.current) {
-        try {
-          const state = player.getPlayerState?.();
-          if (state !== 1) player.playVideo();
-        } catch {}
-      }
-    };
-
-    const interval = setInterval(tick, SYNC_INTERVAL);
-    return () => clearInterval(interval);
-  }, [player, playerReady]);
-
-  // ✅ 3) Handle state changes (minimal interference)
-  const onStateChange = (e) => {
-    // Just log state changes, don't force anything
-    // This prevents the pause/play loop
   };
 
   const opts = {
@@ -161,11 +56,12 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
     width: "100%",
     playerVars: {
       autoplay: 1,
-      controls: isHost ? 1 : 0, // ✅ Only host gets controls
-      disablekb: 1, // ✅ No keyboard shortcuts for anyone
+      controls: isHost ? 1 : 0, // ✅ DJ gets full controls
+      disablekb: isHost ? 0 : 1, // ✅ DJ can use keyboard
       modestbranding: 1,
       rel: 0,
-      fs: 1, // ✅ Fullscreen allowed for everyone
+      fs: 1, // Fullscreen for everyone
+      iv_load_policy: 3, // No annotations
     },
   };
 
@@ -182,9 +78,7 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
                 </span>
               </div>
               <div className="mt-2 text-white/60">
-                {isHost
-                  ? "Add songs to the queue to start the set."
-                  : "Waiting for the host to press play…"}
+                {isHost ? "Add songs to the queue to start the set." : "Waiting for the host to press play…"}
               </div>
             </div>
           </div>
@@ -196,74 +90,24 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5 md:p-7">
       {/* Title */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-        <div className="flex-1">
-          <div className="text-xs tracking-widest uppercase text-white/50">
-            Now Playing
-          </div>
-          <h2 className="text-xl md:text-2xl font-extrabold leading-tight">
-            {currentSong.title}
-          </h2>
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
+        <div>
+          <div className="text-xs tracking-widest uppercase text-white/50">Now Playing</div>
+          <h2 className="text-xl md:text-2xl font-extrabold leading-tight">{currentSong.title}</h2>
           <div className="mt-1 text-white/60">
             Singer:{" "}
             <span className="font-bold text-white bg-black/30 px-2 py-1 rounded-lg border border-white/10">
-              {currentSong.singerName || currentSong.requestedByName || currentSong.requestedBy || "Someone"}
+              {currentSong.singerName}
             </span>
           </div>
-
-          {/* ✅ VOLUME CONTROL (host only) */}
-          {isHost && (
-            <div className="mt-3 flex items-center gap-3 max-w-md">
-              <span className="text-xs text-white/60 whitespace-nowrap">🔊 Video:</span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={videoVolume}
-                onChange={(e) => {
-                  const vol = parseInt(e.target.value);
-                  setVideoVolume(vol);
-                  try {
-                    player?.setVolume(vol);
-                  } catch {}
-                }}
-                className="flex-1 h-2 bg-white/10 rounded-lg appearance-none cursor-pointer 
-                  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 
-                  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-fuchsia-500
-                  [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 
-                  [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-fuchsia-500 [&::-moz-range-thumb]:border-0"
-              />
-              <span className="text-xs font-mono text-white/80 min-w-[3rem] text-right">
-                {videoVolume}%
-              </span>
-            </div>
-          )}
         </div>
 
         {isHost && (
           <button
             onClick={onSkip}
-            className="
-              w-full md:w-auto
-              md:shrink-0
-              inline-flex items-center justify-center gap-2
-              rounded-2xl
-              px-4 py-3 md:py-2.5
-              text-sm font-semibold
-              border border-white/10
-              bg-white/6
-              text-white/85
-              backdrop-blur-xl
-              shadow-[0_10px_40px_rgba(0,0,0,0.25)]
-              transition
-              hover:bg-rose-500/10 hover:border-rose-400/30 hover:text-white
-              active:scale-[0.99]
-              focus:outline-none focus:ring-2 focus:ring-rose-400/30
-            "
-            aria-label="Skip current song"
+            className="px-4 py-2 rounded-xl font-bold bg-[linear-gradient(90deg,#ef4444,#f97316)] hover:opacity-95 active:scale-[0.99] transition border border-white/10 shadow-[0_18px_60px_rgba(239,68,68,0.16)]"
           >
-            <span className="opacity-95">Skip</span>
-            <span className="text-white/60">⏭️</span>
+            Skip ⏭️
           </button>
         )}
       </div>
@@ -274,19 +118,12 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
           <div className="aspect-video flex items-center justify-center">
             <div className="text-center p-8">
               <div className="text-5xl mb-4">🚫</div>
-              <div className="text-xl font-extrabold mb-2">
-                Can't embed this one
-              </div>
+              <div className="text-xl font-extrabold mb-2">Can’t embed this one</div>
               <div className="text-white/60 mb-4">
                 Publisher blocked external playback. (Love that for us.)
               </div>
               <button
-                onClick={() =>
-                  window.open(
-                    `https://www.youtube.com/watch?v=${currentSong.videoId}`,
-                    "_blank"
-                  )
-                }
+                onClick={() => window.open(`https://www.youtube.com/watch?v=${currentSong.videoId}`, "_blank")}
                 className="px-5 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 transition"
               >
                 Watch on YouTube ↗️
@@ -296,46 +133,15 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
         </div>
       ) : (
         <div className="rounded-2xl border border-white/10 bg-black/60 overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_30px_90px_rgba(124,58,237,0.10)]">
-          <div className="aspect-video relative">
-            {countdown !== null && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70">
-                <div className="text-center">
-                  <div className="text-sm text-white/60 mb-2">Starting in</div>
-                  <div className="text-6xl font-extrabold text-white">{countdown}</div>
-                </div>
-              </div>
-            )}
+          <div className="aspect-video">
             <YouTube
               videoId={currentSong.videoId}
               opts={opts}
               onReady={onReady}
               onError={onError}
-              onEnd={onEnd}
-              onStateChange={onStateChange}
+              onEnd={onEnd}   // ✅ HERE
               className="w-full h-full"
             />
-            
-            {/* ✅ Fullscreen button for participants */}
-            {!isHost && playerReady && (
-              <button
-                onClick={() => {
-                  try {
-                    const iframe = document.querySelector('iframe');
-                    if (iframe?.requestFullscreen) {
-                      iframe.requestFullscreen();
-                    } else if (iframe?.webkitRequestFullscreen) {
-                      iframe.webkitRequestFullscreen();
-                    }
-                  } catch (e) {
-                    console.error('Fullscreen failed:', e);
-                  }
-                }}
-                className="absolute bottom-4 right-4 z-20 px-4 py-2 rounded-xl bg-black/80 hover:bg-black/90 border border-white/20 backdrop-blur-xl transition text-sm font-semibold"
-                title="Fullscreen"
-              >
-                ⛶ Fullscreen
-              </button>
-            )}
           </div>
         </div>
       )}

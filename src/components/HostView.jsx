@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 import VideoPlayer from "./VideoPlayer";
@@ -13,6 +13,9 @@ function HostView({ roomCode, currentUser, roomState, djName }) {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
+  // ✅ store host YouTube player instance so DJ can pause/resume with correct time
+  const hostPlayerRef = useRef(null);
+
   const queue = useMemo(
     () => (roomState?.queue ? Object.values(roomState.queue) : []),
     [roomState?.queue]
@@ -24,6 +27,7 @@ function HostView({ roomCode, currentUser, roomState, djName }) {
   );
 
   const currentSong = roomState?.currentSong;
+  const playbackState = roomState?.playbackState;
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -57,41 +61,59 @@ function HostView({ roomCode, currentUser, roomState, djName }) {
 
       addedAt: Date.now(),
     });
-
-    // ✅ keep search UI as-is (no clearing)
   };
 
+  // ✅ Start a song: set currentSong + playbackState together, then remove from queue
   const handlePlaySong = async (song) => {
-    await set(ref(database, `karaoke-rooms/${roomCode}/currentSong`), song);
+    await update(ref(database, `karaoke-rooms/${roomCode}`), {
+      currentSong: song,
+      playbackState: {
+        isPlaying: true,
+        videoId: song.videoId,
+        startTime: Date.now(),
+        pausedTime: 0, // ✅ used when DJ pauses and resumes
+      },
+      activeSingerId: song.requestedById || null,
+      activeSingerName: song.requestedByName || "Someone",
+    });
 
     // remove from queue once it starts
     await remove(ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}`));
-
-await update(ref(database, `karaoke-rooms/${roomCode}`), {
-  currentSong: song,
-  playbackState: {
-    isPlaying: true,
-    videoId: song.videoId,
-    startTime: Date.now()
-  }
-});
-
-    // ✅ mic policy uses this (we’ll implement inside VideoChat next)
-    await set(ref(database, `karaoke-rooms/${roomCode}/activeSingerId`), song.requestedById || null);
-    await set(ref(database, `karaoke-rooms/${roomCode}/activeSingerName`), song.requestedByName || "Someone");
   };
 
-  const handleSkipSong = async () => {
-    await set(ref(database, `karaoke-rooms/${roomCode}/currentSong`), null);
+  // ✅ DJ global pause (pauses for everyone)
+  const handleDJPause = async () => {
+    const p = hostPlayerRef.current;
+    const t = p?.getCurrentTime?.() || 0;
 
     await update(ref(database, `karaoke-rooms/${roomCode}/playbackState`), {
       isPlaying: false,
-      videoId: null,
+      pausedTime: t,
     });
+  };
 
-    // reset singer
-    await set(ref(database, `karaoke-rooms/${roomCode}/activeSingerId`), null);
-    await set(ref(database, `karaoke-rooms/${roomCode}/activeSingerName`), null);
+  // ✅ DJ global resume (resumes for everyone, synced)
+  const handleDJPlay = async () => {
+    const pausedTime = playbackState?.pausedTime || 0;
+
+    await update(ref(database, `karaoke-rooms/${roomCode}/playbackState`), {
+      isPlaying: true,
+      startTime: Date.now() - pausedTime * 1000,
+    });
+  };
+
+  const handleSkipSong = async () => {
+    await update(ref(database, `karaoke-rooms/${roomCode}`), {
+      currentSong: null,
+      playbackState: {
+        isPlaying: false,
+        videoId: null,
+        startTime: 0,
+        pausedTime: 0,
+      },
+      activeSingerId: null,
+      activeSingerName: null,
+    });
 
     // ✅ Auto-play next song in queue
     const q = roomState?.queue ? Object.values(roomState.queue) : [];
@@ -142,6 +164,9 @@ await update(ref(database, `karaoke-rooms/${roomCode}`), {
     const policyRef = ref(database, `karaoke-rooms/${roomCode}/micPolicy`);
     await set(policyRef, roomState?.micPolicy === "open" ? "auto" : "open");
   };
+
+  const djIsPlaying = !!playbackState?.isPlaying;
+  const canDJControl = !!currentSong && !!playbackState?.videoId;
 
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
@@ -197,7 +222,46 @@ await update(ref(database, `karaoke-rooms/${roomCode}`), {
                       {djName || currentUser?.name || "DJ"}{" "}
                       <span className="text-white/70">🎤</span>
                     </div>
-                    <div className="text-xs text-white/40">don’t touch anything expensive</div>
+                    <div className="text-xs text-white/40">
+                      don’t touch anything expensive
+                    </div>
+
+                    {/* ✅ DJ Play/Pause */}
+                    <div className="mt-3 flex gap-2 md:justify-end">
+                      <button
+                        onClick={djIsPlaying ? handleDJPause : handleDJPlay}
+                        disabled={!canDJControl}
+                        className={`px-4 py-2 rounded-xl border backdrop-blur-xl transition text-sm font-semibold
+                          ${
+                            canDJControl
+                              ? "bg-white/10 hover:bg-white/20 border-white/10"
+                              : "bg-white/5 border-white/10 opacity-40 cursor-not-allowed"
+                          }`}
+                        title={
+                          canDJControl
+                            ? djIsPlaying
+                              ? "Pause for everyone"
+                              : "Resume for everyone"
+                            : "No track loaded"
+                        }
+                      >
+                        {djIsPlaying ? "⏸ Pause (All)" : "▶️ Play (All)"}
+                      </button>
+
+                      <button
+                        onClick={handleSkipSong}
+                        disabled={!canDJControl}
+                        className={`px-4 py-2 rounded-xl border backdrop-blur-xl transition text-sm font-semibold
+                          ${
+                            canDJControl
+                              ? "bg-white/10 hover:bg-white/20 border-white/10"
+                              : "bg-white/5 border-white/10 opacity-40 cursor-not-allowed"
+                          }`}
+                        title={canDJControl ? "Skip song" : "No track loaded"}
+                      >
+                        ⏭ Skip
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -210,9 +274,10 @@ await update(ref(database, `karaoke-rooms/${roomCode}`), {
             <div className="lg:col-span-2 space-y-6">
               <VideoPlayer
                 currentSong={currentSong}
-                playbackState={roomState?.playbackState}
+                playbackState={playbackState}
                 onSkip={handleSkipSong}
                 isHost={true}
+                onPlayerReady={(p) => (hostPlayerRef.current = p)} // ✅ needs VideoPlayer to call this in onReady
               />
 
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 md:p-6">
@@ -234,8 +299,12 @@ await update(ref(database, `karaoke-rooms/${roomCode}`), {
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 md:p-6">
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-xs tracking-widest uppercase text-white/50">Live Video</div>
-                    <h3 className="text-xl md:text-2xl font-extrabold">Participants</h3>
+                    <div className="text-xs tracking-widest uppercase text-white/50">
+                      Live Video
+                    </div>
+                    <h3 className="text-xl md:text-2xl font-extrabold">
+                      Participants
+                    </h3>
                     {roomState?.micPolicy === "auto" && (
                       <div className="text-xs text-white/50 mt-1">
                         🎙️ Auto-mic: only the singer should be unmuted
@@ -275,7 +344,10 @@ await update(ref(database, `karaoke-rooms/${roomCode}`), {
               </div>
 
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 md:p-6">
-                <ParticipantsList participants={participants} currentUser={currentUser} />
+                <ParticipantsList
+                  participants={participants}
+                  currentUser={currentUser}
+                />
               </div>
             </div>
           </div>
