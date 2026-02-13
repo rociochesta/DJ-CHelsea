@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { database, ref, push, set, onValue } from "../utils/firebase";
 
-const EMOJI_REACTIONS = ["🔥", "❤️", "😂", "👏", "😭", "🎤", "⭐", "💯"];
+const EMOJI_REACTIONS = ["🔥", "❤️", "😂", "👏", "😭", "🎤"];
 
 // Throttle helper
 const throttle = (func, limit) => {

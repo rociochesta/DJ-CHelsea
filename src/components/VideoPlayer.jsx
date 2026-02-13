@@ -99,7 +99,7 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
     }
   }, [player, playerReady, playbackState]);
 
-  // ✅ 2) Continuous drift correction (but allow participants to pause)
+  // ✅ 2) Continuous drift correction (only sync time, don't force play/pause)
   useEffect(() => {
     if (!player || !playerReady) return;
 
@@ -112,7 +112,7 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
       if (ps.startTime > Date.now()) return; // wait for scheduled start
       if (!ps || !song?.videoId) return;
 
-      // If not playing globally, allow pause (host controls state via Firebase)
+      // If not playing globally, pause everyone
       if (!ps.isPlaying) {
         try {
           player.pauseVideo();
@@ -137,11 +137,10 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
         } catch {}
       }
 
-      // ✅ For HOST: Force play in case they paused locally
-      // ✅ For PARTICIPANTS: Allow them to pause, don't force play
+      // Only force play for HOST
       if (isHostRef.current) {
         try {
-          const state = player.getPlayerState?.(); // 1 playing, 2 paused, etc
+          const state = player.getPlayerState?.();
           if (state !== 1) player.playVideo();
         } catch {}
       }
@@ -151,22 +150,10 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
     return () => clearInterval(interval);
   }, [player, playerReady]);
 
-  // ✅ 3) React to user trying to pause/seek (guests)
+  // ✅ 3) Handle state changes (minimal interference)
   const onStateChange = (e) => {
-    // only enforce when globally playing and user is not host
-    const ps = playbackRef.current;
-    if (!ps?.isPlaying) return;
-    if (isHostRef.current) return;
-
-    // 1 = playing, 2 = paused
-    // When participant presses play after pausing, sync back to global time
-    if (e.data === 1) {
-      // User just pressed play - sync to global time
-      try {
-        const expected = Math.max(0, (Date.now() - ps.startTime) / 1000);
-        player.seekTo(expected, true);
-      } catch {}
-    }
+    // Just log state changes, don't force anything
+    // This prevents the pause/play loop
   };
 
   const opts = {
@@ -174,11 +161,11 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
     width: "100%",
     playerVars: {
       autoplay: 1,
-      controls: 1, // ✅ Everyone gets controls now
-      disablekb: isHost ? 0 : 1, // ✅ guests still no keyboard shortcuts
+      controls: isHost ? 1 : 0, // ✅ Only host gets controls
+      disablekb: 1, // ✅ No keyboard shortcuts for anyone
       modestbranding: 1,
       rel: 0,
-      fs: 1, // ✅ Allow fullscreen for everyone
+      fs: 1, // ✅ Fullscreen allowed for everyone
     },
   };
 
@@ -327,6 +314,28 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
               onStateChange={onStateChange}
               className="w-full h-full"
             />
+            
+            {/* ✅ Fullscreen button for participants */}
+            {!isHost && playerReady && (
+              <button
+                onClick={() => {
+                  try {
+                    const iframe = document.querySelector('iframe');
+                    if (iframe?.requestFullscreen) {
+                      iframe.requestFullscreen();
+                    } else if (iframe?.webkitRequestFullscreen) {
+                      iframe.webkitRequestFullscreen();
+                    }
+                  } catch (e) {
+                    console.error('Fullscreen failed:', e);
+                  }
+                }}
+                className="absolute bottom-4 right-4 z-20 px-4 py-2 rounded-xl bg-black/80 hover:bg-black/90 border border-white/20 backdrop-blur-xl transition text-sm font-semibold"
+                title="Fullscreen"
+              >
+                ⛶ Fullscreen
+              </button>
+            )}
           </div>
         </div>
       )}
