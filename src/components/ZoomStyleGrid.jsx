@@ -1,12 +1,32 @@
 import React from 'react';
 import { useParticipants } from '@livekit/components-react';
 
-function ParticipantThumb({ participant, currentUser }) {
+function ParticipantThumb({ participant, currentUser, onMuteToggle, isHost }) {
   const videoTrack = participant?.videoTracks?.values?.()?.next?.()?.value || null;
   const participantName = participant?.name || participant?.identity || "Guest";
   const isCurrentUser = currentUser?.name === participantName || currentUser?.id === participant?.identity;
   const isMicOn = !!participant?.isMicrophoneEnabled;
   const isCameraOn = !!participant?.isCameraEnabled;
+
+  const handleToggleCamera = async () => {
+    if (participant?.setCameraEnabled) {
+      try {
+        await participant.setCameraEnabled(!isCameraOn);
+      } catch (e) {
+        console.error('Failed to toggle camera:', e);
+      }
+    }
+  };
+
+  const handleToggleMic = async () => {
+    if (participant?.setMicrophoneEnabled) {
+      try {
+        await participant.setMicrophoneEnabled(!isMicOn);
+      } catch (e) {
+        console.error('Failed to toggle mic:', e);
+      }
+    }
+  };
 
   return (
     <div className="relative flex-shrink-0 w-32 h-24 sm:w-40 sm:h-28 rounded-xl overflow-hidden border border-white/10 bg-black group">
@@ -37,6 +57,45 @@ function ParticipantThumb({ participant, currentUser }) {
         </div>
       )}
 
+      {/* Controls overlay (for current user or host) */}
+      {(isCurrentUser || isHost) && (
+        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {isCurrentUser && (
+            <>
+              <button
+                onClick={handleToggleCamera}
+                className={`p-1 rounded text-[10px] ${
+                  isCameraOn ? 'bg-white/20' : 'bg-red-500/80'
+                }`}
+                title={isCameraOn ? 'Turn camera off' : 'Turn camera on'}
+              >
+                📷
+              </button>
+              <button
+                onClick={handleToggleMic}
+                className={`p-1 rounded text-[10px] ${
+                  isMicOn ? 'bg-emerald-500/80' : 'bg-red-500/80'
+                }`}
+                title={isMicOn ? 'Mute' : 'Unmute'}
+              >
+                🎙️
+              </button>
+            </>
+          )}
+          {isHost && !isCurrentUser && (
+            <button
+              onClick={() => onMuteToggle?.(participantName)}
+              className={`p-1 rounded text-[10px] ${
+                isMicOn ? 'bg-emerald-500/80' : 'bg-red-500/80'
+              }`}
+              title={isMicOn ? 'Mute participant' : 'Unmute participant'}
+            >
+              🎙️
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Info bar at bottom */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-1.5">
         <div className="flex items-center justify-between gap-1">
@@ -46,18 +105,10 @@ function ParticipantThumb({ participant, currentUser }) {
           </span>
           
           {/* Mic indicator */}
-          <div className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
+          <div className={`shrink-0 w-4 h-4 rounded-full flex items-center justify-center ${
             isMicOn ? 'bg-emerald-500/80' : 'bg-red-500/80'
           }`}>
-            {isMicOn ? (
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            ) : (
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
-              </svg>
-            )}
+            <span className="text-[8px]">{isMicOn ? '🎙️' : '🔇'}</span>
           </div>
         </div>
       </div>
@@ -65,7 +116,7 @@ function ParticipantThumb({ participant, currentUser }) {
   );
 }
 
-function ZoomStyleGrid({ currentUser }) {
+function ZoomStyleGrid({ currentUser, onMuteToggle, onMuteAll, isHost }) {
   const liveKitParticipants = useParticipants() || [];
 
   return (
@@ -78,9 +129,22 @@ function ZoomStyleGrid({ currentUser }) {
           </h3>
         </div>
         
-        <div className="flex items-center gap-2 px-2 py-1 rounded-full border border-white/10 bg-black/30">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_18px_rgba(239,68,68,0.8)]" />
-          <span className="text-[10px] font-medium">LIVE</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 px-2 py-1 rounded-full border border-white/10 bg-black/30">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-[0_0_18px_rgba(239,68,68,0.8)]" />
+            <span className="text-[10px] font-medium">LIVE</span>
+          </div>
+
+          {isHost && liveKitParticipants.length > 0 && (
+            <button
+              onClick={onMuteAll}
+              className="px-3 py-1.5 rounded-xl font-semibold bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 transition text-xs flex items-center gap-1"
+              title="Mute all participants"
+            >
+              <span>🔇</span>
+              <span>Mute All</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -92,6 +156,8 @@ function ZoomStyleGrid({ currentUser }) {
               key={participant.identity}
               participant={participant}
               currentUser={currentUser}
+              onMuteToggle={onMuteToggle}
+              isHost={isHost}
             />
           ))}
         </div>

@@ -1,262 +1,243 @@
-import React, { useState } from "react";
-import { useRoomContext } from "@livekit/components-react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { database, ref, push, set, onValue } from "../utils/firebase";
 
-import { database, ref, set, update, push, remove } from "../utils/firebase";
-import { searchKaraokeVideos } from "../utils/youtube";
+const EMOJI_REACTIONS = ["🔥", "❤️", "😂", "👏", "😭", "🎤", "⭐", "💯"];
 
-import VideoPlayer from "./VideoPlayer";
-import SongQueue from "./SongQueue";
-import SongSearch from "./SongSearch";
-import ParticipantsList from "./ParticipantsList";
-import ZoomStyleGrid from "./ZoomStyleGrid";
-import ChatPanel from "./ChatPanel";
-import EmojiReactions from "./EmojiReactions";
-import DebugPanel from "./Debugpanel";
+// Throttle helper
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+};
 
-function DJView({ roomCode, currentUser, roomState, isHost }) {
-  const room = useRoomContext();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [participantMutes, setParticipantMutes] = useState({});
+function ChatPanel({ roomCode, currentUser, currentSong }) {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+const [isOpen, setIsOpen] = useState(true);
+  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
-  const handleSearch = async (e) => {
+  // Throttled update function
+  const updateMessages = useRef(
+    throttle((messageList) => {
+      setMessages(messageList);
+    }, 100) // Update at most every 100ms
+  ).current;
+
+  // Listen to chat messages
+  useEffect(() => {
+    if (!roomCode) return;
+
+    const messagesRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
+    
+    const unsubscribe = onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const messageList = Object.entries(data).map(([id, msg]) => ({
+          id,
+          ...msg,
+        }));
+        // Sort by timestamp
+        messageList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        updateMessages(messageList);
+      } else {
+        setMessages([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [roomCode, updateMessages]);
+
+  // Auto-scroll to bottom when new messages arrive - optimized
+  useEffect(() => {
+    if (isOpen && messagesEndRef.current) {
+      // Use requestAnimationFrame to avoid blocking
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
+    }
+  }, [messages.length, isOpen]); // Only trigger on message count change
+
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    if (!message.trim()) return;
 
-    setIsSearching(true);
-    setHasSearched(true);
+    // Clear input immediately for instant feedback
+    const messageToSend = message.trim();
+    setMessage("");
 
-    try {
-      const results = await searchKaraokeVideos(searchQuery);
-      setSearchResults(results);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+    // Fire and forget - don't await
+    const chatRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
+    const newMessageRef = push(chatRef);
 
-  const handleAddToQueue = async (video, requestedBy) => {
-    const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
-    const newSongRef = push(queueRef);
-
-    const requestedByName =
-      typeof requestedBy === "string"
-        ? requestedBy
-        : typeof requestedBy?.name === "string"
-        ? requestedBy.name
-        : currentUser.name;
-
-    await set(newSongRef, {
-      id: newSongRef.key,
-      videoId: video.id,
-      title: video.title,
-      thumbnail: video.thumbnail,
-      addedBy: currentUser.id,
-      requestedBy: requestedByName,
-      addedAt: Date.now(),
+    set(newMessageRef, {
+      userId: currentUser.id,
+      userName: currentUser.name,
+      message: messageToSend,
+      timestamp: Date.now(),
+    }).catch((err) => {
+      console.error("Failed to send message:", err);
+      // Optionally restore message on error
+      setMessage(messageToSend);
     });
   };
 
-  const handlePlaySong = async (song) => {
-    const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
-    await set(currentSongRef, song);
+  const handleSendEmoji = (emoji) => {
+    // Fire and forget - don't await, don't block UI
+    const chatRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
+    const newMessageRef = push(chatRef);
 
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}`);
-    await remove(songRef);
-
-    const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
-    await update(playbackRef, {
-      isPlaying: true,
-      videoId: song.videoId,
-      startTime: Date.now(),
+    set(newMessageRef, {
+      userId: currentUser.id,
+      userName: currentUser.name,
+      message: emoji,
+      isEmoji: true,
+      timestamp: Date.now(),
+    }).catch((err) => {
+      console.error("Failed to send emoji:", err);
     });
   };
 
-  const handleSkipSong = async () => {
-    const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
-    await set(currentSongRef, null);
+  const unreadCount = useMemo(() => {
+    if (isOpen) return 0;
+    // You could track last read timestamp here
+    return 0;
+  }, [isOpen, messages]);
 
-    const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
-    await update(playbackRef, {
-      isPlaying: false,
-      videoId: null,
-    });
-
-    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
-    if (queueArr.length > 0) {
-      const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
-      const nextSong = sortedQueue[0];
-      setTimeout(() => handlePlaySong(nextSong), 500);
-    }
-  };
-
-  const handleDeleteSong = async (songId) => {
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${songId}`);
-    await remove(songRef);
-  };
-
-  const handleMoveSongUp = async (song, currentIndex) => {
-    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
-    if (currentIndex === 0) return;
-
-    const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
-    const prevSong = sortedQueue[currentIndex - 1];
-
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
-    const prevSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${prevSong.id}/addedAt`);
-
-    await set(songRef, prevSong.addedAt);
-    await set(prevSongRef, song.addedAt);
-  };
-  const handleMuteToggle = async (name) => {
-  const ref = dbRef(
-    rtdb,
-    `karaoke-rooms/${roomCode}/participantMutes/${name}`
-  );
-  await set(ref, !participantMutes?.[name]);
-};
-
-const handleMuteAll = async () => {
-  const updates = {};
-  Object.keys(participantMutes || {}).forEach((name) => {
-    updates[name] = true;
-  });
-  const ref = dbRef(rtdb, `karaoke-rooms/${roomCode}/participantMutes`);
-  await set(ref, updates);
-};
-
-  const handleMoveSongDown = async (song, currentIndex) => {
-    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
-    const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
-    if (currentIndex === sortedQueue.length - 1) return;
-
-    const nextSong = sortedQueue[currentIndex + 1];
-
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
-    const nextSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`);
-
-    await set(songRef, nextSong.addedAt);
-    await set(nextSongRef, song.addedAt);
-  };
-
-  const queue = roomState?.queue ? Object.values(roomState.queue) : [];
-  const participants = roomState?.participants ? Object.values(roomState.participants) : [];
-  const currentSong = roomState?.currentSong || null;
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-20 left-4 z-40 px-4 py-3 rounded-2xl bg-gradient-to-r from-fuchsia-600/90 to-indigo-600/90 hover:from-fuchsia-600 hover:to-indigo-600 text-white font-bold shadow-2xl border border-white/20 backdrop-blur-xl transition-all hover:scale-105 active:scale-95"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-xl">💬</span>
+          <span>Chat</span>
+          {unreadCount > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-red-500 text-xs">
+              {unreadCount}
+            </span>
+          )}
+        </div>
+      </button>
+    );
+  }
 
   return (
-    <div className="min-h-screen relative overflow-hidden text-white">
-      <div className="absolute inset-0 bg-[#070712]" />
-      <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl opacity-50 bg-fuchsia-600" />
-      <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.18),transparent_55%)]" />
+    <div className="fixed bottom-20 left-4 z-40 w-80 sm:w-96 max-h-[calc(100vh-160px)] rounded-3xl border border-white/20 bg-black/95 backdrop-blur-2xl shadow-2xl flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-fuchsia-900/40 to-indigo-900/40">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">💬</span>
+          <h3 className="font-bold text-lg">Chat</h3>
+        </div>
+        <button
+          onClick={() => setIsOpen(false)}
+          className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition"
+        >
+          ✕
+        </button>
+      </div>
 
-      <div className="relative p-3 sm:p-4">
-        <div className="max-w-[1800px] mx-auto">
-          {/* Header */}
-          <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-4 sm:mb-6">
-            <div className="relative bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
-              <div className="relative px-4 py-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/35 text-[10px] sm:text-xs tracking-widest uppercase">
-                    <span className="w-2 h-2 rounded-full bg-fuchsia-400 shadow-[0_0_18px_rgba(232,121,249,0.8)]" />
-                    {isHost ? "DJ Console" : "Listening Party"}
+      {/* Messages */}
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-3"
+        style={{ 
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+        }}
+      >
+        {messages.length === 0 ? (
+          <div className="text-center text-white/40 text-sm mt-8">
+            <div className="text-4xl mb-2">👋</div>
+            <div>No messages yet</div>
+            <div className="text-xs mt-1">Be the first to say something!</div>
+          </div>
+        ) : (
+          messages.map((msg) => {
+            const isMe = msg.userId === currentUser.id;
+            const isEmojiOnly = msg.isEmoji || (msg.message && msg.message.length <= 2 && /^\p{Emoji}+$/u.test(msg.message));
+
+            return (
+              <div
+                key={msg.id}
+                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col`}>
+                  {!isMe && (
+                    <div className="text-xs text-white/50 mb-1 px-2">
+                      {msg.userName}
+                    </div>
+                  )}
+                  <div
+                    className={`px-4 py-2 rounded-2xl ${
+                      isEmojiOnly
+                        ? 'bg-transparent text-4xl'
+                        : isMe
+                        ? 'bg-gradient-to-r from-fuchsia-600 to-indigo-600 text-white'
+                        : 'bg-white/10 text-white'
+                    }`}
+                  >
+                    {msg.message}
                   </div>
-
-                  <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold leading-tight">
-                    <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
-                      DJ Mode 🎧
-                    </span>
-                  </h1>
-
-                  <div className="mt-1 text-xs sm:text-sm text-white/70">
-                    Room:{" "}
-                    <span className="font-mono text-white tracking-[0.2em] bg-black/35 px-2 py-1 rounded-lg">
-                      {roomCode}
-                    </span>
+                  <div className="text-[10px] text-white/30 mt-1 px-2">
+                    {new Date(msg.timestamp).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </div>
                 </div>
-
-                <div className="sm:text-right text-left">
-                  <div className="text-[10px] sm:text-xs text-white/50">{isHost ? "Host" : "Participant"}</div>
-                  <div className="font-bold text-base sm:text-lg">
-                    {currentUser?.name || "Guest"} {isHost ? "🎧" : "🎵"}
-                  </div>
-
-                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10">
-                    <span className="text-[11px] sm:text-xs font-semibold text-indigo-400">
-                      Video Only Mode
-                    </span>
-                  </div>
-                </div>
               </div>
-            </div>
-          </div>
+            );
+          })
+        )}
+        <div ref={messagesEndRef} />
+      </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-            {/* Left column - Video and search */}
-            <div className="xl:col-span-2 space-y-4 sm:space-y-6">
-              <VideoPlayer
-                currentSong={currentSong}
-                playbackState={roomState?.playbackState}
-                onSkip={isHost ? handleSkipSong : null}
-                isHost={isHost}
-              />
-
-              {/* Mobile queue */}
-              <div className="xl:hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
-                <SongQueue
-                  queue={queue}
-                  onPlaySong={isHost ? handlePlaySong : null}
-                  onDeleteSong={isHost ? handleDeleteSong : null}
-                  onMoveSongUp={isHost ? handleMoveSongUp : null}
-                  onMoveSongDown={isHost ? handleMoveSongDown : null}
-                  isHost={isHost}
-                />
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
-                <SongSearch
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  onSearch={handleSearch}
-                  isSearching={isSearching}
-                  searchResults={searchResults}
-                  onAddToQueue={handleAddToQueue}
-                  hasSearched={hasSearched}
-                  roomCode={roomCode}
-                  currentUser={currentUser}
-                  participants={participants}
-                  isParticipant={!isHost}
-                />
-              </div>
-
-              {/* Zoom-style participants */}
-              <ZoomStyleGrid currentUser={currentUser} />
-            </div>
-
-            {/* Right column - Queue */}
-            <div className="hidden xl:block space-y-6">
-              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
-                <SongQueue
-                  queue={queue}
-                  onPlaySong={isHost ? handlePlaySong : null}
-                  onDeleteSong={isHost ? handleDeleteSong : null}
-                  onMoveSongUp={isHost ? handleMoveSongUp : null}
-                  onMoveSongDown={isHost ? handleMoveSongDown : null}
-                  isHost={isHost}
-                />
-              </div>
-            </div>
-          </div>
+      {/* Emoji Quick Reactions */}
+      <div className="px-4 py-2 border-t border-white/10 bg-black/50">
+        <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          {EMOJI_REACTIONS.map((emoji) => (
+            <button
+              key={emoji}
+              onClick={() => handleSendEmoji(emoji)}
+              className="text-2xl hover:scale-125 transition-transform active:scale-95 shrink-0"
+              title={`Send ${emoji}`}
+            >
+              {emoji}
+            </button>
+          ))}
         </div>
       </div>
 
-      <ChatPanel roomCode={roomCode} currentUser={currentUser} currentSong={currentSong} />
-      <EmojiReactions roomCode={roomCode} currentUser={currentUser} />
-      {isHost && <DebugPanel currentUser={currentUser} roomState={roomState} />}
+      {/* Input */}
+      <form onSubmit={handleSendMessage} className="p-4 border-t border-white/10 bg-black/50">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 px-4 py-2 rounded-xl bg-white/10 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-400/20"
+            maxLength={200}
+          />
+          <button
+            type="submit"
+            disabled={!message.trim()}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:from-fuchsia-500 hover:to-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed transition font-bold"
+          >
+            Send
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
 
-export default DJView;
+export default ChatPanel;
