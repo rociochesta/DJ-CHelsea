@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState, useMemo } from "react";
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 import VideoPlayer from "./VideoPlayer";
@@ -9,20 +9,11 @@ import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DebugPanel from "./DebugPanel";
 
-function HostView({ roomCode, currentUser, roomState, isHost = true }) {
+function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-
-  // Memoize user object to prevent Chat/Reactions extra re-renders
-  const memoizedUser = useMemo(
-    () => ({
-      id: currentUser?.id,
-      name: currentUser?.name,
-    }),
-    [currentUser?.id, currentUser?.name]
-  );
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -51,7 +42,6 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
   };
 
   const handlePlaySong = async (song) => {
-    if (!isHost) return;
     const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
     await set(currentSongRef, song);
 
@@ -73,8 +63,6 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
   };
 
   const handleSkipSong = async () => {
-    if (!isHost) return;
-
     // Mute current singer
     const currentSinger = roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
     if (currentSinger) {
@@ -89,7 +77,7 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
       isPlaying: false,
       videoId: null,
     });
-
+    
     const queue = roomState?.queue ? Object.values(roomState.queue) : [];
     if (queue.length > 0) {
       const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
@@ -99,33 +87,30 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
   };
 
   const handleDeleteSong = async (songId) => {
-    if (!isHost) return;
     const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${songId}`);
     await remove(songRef);
   };
 
   const handleMoveSongUp = async (song, currentIndex) => {
-    if (!isHost) return;
     if (currentIndex === 0) return;
     const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
     const prevSong = sortedQueue[currentIndex - 1];
-
+    
     const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
     const prevSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${prevSong.id}/addedAt`);
-
+    
     await set(songRef, prevSong.addedAt);
     await set(prevSongRef, song.addedAt);
   };
 
   const handleMoveSongDown = async (song, currentIndex) => {
-    if (!isHost) return;
     const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
     if (currentIndex === sortedQueue.length - 1) return;
     const nextSong = sortedQueue[currentIndex + 1];
-
+    
     const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
     const nextSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`);
-
+    
     await set(songRef, nextSong.addedAt);
     await set(nextSongRef, song.addedAt);
   };
@@ -136,10 +121,9 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
   };
 
   const handleMuteAll = async () => {
-    if (!isHost) return;
     const participants = roomState?.participants ? Object.values(roomState.participants) : [];
     const currentSinger = roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-
+    
     for (const participant of participants) {
       if (participant.name !== currentSinger) {
         await setParticipantMute(participant.name, true);
@@ -152,6 +136,12 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
   const currentSong = roomState?.currentSong;
   const participantMutes = roomState?.participantMutes || {};
 
+  // Memoize user object to prevent Chat/Reactions re-renders
+  const memoizedUser = useMemo(() => ({
+    id: currentUser?.id,
+    name: currentUser?.name
+  }), [currentUser?.id, currentUser?.name]);
+
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
       <div className="absolute inset-0 bg-[#070712]" />
@@ -161,13 +151,14 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
 
       <div className="relative p-4">
         <div className="max-w-[1800px] mx-auto">
+          {/* Static Banner - No animation */}
           <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-6">
             <div className="relative h-28 bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
               <div className="relative p-5 flex items-center justify-between h-full">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/35 text-xs tracking-widest uppercase">
                     <span className="w-2 h-2 rounded-full bg-fuchsia-400 shadow-[0_0_18px_rgba(232,121,249,0.8)]" />
-                    {isHost ? "DJ Console" : "Listening Party"}
+                    Host Console
                   </div>
 
                   <h1 className="mt-2 text-3xl font-extrabold">
@@ -177,45 +168,40 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
                   </h1>
 
                   <div className="mt-1 text-sm text-white/70">
-                    Room:{" "}
-                    <span className="font-mono text-white tracking-[0.2em] bg-black/35 px-2 py-1 rounded-lg">
-                      {roomCode}
-                    </span>
+                    Room: <span className="font-mono text-white tracking-[0.2em] bg-black/35 px-2 py-1 rounded-lg">{roomCode}</span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <div className="text-xs text-white/50">{isHost ? "Host" : "Participant"}</div>
-                  <div className="font-bold text-lg">
-                    {currentUser.name} {isHost ? "🎤" : "🎵"}
-                  </div>
-
-                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10">
-                    <span className="text-xs font-semibold text-indigo-400">Video Only Mode</span>
+                  <div className="text-xs text-white/50">Host</div>
+                  <div className="font-bold text-lg">{currentUser.name} 🎤</div>
+                  
+                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
+                    <span className="text-xs font-semibold text-emerald-400">Mic: AUTO (only singer)</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Layout - Video left, Queue right */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <div className="xl:col-span-2 space-y-6">
               <VideoPlayer
                 currentSong={currentSong}
                 playbackState={roomState?.playbackState}
-                onSkip={isHost ? handleSkipSong : null}
-                isHost={isHost}
+                onSkip={handleSkipSong}
+                isHost={true}
               />
 
               <SingerSpotlight
                 roomCode={roomCode}
                 currentSong={currentSong}
+                participants={participants}
                 participantMutes={participantMutes}
-                onMuteToggle={isHost ? setParticipantMute : null}
-                onMuteAll={isHost ? handleMuteAll : null}
+                onMuteToggle={setParticipantMute}
+                onMuteAll={handleMuteAll}
                 queue={queue}
-                canControlMics={isHost}
-                currentUser={memoizedUser}
               />
 
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
@@ -230,20 +216,20 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
                   currentUser={currentUser}
                   participants={participants}
                   roomCode={roomCode}
-                  isParticipant={!isHost}
+                  isParticipant={false}
                 />
               </div>
             </div>
 
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
-                <SongQueue
-                  queue={queue}
-                  onPlaySong={isHost ? handlePlaySong : null}
-                  onDeleteSong={isHost ? handleDeleteSong : null}
-                  onMoveSongUp={isHost ? handleMoveSongUp : null}
-                  onMoveSongDown={isHost ? handleMoveSongDown : null}
-                  isHost={isHost}
+                <SongQueue 
+                  queue={queue} 
+                  onPlaySong={handlePlaySong} 
+                  onDeleteSong={handleDeleteSong}
+                  onMoveSongUp={handleMoveSongUp}
+                  onMoveSongDown={handleMoveSongDown}
+                  isHost={true} 
                 />
               </div>
             </div>
@@ -251,10 +237,10 @@ function HostView({ roomCode, currentUser, roomState, isHost = true }) {
         </div>
       </div>
 
-      {/* Chat + Reactions + Debug */}
+      {/* Chat, Reactions, and Debug Panels */}
       <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
-      {isHost && <DebugPanel currentUser={currentUser} roomState={roomState} />}
+      <DebugPanel currentUser={currentUser} roomState={roomState} />
     </div>
   );
 }
