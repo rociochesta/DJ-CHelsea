@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo, memo } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
 
 function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
@@ -99,7 +99,7 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
     }
   }, [player, playerReady, playbackState]);
 
-  // ✅ 2) Continuous drift correction + anti-pause for guests
+  // ✅ 2) Continuous drift correction (only sync time, don't force play/pause)
   useEffect(() => {
     if (!player || !playerReady) return;
 
@@ -112,7 +112,7 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
       if (ps.startTime > Date.now()) return; // wait for scheduled start
       if (!ps || !song?.videoId) return;
 
-      // If not playing globally, allow pause (host controls state via Firebase)
+      // If not playing globally, pause everyone
       if (!ps.isPlaying) {
         try {
           player.pauseVideo();
@@ -137,48 +137,37 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
         } catch {}
       }
 
-      // Force play in case user paused locally
-      try {
-        const state = player.getPlayerState?.(); // 1 playing, 2 paused, etc
-        if (state !== 1) player.playVideo();
-      } catch {}
+      // Only force play for HOST
+      if (isHostRef.current) {
+        try {
+          const state = player.getPlayerState?.();
+          if (state !== 1) player.playVideo();
+        } catch {}
+      }
     };
 
     const interval = setInterval(tick, SYNC_INTERVAL);
     return () => clearInterval(interval);
   }, [player, playerReady]);
 
-  // ✅ 3) React to user trying to pause/seek (guests)
+  // ✅ 3) Handle state changes (minimal interference)
   const onStateChange = (e) => {
-    // only enforce when globally playing and user is not host
-    const ps = playbackRef.current;
-    if (!ps?.isPlaying) return;
-    if (isHostRef.current) return;
-
-    // 2 = paused
-    if (e.data === 2) {
-      // snap back: play + correct time immediately
-      try {
-        const expected = Math.max(0, (Date.now() - ps.startTime) / 1000);
-        player.seekTo(expected, true);
-        player.playVideo();
-      } catch {}
-    }
+    // Just log state changes, don't force anything
+    // This prevents the pause/play loop
   };
 
- const opts = useMemo(() => ({
-  width: "100%",
-  height: "100%",
-  playerVars: {
-    autoplay: 1,
-    controls: isHost ? 1 : 0, // ✅ DJ gets full controls, participants get none
-    disablekb: isHost ? 0 : 1, // ✅ DJ can use keyboard, participants can't  
-    modestbranding: 1,
-    rel: 0,
-    fs: 1, // Fullscreen for everyone
-    iv_load_policy: 3, // No annotations
-  },
-}), [isHost]);
+  const opts = {
+    height: "100%",
+    width: "100%",
+    playerVars: {
+      autoplay: 1,
+      controls: isHost ? 1 : 0, // ✅ Only host gets controls
+      disablekb: 1, // ✅ No keyboard shortcuts for anyone
+      modestbranding: 1,
+      rel: 0,
+      fs: 1, // ✅ Fullscreen allowed for everyone
+    },
+  };
 
   if (!currentSong) {
     return (
@@ -325,6 +314,28 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
               onStateChange={onStateChange}
               className="w-full h-full"
             />
+            
+            {/* ✅ Fullscreen button for participants */}
+            {!isHost && playerReady && (
+              <button
+                onClick={() => {
+                  try {
+                    const iframe = document.querySelector('iframe');
+                    if (iframe?.requestFullscreen) {
+                      iframe.requestFullscreen();
+                    } else if (iframe?.webkitRequestFullscreen) {
+                      iframe.webkitRequestFullscreen();
+                    }
+                  } catch (e) {
+                    console.error('Fullscreen failed:', e);
+                  }
+                }}
+                className="absolute bottom-4 right-4 z-20 px-4 py-2 rounded-xl bg-black/80 hover:bg-black/90 border border-white/20 backdrop-blur-xl transition text-sm font-semibold"
+                title="Fullscreen"
+              >
+                ⛶ Fullscreen
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -332,12 +343,4 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   );
 }
 
-export default memo(VideoPlayer, (prev, next) => {
-  return (
-    prev.videoId === next.videoId &&
-    prev.title === next.title &&
-    prev.singer === next.singer &&
-    prev.isPlaying === next.isPlaying &&
-    prev.startTime === next.startTime
-  );
-});
+export default VideoPlayer;
