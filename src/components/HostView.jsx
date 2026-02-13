@@ -11,7 +11,7 @@ import SongSearch from "./SongSearch";
 import SingerSpotlight from "./SingerSpotlight";
 import DebugPanel from "./Debugpanel";
 import ChatPanel from "./ChatPanel";
-import EmojiReactions from "./Emojireactions";
+import EmojiReactions from "./EmojiReactions";
 import { useAutoMicPolicy } from "../hooks/useAutoMicPolicy";
 
 function HostView({ roomCode, currentUser, roomState }) {

@@ -9,7 +9,7 @@ import SongQueue from "./SongQueue";
 import SingerSpotlight from "./SingerSpotlight";
 import SongSearch from "./SongSearch";
 import ChatPanel from "./ChatPanel";
-import EmojiReactions from "./Emojireactions";
+import EmojiReactions from "./EmojiReactions";
 import { useAutoMicPolicy } from "../hooks/useAutoMicPolicy";
 
 export default function ParticipantView({ roomCode, currentUser, roomState }) {
