@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo, memo } from "react";
 import YouTube from "react-youtube";
-import React, { useMemo, memo } from "react";
 
 function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   const [player, setPlayer] = useState(null);
