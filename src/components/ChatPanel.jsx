@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { database, ref, push, set, onValue, serverTimestamp } from "../utils/firebase";
+import { database, ref, push, set, onValue } from "../utils/firebase";
 
 const EMOJI_REACTIONS = ["🔥", "❤️", "😂", "👏", "😭", "🎤", "⭐", "💯"];
+
+// Throttle helper
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+};
 
 function ChatPanel({ roomCode, currentUser, currentSong }) {
   const [message, setMessage] = useState("");
@@ -9,6 +21,13 @@ function ChatPanel({ roomCode, currentUser, currentSong }) {
   const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+
+  // Throttled update function
+  const updateMessages = useRef(
+    throttle((messageList) => {
+      setMessages(messageList);
+    }, 100) // Update at most every 100ms
+  ).current;
 
   // Listen to chat messages
   useEffect(() => {
@@ -25,49 +44,62 @@ function ChatPanel({ roomCode, currentUser, currentSong }) {
         }));
         // Sort by timestamp
         messageList.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        setMessages(messageList);
+        updateMessages(messageList);
       } else {
         setMessages([]);
       }
     });
 
     return () => unsubscribe();
-  }, [roomCode]);
+  }, [roomCode, updateMessages]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom when new messages arrive - optimized
   useEffect(() => {
     if (isOpen && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      // Use requestAnimationFrame to avoid blocking
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
     }
-  }, [messages, isOpen]);
+  }, [messages.length, isOpen]); // Only trigger on message count change
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
 
+    // Clear input immediately for instant feedback
+    const messageToSend = message.trim();
+    setMessage("");
+
+    // Fire and forget - don't await
     const chatRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
     const newMessageRef = push(chatRef);
 
-    await set(newMessageRef, {
+    set(newMessageRef, {
       userId: currentUser.id,
       userName: currentUser.name,
-      message: message.trim(),
+      message: messageToSend,
       timestamp: Date.now(),
+    }).catch((err) => {
+      console.error("Failed to send message:", err);
+      // Optionally restore message on error
+      setMessage(messageToSend);
     });
-
-    setMessage("");
   };
 
-  const handleSendEmoji = async (emoji) => {
+  const handleSendEmoji = (emoji) => {
+    // Fire and forget - don't await, don't block UI
     const chatRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
     const newMessageRef = push(chatRef);
 
-    await set(newMessageRef, {
+    set(newMessageRef, {
       userId: currentUser.id,
       userName: currentUser.name,
       message: emoji,
       isEmoji: true,
       timestamp: Date.now(),
+    }).catch((err) => {
+      console.error("Failed to send emoji:", err);
     });
   };
 

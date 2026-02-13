@@ -1,11 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { database, ref, push, set, onValue } from "../utils/firebase";
 
 const REACTION_EMOJIS = ["🔥", "❤️", "😂", "👏", "😭", "🎤", "⭐", "💯"];
 
+// Throttle helper
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function(...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+};
+
 function EmojiReactions({ roomCode, currentUser }) {
   const [reactions, setReactions] = useState([]);
   const [showPicker, setShowPicker] = useState(false);
+
+  // Throttled update function
+  const updateReactions = useRef(
+    throttle((reactionList) => {
+      setReactions(reactionList);
+    }, 50) // Update at most every 50ms for smoother animations
+  ).current;
 
   // Listen to reactions
   useEffect(() => {
@@ -20,48 +39,53 @@ function EmojiReactions({ roomCode, currentUser }) {
           id,
           ...reaction,
         }));
-        setReactions(reactionList);
+        updateReactions(reactionList);
       } else {
         setReactions([]);
       }
     });
 
     return () => unsubscribe();
-  }, [roomCode]);
+  }, [roomCode, updateReactions]);
 
-  // Auto-cleanup old reactions (older than 5 seconds)
+  // Auto-cleanup old reactions (older than 5 seconds) - optimized
   useEffect(() => {
     if (!roomCode) return;
 
     const interval = setInterval(() => {
       const now = Date.now();
-      const reactionsRef = ref(database, `karaoke-rooms/${roomCode}/reactions`);
       
-      reactions.forEach((reaction) => {
-        if (now - reaction.timestamp > 5000) {
-          const reactionRef = ref(database, `karaoke-rooms/${roomCode}/reactions/${reaction.id}`);
-          set(reactionRef, null).catch(() => {});
-        }
+      // Batch cleanup operations
+      const toDelete = reactions.filter((reaction) => now - reaction.timestamp > 5000);
+      
+      // Fire all deletes without awaiting (non-blocking)
+      toDelete.forEach((reaction) => {
+        const reactionRef = ref(database, `karaoke-rooms/${roomCode}/reactions/${reaction.id}`);
+        set(reactionRef, null).catch(() => {}); // Fire and forget
       });
-    }, 1000);
+    }, 2000); // Check every 2 seconds instead of 1 to reduce overhead
 
     return () => clearInterval(interval);
   }, [roomCode, reactions]);
 
-  const handleSendReaction = async (emoji) => {
+  const handleSendReaction = (emoji) => {
+    // Close picker immediately
+    setShowPicker(false);
+
+    // Fire and forget - don't await, don't block UI
     const reactionsRef = ref(database, `karaoke-rooms/${roomCode}/reactions`);
     const newReactionRef = push(reactionsRef);
 
-    await set(newReactionRef, {
+    set(newReactionRef, {
       emoji,
       userId: currentUser.id,
       userName: currentUser.name,
       timestamp: Date.now(),
       // Random starting position for animation
       startX: Math.random() * 80 + 10, // 10-90% from left
+    }).catch((err) => {
+      console.error("Failed to send reaction:", err);
     });
-
-    setShowPicker(false);
   };
 
   // Filter recent reactions (last 5 seconds)
@@ -75,20 +99,19 @@ function EmojiReactions({ roomCode, currentUser }) {
       <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden">
         {recentReactions.map((reaction) => {
           const age = Date.now() - reaction.timestamp;
-          const progress = age / 5000; // 0 to 1 over 5 seconds
+          const progress = Math.min(age / 5000, 1); // 0 to 1 over 5 seconds
 
           return (
             <div
               key={reaction.id}
-              className="absolute animate-float-up"
+              className="absolute will-change-transform"
               style={{
                 left: `${reaction.startX}%`,
-                bottom: `${10 + progress * 80}%`, // Rise from 10% to 90%
+                bottom: '10%',
                 fontSize: '3rem',
-                opacity: 1 - progress, // Fade out
-                transform: `scale(${1 - progress * 0.3})`, // Shrink slightly
-                transition: 'all 0.5s ease-out',
                 textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                animation: 'float-up-smooth 5s ease-out forwards',
+                animationDelay: '0s',
               }}
             >
               {reaction.emoji}
@@ -134,30 +157,32 @@ function EmojiReactions({ roomCode, currentUser }) {
       </div>
 
       <style>{`
-        @keyframes float-up {
-          from {
-            transform: translateY(0) scale(1);
+        @keyframes float-up-smooth {
+          0% {
+            transform: translateY(0) translateZ(0) scale(1);
             opacity: 1;
           }
-          to {
-            transform: translateY(-100px) scale(0.7);
+          100% {
+            transform: translateY(-80vh) translateZ(0) scale(0.7);
             opacity: 0;
           }
         }
 
         @keyframes scale-in {
           from {
-            transform: scale(0.9);
+            transform: scale(0.9) translateZ(0);
             opacity: 0;
           }
           to {
-            transform: scale(1);
+            transform: scale(1) translateZ(0);
             opacity: 1;
           }
         }
 
-        .animate-float-up {
-          animation: float-up 5s ease-out forwards;
+        .will-change-transform {
+          will-change: transform, opacity;
+          backface-visibility: hidden;
+          -webkit-font-smoothing: antialiased;
         }
 
         .animate-scale-in {

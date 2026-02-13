@@ -2,7 +2,6 @@ import React from "react";
 import { useParticipants } from "@livekit/components-react";
 import ParticipantTile from "./ParticipantTile";
 import EmojiReactions from "./EmojiReactions";
-
 export default function SingerSpotlight({
   roomCode,
   currentSong,
