@@ -1,25 +1,19 @@
 import React, { useState } from "react";
-import { useRoomContext } from "@livekit/components-react";
-
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
-
 import VideoPlayer from "./VideoPlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
-import ParticipantsList from "./ParticipantsList";
-import ZoomStyleGrid from "./ZoomStyleGrid";
+import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DebugPanel from "./Debugpanel";
 
 function DJView({ roomCode, currentUser, roomState, isHost }) {
-  const room = useRoomContext();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [participantMutes, setParticipantMutes] = useState({});
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -27,25 +21,14 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
 
     setIsSearching(true);
     setHasSearched(true);
-
-    try {
-      const results = await searchKaraokeVideos(searchQuery);
-      setSearchResults(results);
-    } finally {
-      setIsSearching(false);
-    }
+    const results = await searchKaraokeVideos(searchQuery);
+    setSearchResults(results);
+    setIsSearching(false);
   };
 
   const handleAddToQueue = async (video, requestedBy) => {
     const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
     const newSongRef = push(queueRef);
-
-    const requestedByName =
-      typeof requestedBy === "string"
-        ? requestedBy
-        : typeof requestedBy?.name === "string"
-        ? requestedBy.name
-        : currentUser.name;
 
     await set(newSongRef, {
       id: newSongRef.key,
@@ -53,7 +36,7 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
       title: video.title,
       thumbnail: video.thumbnail,
       addedBy: currentUser.id,
-      requestedBy: requestedByName,
+      requestedBy: requestedBy || "Someone",
       addedAt: Date.now(),
     });
   };
@@ -82,10 +65,10 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
       isPlaying: false,
       videoId: null,
     });
-
-    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
-    if (queueArr.length > 0) {
-      const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
+    
+    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+    if (queue.length > 0) {
+      const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
       const nextSong = sortedQueue[0];
       setTimeout(() => handlePlaySong(nextSong), 500);
     }
@@ -97,22 +80,32 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
   };
 
   const handleMoveSongUp = async (song, currentIndex) => {
-    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
     if (currentIndex === 0) return;
-
-    const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
+    const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
     const prevSong = sortedQueue[currentIndex - 1];
-
+    
     const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
     const prevSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${prevSong.id}/addedAt`);
-
+    
     await set(songRef, prevSong.addedAt);
     await set(prevSongRef, song.addedAt);
   };
-  const handleMuteToggle = async (participantName) => {
+
+  const handleMoveSongDown = async (song, currentIndex) => {
+    const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
+    if (currentIndex === sortedQueue.length - 1) return;
+    const nextSong = sortedQueue[currentIndex + 1];
+    
+    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
+    const nextSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`);
+    
+    await set(songRef, nextSong.addedAt);
+    await set(nextSongRef, song.addedAt);
+  };
+
+  const setParticipantMute = async (participantName, muted) => {
     const muteRef = ref(database, `karaoke-rooms/${roomCode}/participantMutes/${participantName}`);
-    const currentMuteState = participantMutes?.[participantName] || false;
-    await set(muteRef, !currentMuteState);
+    await set(muteRef, muted);
   };
 
   const handleMuteAll = async () => {
@@ -120,29 +113,21 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
     
     for (const participant of participants) {
       if (participant.name !== currentUser?.name) {
-        const muteRef = ref(database, `karaoke-rooms/${roomCode}/participantMutes/${participant.name}`);
-        await set(muteRef, true);
+        await setParticipantMute(participant.name, true);
       }
     }
   };
 
-  const handleMoveSongDown = async (song, currentIndex) => {
-    const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
-    const sortedQueue = [...queueArr].sort((a, b) => a.addedAt - b.addedAt);
-    if (currentIndex === sortedQueue.length - 1) return;
-
-    const nextSong = sortedQueue[currentIndex + 1];
-
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
-    const nextSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`);
-
-    await set(songRef, nextSong.addedAt);
-    await set(nextSongRef, song.addedAt);
-  };
-
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
   const participants = roomState?.participants ? Object.values(roomState.participants) : [];
-  const currentSong = roomState?.currentSong || null;
+  const currentSong = roomState?.currentSong;
+  const participantMutes = roomState?.participantMutes || {};
+
+  // Memoize user object to prevent Chat/Reactions re-renders
+  const memoizedUser = React.useMemo(() => ({
+    id: currentUser?.id,
+    name: currentUser?.name
+  }), [currentUser?.id, currentUser?.name]);
 
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
@@ -151,51 +136,44 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
       <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.18),transparent_55%)]" />
 
-      <div className="relative p-3 sm:p-4">
+      <div className="relative p-4">
         <div className="max-w-[1800px] mx-auto">
-          {/* Header */}
-          <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-4 sm:mb-6">
-            <div className="relative bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
-              <div className="relative px-4 py-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+          {/* Static Banner */}
+          <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-6">
+            <div className="relative h-28 bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
+              <div className="relative p-5 flex items-center justify-between h-full">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/35 text-[10px] sm:text-xs tracking-widest uppercase">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/35 text-xs tracking-widest uppercase">
                     <span className="w-2 h-2 rounded-full bg-fuchsia-400 shadow-[0_0_18px_rgba(232,121,249,0.8)]" />
                     {isHost ? "DJ Console" : "Listening Party"}
                   </div>
 
-                  <h1 className="mt-2 text-2xl sm:text-3xl font-extrabold leading-tight">
+                  <h1 className="mt-2 text-3xl font-extrabold">
                     <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
                       DJ Mode 🎧
                     </span>
                   </h1>
 
-                  <div className="mt-1 text-xs sm:text-sm text-white/70">
-                    Room:{" "}
-                    <span className="font-mono text-white tracking-[0.2em] bg-black/35 px-2 py-1 rounded-lg">
-                      {roomCode}
-                    </span>
+                  <div className="mt-1 text-sm text-white/70">
+                    Room: <span className="font-mono text-white tracking-[0.2em] bg-black/35 px-2 py-1 rounded-lg">{roomCode}</span>
                   </div>
                 </div>
 
-                <div className="sm:text-right text-left">
-                  <div className="text-[10px] sm:text-xs text-white/50">{isHost ? "Host" : "Participant"}</div>
-                  <div className="font-bold text-base sm:text-lg">
-                    {currentUser?.name || "Guest"} {isHost ? "🎧" : "🎵"}
-                  </div>
-
+                <div className="text-right">
+                  <div className="text-xs text-white/50">{isHost ? "Host" : "Participant"}</div>
+                  <div className="font-bold text-lg">{currentUser.name} {isHost ? "🎧" : "🎵"}</div>
+                  
                   <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10">
-                    <span className="text-[11px] sm:text-xs font-semibold text-indigo-400">
-                      Video Only Mode
-                    </span>
+                    <span className="text-xs font-semibold text-indigo-400">Video Only Mode</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-            {/* Left column - Video and search */}
-            <div className="xl:col-span-2 space-y-4 sm:space-y-6">
+          {/* Layout - Video left, Queue right */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2 space-y-6">
               <VideoPlayer
                 currentSong={currentSong}
                 playbackState={roomState?.playbackState}
@@ -203,19 +181,17 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
                 isHost={isHost}
               />
 
-              {/* Mobile queue */}
-              <div className="xl:hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
-                <SongQueue
-                  queue={queue}
-                  onPlaySong={isHost ? handlePlaySong : null}
-                  onDeleteSong={isHost ? handleDeleteSong : null}
-                  onMoveSongUp={isHost ? handleMoveSongUp : null}
-                  onMoveSongDown={isHost ? handleMoveSongDown : null}
-                  isHost={isHost}
-                />
-              </div>
+              <SingerSpotlight
+                roomCode={roomCode}
+                currentSong={currentSong}
+                participants={participants}
+                participantMutes={participantMutes}
+                onMuteToggle={setParticipantMute}
+                onMuteAll={handleMuteAll}
+                queue={queue}
+              />
 
-              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
+              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
                 <SongSearch
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
@@ -224,27 +200,14 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
                   searchResults={searchResults}
                   onAddToQueue={handleAddToQueue}
                   hasSearched={hasSearched}
-                  roomCode={roomCode}
-                  currentUser={currentUser}
-                  participants={participants}
-                  isParticipant={!isHost}
                 />
               </div>
-
-              {/* Zoom-style participants */}
-              <ZoomStyleGrid 
-                currentUser={currentUser} 
-                onMuteToggle={handleMuteToggle}
-                onMuteAll={handleMuteAll}
-                isHost={isHost}
-              />
             </div>
 
-            {/* Right column - Queue */}
-            <div className="hidden xl:block space-y-6">
+            <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
-                <SongQueue
-                  queue={queue}
+                <SongQueue 
+                  queue={queue} 
                   onPlaySong={isHost ? handlePlaySong : null}
                   onDeleteSong={isHost ? handleDeleteSong : null}
                   onMoveSongUp={isHost ? handleMoveSongUp : null}
@@ -257,8 +220,9 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
         </div>
       </div>
 
-      <ChatPanel roomCode={roomCode} currentUser={currentUser} currentSong={currentSong} />
-      <EmojiReactions roomCode={roomCode} currentUser={currentUser} />
+      {/* Keep Chat and Reactions */}
+      <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
+      <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
       {isHost && <DebugPanel currentUser={currentUser} roomState={roomState} />}
     </div>
   );
