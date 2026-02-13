@@ -200,6 +200,10 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
                   searchResults={searchResults}
                   onAddToQueue={handleAddToQueue}
                   hasSearched={hasSearched}
+                  currentUser={currentUser}
+                  participants={participants}
+                  roomCode={roomCode}
+                  isParticipant={!isHost}
                 />
               </div>
             </div>

@@ -1,141 +1,88 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { searchKaraokeVideos } from "../utils/youtube";
-import { logSearchEvent } from "../utils/netlifySearchLog";
 
-function SongSearch({ onAddToQueue, participants = [], roomCode, currentUser, isParticipant = false }) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+function SongSearch({ 
+  searchQuery, 
+  setSearchQuery, 
+  onSearch, 
+  isSearching, 
+  searchResults, 
+  onAddToQueue, 
+  hasSearched,
+  currentUser,
+  participants,
+  roomCode,
+  isParticipant 
+}) {
   const [error, setError] = useState("");
-
-  // ✅ picker modal state
-  const [pickOpen, setPickOpen] = useState(false);
-  const [pickedVideo, setPickedVideo] = useState(null);
-  const [pickedUserId, setPickedUserId] = useState("");
-  const [customName, setCustomName] = useState("");
-const normalizeParticipant = (p, idx) => {
-  if (!p) return { id: `p-${idx}`, name: "Guest", role: "participant" };
-
-  const name =
-    typeof p === "string" ? p :
-    typeof p?.name === "string" ? p.name :
-    typeof p?.name === "object" && p?.name?.name ? String(p.name.name) :
-    typeof p?.identity === "string" ? p.identity :
-    "Guest";
-
-  const id = typeof p?.id === "string" && p.id
-    ? p.id
-    : typeof p?.identity === "string" && p.identity
-    ? p.identity
-    : `p-${idx}-${name}`;
-
-  return {
-    id,
-    name,
-    role: p?.role || "participant",
-  };
-};
- const sortedParticipants = useMemo(() => {
-  const list =
-    Array.isArray(participants)
-      ? participants
-      : participants && typeof participants === "object"
-      ? Object.entries(participants).map(([id, p]) => ({ ...p, id }))
-      : [];
-
-  const normalized = list.map(normalizeParticipant);
-
-  return normalized.sort((a, b) => {
-    if (a.role === "host" && b.role !== "host") return -1;
-    if (b.role === "host" && a.role !== "host") return 1;
-    return String(a.name || "").localeCompare(String(b.name || ""));
-  });
-}, [participants]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
-
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const videos = await searchKaraokeVideos(searchQuery);
-      setSearchResults(videos);
-        // 🔎 LOG SEARCH TO NETLIFY
-  await logSearchEvent({
-    roomCode: roomCode || "",       // pass via props if you want
-    userName: currentUser?.name || "", // optional
-    query: searchQuery,
-    results: videos.length,
-    timestamp: Date.now(),
-  });
-
-      if (videos.length === 0) {
-        setError("No videos found. Try adding 'karaoke', 'instrumental', or 'lyrics'.");
-      }
-    } catch (err) {
-      console.error("Search error:", err);
-      setError("Search failed. Check your YouTube API key and try again.");
-    } finally {
-      setIsLoading(false);
+    if (onSearch) {
+      onSearch(e);
     }
   };
 
-  const openPicker = (video) => {
-    setPickedVideo(video);
-    setCustomName("");
-
-    // default select first participant if exists
-  setPickedUserId(sortedParticipants[0]?.id || "__custom__");
-    setPickOpen(true);
+  const handleAdd = (video) => {
+    // For DJ/Host: show options with their name first
+    if (!isParticipant && currentUser?.name) {
+      const options = [
+        currentUser.name, // DJ's name first
+        ...((participants || []).map(p => p.name).filter(n => n !== currentUser.name)),
+        "Other (type name)"
+      ];
+      
+      const choice = window.prompt(
+        `Who's singing this song?\n\nOptions:\n${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}`,
+        "1"
+      );
+      
+      if (!choice) return; // Cancelled
+      
+      const choiceNum = parseInt(choice);
+      let requestedBy;
+      
+      if (choiceNum >= 1 && choiceNum <= options.length) {
+        const selected = options[choiceNum - 1];
+        if (selected === "Other (type name)") {
+          requestedBy = window.prompt("Enter singer's name:", "")?.trim() || "Someone";
+        } else {
+          requestedBy = selected;
+        }
+      } else {
+        // They typed a name directly
+        requestedBy = choice.trim() || currentUser.name;
+      }
+      
+      onAddToQueue?.(video, requestedBy);
+    } else {
+      // For participants: just use their name
+      onAddToQueue?.(video, currentUser?.name || "Someone");
+    }
   };
-
-  const closePicker = () => {
-    setPickOpen(false);
-    setPickedVideo(null);
-    setPickedUserId("");
-    setCustomName("");
-  };
-
- const confirmPick = () => {
-  let chosen = null;
-
-  if (pickedUserId !== "__custom__") {
-    chosen = sortedParticipants.find((p) => p.id === pickedUserId) || null;
-  }
-
-  if (!chosen) {
-    const name = String(customName || "").trim();
-    chosen = { id: null, name: name || "Someone", role: "participant" };
-  }
-
-  onAddToQueue?.(pickedVideo, chosen);
-  closePicker();
-};
 
   return (
-    <div className="card">
+    <div>
       <h3 className="text-xl font-bold mb-4">Find a track</h3>
 
-    <form onSubmit={handleSearch} className="mb-4 flex flex-col sm:flex-row gap-3">
+      <form onSubmit={handleSearch} className="mb-4 flex gap-3">
         <input
           type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={searchQuery || ""}
+          onChange={(e) => setSearchQuery?.(e.target.value)}
           placeholder='Search YouTube... (e.g. "Mr Brightside karaoke")'
-          className="flex-1 p-3 rounded-lg bg-karaoke-bg border border-gray-600 text-white focus:border-karaoke-accent focus:outline-none"
+          className="flex-1 p-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-fuchsia-400/70 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/20"
         />
-        <button
-  type="submit"
-  disabled={isLoading}
-  className="btn-primary w-full sm:w-auto"
->
-  {isLoading ? "Searching..." : "Search"}
-</button>
+        <button 
+          type="submit" 
+          disabled={isSearching} 
+          className="px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 active:scale-[0.99] transition disabled:opacity-50"
+        >
+          {isSearching ? "Searching..." : "Search"}
+        </button>
       </form>
 
-      <div className="text-sm text-gray-400 mb-4">
+      <div className="text-sm text-white/60 mb-4">
         💡 Some videos can't be embedded (official uploads often block playback). If a video fails, it'll auto-skip.
       </div>
 
@@ -146,114 +93,27 @@ const normalizeParticipant = (p, idx) => {
       )}
 
       <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-        {searchResults.map((video) => (
-          <div
-            key={video.id}
-            className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg bg-karaoke-bg border border-gray-700"
-          >
-            <img
-              src={video.thumbnail}
-              alt={video.title}
-              className="w-20 h-14 rounded object-cover"
-            />
-<div className="flex-1 min-w-0">
-  <div className="font-semibold text-white line-clamp-2">
-    {video.title}
-  </div>
-  <div className="text-sm text-gray-400 truncate">
-    {video.channelTitle}
-  </div>
-</div>
-         <button
-  onClick={() => isParticipant ? onAddToQueue(video) : openPicker(video)}
-  className="btn-secondary w-full sm:w-auto whitespace-nowrap"
->
-  Add to Queue
-</button>
-         
+        {searchResults && searchResults.map((video) => (
+          <div key={video.id} className="flex gap-3 items-center p-3 rounded-xl bg-black/25 border border-white/10 hover:bg-black/35 transition">
+            <img src={video.thumbnail} alt={video.title} className="w-20 h-14 rounded object-cover shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-white truncate">{video.title}</div>
+              <div className="text-sm text-white/60 truncate">{video.channelTitle}</div>
+            </div>
+            <button 
+              onClick={() => handleAdd(video)} 
+              className="px-4 py-2 rounded-xl font-bold bg-white/10 hover:bg-white/20 transition whitespace-nowrap"
+            >
+              Add to Queue
+            </button>
           </div>
         ))}
       </div>
-
-      {/* ✅ Who requested? modal (host only) */}
-      {!isParticipant && pickOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0b0b18] p-4 shadow-2xl">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <div className="text-xs tracking-widest uppercase text-white/50">
-                  Who requested this?
-                </div>
-                <div className="text-lg font-extrabold mt-1">
-                  Pick the singer 🎤
-                </div>
-                <div className="text-sm text-white/60 mt-1 truncate">
-                  {pickedVideo?.title}
-                </div>
-              </div>
-
-              <button
-                onClick={closePicker}
-                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {sortedParticipants.length > 0 ? (
-                <>
-                  <select
-                    value={pickedUserId}
-                    onChange={(e) => setPickedUserId(e.target.value)}
-                    className="w-full rounded-xl bg-white/10 border border-white/10 p-3 text-white"
-                  >
-                    {sortedParticipants.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name || "Guest"}{p.role === "host" ? " (DJ)" : ""}
-                      </option>
-                    ))}
-                  <option value="__custom__">Someone else…</option>
-                  </select>
-
-                {pickedUserId === "__custom__" && (
-                    <input
-                      value={customName}
-                      onChange={(e) => setCustomName(e.target.value)}
-                      placeholder="Type name…"
-                      className="w-full rounded-xl bg-white/10 border border-white/10 p-3 text-white"
-                    />
-                  )}
-                </>
-              ) : (
-                <input
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  placeholder="No participants found — type name…"
-                  className="w-full rounded-xl bg-white/10 border border-white/10 p-3 text-white"
-                />
-              )}
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  onClick={closePicker}
-                  className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmPick}
-                  className="px-3 py-2 rounded-xl bg-fuchsia-600 hover:bg-fuchsia-500 font-bold"
-                >
-                  Add
-                </button>
-              </div>
-
-              <div className="text-xs text-white/40">
-                Tip: if someone hasn’t joined yet, pick “Someone else…” and type it.
-              </div>
-            </div>
-          </div>
+      
+      {hasSearched && searchResults && searchResults.length === 0 && (
+        <div className="text-center py-8 text-white/50">
+          <div className="text-4xl mb-2">🔍</div>
+          <div>No results found. Try a different search.</div>
         </div>
       )}
     </div>
