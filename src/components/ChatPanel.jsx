@@ -18,7 +18,7 @@ const throttle = (func, limit) => {
 function ChatPanel({ roomCode, currentUser, currentSong }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
+const [isOpen, setIsOpen] = useState(true);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 

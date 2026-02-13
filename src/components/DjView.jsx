@@ -11,6 +11,7 @@ import ParticipantsList from "./ParticipantsList";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DebugPanel from "./Debugpanel";
+import SingerSpotlight from "./SingerSpotlight";
 
 function DJView({ roomCode, currentUser, roomState, isHost }) {
   const room = useRoomContext();
@@ -18,6 +19,7 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [participantMutes, setParticipantMutes] = useState({});
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -107,6 +109,22 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
     await set(songRef, prevSong.addedAt);
     await set(prevSongRef, song.addedAt);
   };
+  const handleMuteToggle = async (name) => {
+  const ref = dbRef(
+    rtdb,
+    `karaoke-rooms/${roomCode}/participantMutes/${name}`
+  );
+  await set(ref, !participantMutes?.[name]);
+};
+
+const handleMuteAll = async () => {
+  const updates = {};
+  Object.keys(participantMutes || {}).forEach((name) => {
+    updates[name] = true;
+  });
+  const ref = dbRef(rtdb, `karaoke-rooms/${roomCode}/participantMutes`);
+  await set(ref, updates);
+};
 
   const handleMoveSongDown = async (song, currentIndex) => {
     const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];

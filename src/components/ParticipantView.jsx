@@ -96,14 +96,13 @@ export default function ParticipantView({ roomCode, currentUser, roomState }) {
           <VideoPlayer currentSong={currentSong} playbackState={roomState?.playbackState} isHost={false} />
 <SingerSpotlight
   roomCode={roomCode}
-  currentSong={currentSong}
+  currentSong={roomState?.currentSong}
   participantMutes={participantMutes}
-  onMuteToggle={noopMuteToggle}
-  onMuteAll={noopMuteAll}
-  queue={queue}
-  canControlMics={false}
-  currentUser={currentUser}
-  showControls={true}
+  onMuteToggle={handleMuteToggle}
+  onMuteAll={handleMuteAll}
+  queue={roomState?.queue || []}
+  canControlMics={isHost}
+  currentUser={displayName}
 />
         </div>
 

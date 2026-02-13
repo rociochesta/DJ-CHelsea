@@ -96,7 +96,7 @@ function EmojiReactions({ roomCode, currentUser }) {
   return (
     <>
       {/* Floating reactions overlay */}
-      <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden">
+<div className="fixed inset-0 pointer-events-none z-50">
         {recentReactions.map((reaction) => {
           const age = Date.now() - reaction.timestamp;
           const progress = Math.min(age / 5000, 1); // 0 to 1 over 5 seconds
@@ -121,7 +121,7 @@ function EmojiReactions({ roomCode, currentUser }) {
       </div>
 
       {/* Reaction picker button */}
-      <div className="relative">
+<div className="fixed bottom-4 right-4 z-40">
         {!showPicker ? (
           <button
             onClick={() => setShowPicker(true)}

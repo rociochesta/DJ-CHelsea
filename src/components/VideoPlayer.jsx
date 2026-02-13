@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
+import React, { useMemo, memo } from "react";
 
 function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   const [player, setPlayer] = useState(null);
@@ -166,17 +167,16 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
     }
   };
 
-  const opts = {
-    height: "100%",
-    width: "100%",
-    playerVars: {
-      autoplay: 1,
-      controls: isHost ? 1 : 0, // ✅ guests no controls
-      disablekb: isHost ? 0 : 1, // ✅ guests no keyboard pause/seek
-      modestbranding: 1,
-      rel: 0,
-    },
-  };
+ const opts = useMemo(() => ({
+  width: "100%",
+  height: "100%",
+  playerVars: {
+    autoplay: 1,
+    controls: 1,
+    modestbranding: 1,
+    rel: 0,
+  },
+}), []);
 
   if (!currentSong) {
     return (
@@ -330,4 +330,12 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   );
 }
 
-export default VideoPlayer;
+export default memo(VideoPlayer, (prev, next) => {
+  return (
+    prev.videoId === next.videoId &&
+    prev.title === next.title &&
+    prev.singer === next.singer &&
+    prev.isPlaying === next.isPlaying &&
+    prev.startTime === next.startTime
+  );
+});

@@ -320,17 +320,16 @@ function HostView({ roomCode, currentUser, roomState }) {
                 />
               </div>
 
-              <SingerSpotlight
-                roomCode={roomCode}
-                currentSong={currentSong}
-                participants={participants}
-                participantMutes={participantMutes}
-                onMuteToggle={setParticipantMute}
-                onMuteAll={handleMuteAll}
-                queue={queue}
-                currentUser={currentUser}
-                showControls={true}
-              />
+      <SingerSpotlight
+  roomCode={roomCode}
+  currentSong={roomState?.currentSong}
+  participantMutes={participantMutes}
+  onMuteToggle={handleMuteToggle}
+  onMuteAll={handleMuteAll}
+  queue={roomState?.queue || []}
+  canControlMics={isHost}
+  currentUser={displayName}
+/>
 
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
                 <SongSearch
