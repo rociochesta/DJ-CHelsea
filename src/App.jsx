@@ -7,7 +7,7 @@ import { generateRoomCode, generateUserId } from "./utils/helpers";
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
 import ParticipantView from "./components/ParticipantView";
-import DJView from "./components/DJView";
+import DJView from "./components/DjView";
 import { RoomAudioRenderer } from "@livekit/components-react";
 
 function App() {
