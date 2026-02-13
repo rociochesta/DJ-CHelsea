@@ -1,14 +1,10 @@
 import React, { useState } from "react";
 
 function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
-  const [mode, setMode] = useState(null); // null, 'join'
+  const [mode, setMode] = useState(null); // null, 'join', 'create'
   const [roomCode, setRoomCode] = useState("");
   const [userName, setUserName] = useState("");
-
-  // ✅ Keep old “DJ unlock” system for later (commented in UI below)
-  const [adminName, setAdminName] = useState("");
-  const [adminPass, setAdminPass] = useState("");
-  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [roomMode, setRoomMode] = useState("dj"); // 'dj' or 'karaoke'
 
   const getDJName = () => {
     const n = userName.trim();
@@ -22,25 +18,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
     }
   };
 
-  // ✅ TEST MODE: any non-empty DJ name + EMPTY password unlocks DJ mode
-  // also pre-fills userName so host uses that DJ name when creating room
-  const handleAdminLogin = (e) => {
-    e?.preventDefault?.();
-
-    const dj = adminName.trim();
-    const passIsEmpty = adminPass.trim() === "";
-
-    if (dj && passIsEmpty) {
-      setAdminUnlocked(true);
-
-      // ✅ make Create Room use this name (since App uses stored/entered names)
-      setUserName(dj);
-
-      setAdminName("");
-      setAdminPass("");
-    } else {
-      alert("Type a DJ name and leave password empty (test mode).");
-    }
+  const handleCreateSubmit = () => {
+    onCreateRoom(getDJName(), roomMode);
   };
 
   return (
@@ -51,7 +30,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
       <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.18),transparent_55%)]" />
 
-      {/* Local keyframes (no Tailwind config needed) */}
+      {/* Local keyframes */}
       <style>{`
         @keyframes sweep {
           0%   { transform: translateX(-120%); opacity: 0; }
@@ -73,7 +52,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-5xl">
           <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-white/5 backdrop-blur-xl">
-            {/* Banner (taller) */}
+            {/* Banner */}
             <div className="relative h-44 md:h-60 overflow-hidden">
               <video
                 className="absolute inset-0 w-full h-full object-cover"
@@ -84,11 +63,9 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 playsInline
               />
 
-              {/* Auto-darken where text sits (left heavy) */}
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.46)_44%,rgba(0,0,0,0.18)_100%)]" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.14),transparent_60%)]" />
 
-              {/* Moving light sweep */}
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
@@ -99,7 +76,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 }}
               />
 
-              {/* Vinyl glow rotation */}
               <div
                 className="absolute right-10 md:right-14 top-1/2 pointer-events-none"
                 style={{
@@ -125,7 +101,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 }}
               />
 
-              {/* NOW SPINNING badge */}
               <div className="absolute left-5 md:left-7 top-4 md:top-5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/35 text-[11px] tracking-widest uppercase">
                   <span
@@ -162,7 +137,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
 
                 <div className="flex flex-col md:items-end gap-3 w-full md:w-auto">
-                  {/* ✅ Simple "try it now" name input */}
                   <div className="w-full md:w-auto">
                     <label className="block text-xs tracking-widest uppercase text-white/50 mb-2">
                       Your name (optional)
@@ -174,51 +148,11 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       placeholder='Leave empty = "DJ"'
                       className="w-full md:w-80 px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:outline-none focus:border-fuchsia-400/60"
                     />
-                    <div className="mt-2 text-xs text-white/45">
-                      You’ll be spinning. Make sure you’re sober. Or at least emotionally licensed. 😇
-                    </div>
                   </div>
-
-                  {/* ✅ Keep old admin unlock for later (do NOT delete) */}
-                  {/*
-                  {!adminUnlocked ? (
-                    <form
-                      onSubmit={handleAdminLogin}
-                      className="flex gap-2 bg-black/30 border border-white/10 rounded-xl p-2 backdrop-blur-xl"
-                    >
-                      <input
-                        type="text"
-                        placeholder="DJ name"
-                        value={adminName}
-                        onChange={(e) => setAdminName(e.target.value)}
-                        className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm w-28 focus:outline-none"
-                      />
-                      <input
-                        type="password"
-                        placeholder="leave empty"
-                        value={adminPass}
-                        onChange={(e) => setAdminPass(e.target.value)}
-                        className="px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm w-28 focus:outline-none"
-                      />
-                      <button
-                        type="submit"
-                        className="px-4 py-2 rounded-lg text-xs font-bold bg-fuchsia-600/80 hover:bg-fuchsia-600"
-                      >
-                        Unlock DJ
-                      </button>
-                    </form>
-                  ) : (
-                    <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-black/30 text-xs">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.75)]" />
-                      DJ Unlocked
-                    </div>
-                  )}
-                  */}
 
                   <div className="flex gap-3 flex-wrap md:justify-end w-full">
                     <button
-                      onClick={() => onCreateRoom(getDJName())}
-                      title="Create the room"
+                      onClick={() => setMode("create")}
                       className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 active:scale-[0.99] transition shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_18px_60px_rgba(255,0,153,0.20)]"
                     >
                       Start a Room
@@ -233,6 +167,94 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                   </div>
                 </div>
               </div>
+
+              {/* Create Room Mode Selection */}
+              {mode === "create" && (
+                <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
+                  <button
+                    onClick={() => setMode(null)}
+                    className="text-white/70 hover:text-white transition mb-4"
+                  >
+                    ← Back
+                  </button>
+
+                  <h2 className="text-2xl font-bold mb-2">Choose Room Mode</h2>
+                  <p className="text-white/60 mb-6">
+                    Select how you want to run your room
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {/* DJ Mode */}
+                    <button
+                      onClick={() => setRoomMode("dj")}
+                      className={`p-6 rounded-2xl border-2 transition text-left ${
+                        roomMode === "dj"
+                          ? "border-fuchsia-500 bg-fuchsia-500/10"
+                          : "border-white/10 bg-black/25 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-4xl">🎧</div>
+                        {roomMode === "dj" && (
+                          <div className="w-6 h-6 rounded-full bg-fuchsia-500 flex items-center justify-center">
+                            <svg className="w-4 h-4" fill="white" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">DJ Mode</h3>
+                      <p className="text-sm text-white/70 mb-3">
+                        Classic music session - no karaoke features
+                      </p>
+                      <ul className="text-xs text-white/60 space-y-1">
+                        <li>✓ Queue and play songs</li>
+                        <li>✓ Video only (no mic echo)</li>
+                        <li>✓ Clean audio experience</li>
+                        <li>✓ Perfect for listening parties</li>
+                      </ul>
+                    </button>
+
+                    {/* Karaoke Mode */}
+                    <button
+                      onClick={() => setRoomMode("karaoke")}
+                      className={`p-6 rounded-2xl border-2 transition text-left ${
+                        roomMode === "karaoke"
+                          ? "border-fuchsia-500 bg-fuchsia-500/10"
+                          : "border-white/10 bg-black/25 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-4xl">🎤</div>
+                        {roomMode === "karaoke" && (
+                          <div className="w-6 h-6 rounded-full bg-fuchsia-500 flex items-center justify-center">
+                            <svg className="w-4 h-4" fill="white" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">Karaoke Mode</h3>
+                      <p className="text-sm text-white/70 mb-3">
+                        Full karaoke experience with live singing
+                      </p>
+                      <ul className="text-xs text-white/60 space-y-1">
+                        <li>✓ Live mic for singers</li>
+                        <li>✓ Singer spotlight view</li>
+                        <li>✓ Auto mic policy (only singer unmuted)</li>
+                        <li>✓ Echo compensation</li>
+                      </ul>
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleCreateSubmit}
+                    className="w-full px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 transition"
+                  >
+                    Create {roomMode === "dj" ? "DJ" : "Karaoke"} Room
+                  </button>
+                </div>
+              )}
 
               {/* Join mode */}
               {mode === "join" && (
@@ -295,8 +317,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               )}
 
-              {/* Bottom cards (3PM-ish) */}
-              {mode !== "join" && (
+              {/* Bottom cards */}
+              {mode !== "join" && mode !== "create" && (
                 <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
                     {
@@ -309,7 +331,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                     },
                     {
                       t: "Why this song?",
-                      d: "Optional. But if it’s unhinged, you owe us a one-line explanation.",
+                      d: "Optional. But if it's unhinged, you owe us a one-line explanation.",
                     },
                   ].map((x) => (
                     <div
@@ -328,7 +350,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
           </div>
 
           <div className="mt-6 text-center text-xs text-white/40">
-            NA-friendly • chaos-controlled • no inspirational speeches (we’re busy)
+            NA-friendly • chaos-controlled • no inspirational speeches (we're busy)
           </div>
         </div>
       </div>

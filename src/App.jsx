@@ -7,6 +7,7 @@ import { generateRoomCode, generateUserId } from "./utils/helpers";
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
 import ParticipantView from "./components/ParticipantView";
+import DJView from "./components/DJView";
 import { RoomAudioRenderer } from "@livekit/components-react";
 
 function App() {
@@ -148,14 +149,13 @@ function App() {
     };
   }, [roomCode, screen, currentUser?.name]);
 
-  const handleCreateRoom = async () => {
+  const handleCreateRoom = async (djName, roomMode = "dj") => {
     const code = generateRoomCode();
-    const chosenDj =
-      (prompt("DJ name for tonight?", djName || currentUser.name) || "").trim() || currentUser.name;
+    const chosenDj = djName || currentUser.name;
 
     setDjName(chosenDj);
     localStorage.setItem("karaoke-djname", chosenDj);
-    localStorage.setItem("karaoke-username", chosenDj); // ✅ FIX: Also save as username for consistency
+    localStorage.setItem("karaoke-username", chosenDj);
 
     // ✅ FIX: Update currentUser with DJ name immediately
     setCurrentUser({ ...currentUser, name: chosenDj });
@@ -167,15 +167,11 @@ function App() {
 
     await set(roomRef, {
       hostId: currentUser.id,
-
-      // ✅ store DJ name as the host identity
       hostName: chosenDj,
-
-      // ✅ also store it in meta for future use if you want
-      meta: { djName: chosenDj },
-
+      roomMode: roomMode, // ✅ Store room mode
+      meta: { djName: chosenDj, roomMode: roomMode },
       createdAt: Date.now(),
-      micPolicy: "auto",
+      micPolicy: roomMode === "karaoke" ? "auto" : "open", // ✅ DJ mode = open mics
       activeSingerId: null,
       activeSingerName: null,
 
@@ -185,7 +181,7 @@ function App() {
       participants: {
         [currentUser.id]: {
           id: currentUser.id,
-          name: chosenDj, // ✅ host uses DJ name
+          name: chosenDj,
           role: "host",
           joinedAt: Date.now(),
         },
@@ -253,51 +249,101 @@ function App() {
   }
 
   // Host screen
- if (screen === "host" && isHost) {
-  return (
-    <LiveKitRoom
-      token={lkToken}
-      serverUrl={import.meta.env.VITE_LIVEKIT_URL}
-      connect={true}
-      audio={true}
-      video={true}
-      style={{ height: "100vh" }}
-      data-lk-theme="default"
-    >
-      <RoomAudioRenderer />
+  if (screen === "host" && isHost) {
+    const roomMode = roomState?.roomMode || roomState?.meta?.roomMode || "karaoke";
+    
+    // DJ Mode - no karaoke features, video only
+    if (roomMode === "dj") {
+      return (
+        <LiveKitRoom
+          token={lkToken}
+          serverUrl={import.meta.env.VITE_LIVEKIT_URL}
+          connect={true}
+          audio={false}
+          video={true}
+          style={{ height: "100vh" }}
+          data-lk-theme="default"
+        >
+          <DJView
+            roomCode={roomCode}
+            currentUser={currentUser}
+            roomState={roomState}
+            isHost={true}
+          />
+        </LiveKitRoom>
+      );
+    }
 
-      <HostView
-        roomCode={roomCode}
-        currentUser={currentUser}
-        roomState={roomState}
-        djName={roomState?.meta?.djName || roomState?.hostName || currentUser.name}
-      />
-    </LiveKitRoom>
-  );
-}
+    // Karaoke Mode - full features
+    return (
+      <LiveKitRoom
+        token={lkToken}
+        serverUrl={import.meta.env.VITE_LIVEKIT_URL}
+        connect={true}
+        audio={true}
+        video={true}
+        style={{ height: "100vh" }}
+        data-lk-theme="default"
+      >
+        <RoomAudioRenderer />
 
-// Participant screen
-if (screen === "participant") {
-  return (
-    <LiveKitRoom
-      token={lkToken}
-      serverUrl={import.meta.env.VITE_LIVEKIT_URL}
-      connect={true}
-      audio={true}
-      video={true}
-      style={{ height: "100vh" }}
-      data-lk-theme="default"
-    >
-      <RoomAudioRenderer />
+        <HostView
+          roomCode={roomCode}
+          currentUser={currentUser}
+          roomState={roomState}
+          djName={roomState?.meta?.djName || roomState?.hostName || currentUser.name}
+        />
+      </LiveKitRoom>
+    );
+  }
 
-      <ParticipantView
-        roomCode={roomCode}
-        currentUser={currentUser}
-        roomState={roomState}
-      />
-    </LiveKitRoom>
-  );
-}
+  // Participant screen
+  if (screen === "participant") {
+    const roomMode = roomState?.roomMode || roomState?.meta?.roomMode || "karaoke";
+    
+    // DJ Mode
+    if (roomMode === "dj") {
+      return (
+        <LiveKitRoom
+          token={lkToken}
+          serverUrl={import.meta.env.VITE_LIVEKIT_URL}
+          connect={true}
+          audio={false}
+          video={true}
+          style={{ height: "100vh" }}
+          data-lk-theme="default"
+        >
+          <DJView
+            roomCode={roomCode}
+            currentUser={currentUser}
+            roomState={roomState}
+            isHost={false}
+          />
+        </LiveKitRoom>
+      );
+    }
+
+    // Karaoke Mode
+    return (
+      <LiveKitRoom
+        token={lkToken}
+        serverUrl={import.meta.env.VITE_LIVEKIT_URL}
+        connect={true}
+        audio={true}
+        video={true}
+        style={{ height: "100vh" }}
+        data-lk-theme="default"
+      >
+        <RoomAudioRenderer />
+
+        <ParticipantView
+          roomCode={roomCode}
+          currentUser={currentUser}
+          roomState={roomState}
+        />
+      </LiveKitRoom>
+    );
+  }
 
   return null;
 }
