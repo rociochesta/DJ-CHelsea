@@ -88,8 +88,8 @@ function EmojiReactions({ roomCode, currentUser }) {
 
   return (
     <>
-      {/* Floating reactions overlay */}
-      <div className="pointer-events-none fixed inset-0 z-30 overflow-hidden">
+      {/* Floating reactions overlay - LOW z-index to not block controls */}
+      <div className="pointer-events-none fixed inset-0 z-10 overflow-hidden">
         {recentReactions.map((reaction) => {
           return (
             <div
@@ -126,12 +126,12 @@ function EmojiReactions({ roomCode, currentUser }) {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] animate-fade-in"
             onClick={() => setShowPicker(false)}
           />
           
           {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 pointer-events-none">
             <div className="pointer-events-auto bg-gradient-to-br from-fuchsia-900/95 via-indigo-900/95 to-purple-900/95 backdrop-blur-2xl rounded-3xl border-2 border-white/20 shadow-2xl p-8 max-w-md w-full animate-scale-up">
               {/* Header */}
               <div className="text-center mb-6">

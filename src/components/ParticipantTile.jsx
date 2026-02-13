@@ -136,8 +136,8 @@ export default function ParticipantTile({
         </div>
       )}
 
-      {/* Controls overlay - ONLY when camera is ON and on hover */}
-      {isCurrentUser && showControls && videoTrack && (
+      {/* Controls overlay - show for current user */}
+      {isCurrentUser && showControls && (
         <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={handleToggleCamera}
