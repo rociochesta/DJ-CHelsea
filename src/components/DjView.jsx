@@ -7,11 +7,10 @@ import { searchKaraokeVideos } from "../utils/youtube";
 import VideoPlayer from "./VideoPlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
-import ZoomStyleGrid from "./ZoomStyleGrid";
+import ParticipantsList from "./ParticipantsList";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DebugPanel from "./Debugpanel";
-import SingerSpotlight from "./SingerSpotlight";
 
 function DJView({ roomCode, currentUser, roomState, isHost }) {
   const room = useRoomContext();
@@ -19,7 +18,7 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [participantMutes, setParticipantMutes] = useState({});
+  const [cooldownMessage, setCooldownMessage] = useState("");
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -37,6 +36,32 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
   };
 
   const handleAddToQueue = async (video, requestedBy) => {
+    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+    
+    // ✅ Check if participant already has a song in queue
+    if (!isHost) {
+      const userHasSong = queue.some((song) => song.requestedBy === currentUser?.name);
+      if (userHasSong) {
+        const naMessages = [
+          "One day at a time, friend. One song at a time. 🙏",
+          "Patience is a virtue we're all working on here. ⏸️",
+          "Let's practice being part of the group, not the center of it. 💫",
+          "The world doesn't revolve around any one of us. Wait your turn. 🌍",
+          "Service to others means letting them have a turn too. 🤝",
+          "We're all here together. No one person is more important. ✨",
+          "Ego check: You've got one in the queue already. 🛑",
+          "Let's practice humility and patience. One song per person. 🕊️",
+          "Everyone gets a turn. That includes you, but not twice. ♻️",
+          "Being a good community member means sharing the space. 🌟",
+          "Your song is coming. Trust the process. 🎵",
+          "Slow down, hotshot. Everyone gets one. That's how this works. 🎯",
+        ];
+        setCooldownMessage(naMessages[Math.floor(Math.random() * naMessages.length)]);
+        setTimeout(() => setCooldownMessage(""), 5000);
+        return;
+      }
+    }
+
     const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
     const newSongRef = push(queueRef);
 
@@ -109,22 +134,6 @@ function DJView({ roomCode, currentUser, roomState, isHost }) {
     await set(songRef, prevSong.addedAt);
     await set(prevSongRef, song.addedAt);
   };
-  const handleMuteToggle = async (name) => {
-  const ref = dbRef(
-    rtdb,
-    `karaoke-rooms/${roomCode}/participantMutes/${name}`
-  );
-  await set(ref, !participantMutes?.[name]);
-};
-
-const handleMuteAll = async () => {
-  const updates = {};
-  Object.keys(participantMutes || {}).forEach((name) => {
-    updates[name] = true;
-  });
-  const ref = dbRef(rtdb, `karaoke-rooms/${roomCode}/participantMutes`);
-  await set(ref, updates);
-};
 
   const handleMoveSongDown = async (song, currentIndex) => {
     const queueArr = roomState?.queue ? Object.values(roomState.queue) : [];
@@ -216,6 +225,12 @@ const handleMuteAll = async () => {
               </div>
 
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
+                {cooldownMessage && (
+                  <div className="mb-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 text-center">
+                    <div className="text-yellow-400 font-bold">{cooldownMessage}</div>
+                  </div>
+                )}
+                
                 <SongSearch
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
@@ -231,8 +246,10 @@ const handleMuteAll = async () => {
                 />
               </div>
 
-              {/* Zoom-style participants */}
-              <ZoomStyleGrid currentUser={currentUser} />
+              {/* Participants list */}
+              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-4 sm:p-6">
+                <ParticipantsList currentUser={currentUser} />
+              </div>
             </div>
 
             {/* Right column - Queue */}
