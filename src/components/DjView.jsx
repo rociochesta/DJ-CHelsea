@@ -9,7 +9,7 @@ import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import ParticipantsList from "./ParticipantsList";
 import ChatPanel from "./ChatPanel";
-import EmojiReactions from "./Emojireactions";
+import EmojiReactions from "./EmojiReactions";
 import DebugPanel from "./Debugpanel";
 
 function DJView({ roomCode, currentUser, roomState, isHost }) {
