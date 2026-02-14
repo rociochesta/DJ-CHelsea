@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from "react";
-import { VideoTrack } from "@livekit/components-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Track } from "livekit-client";
 
 export default function ParticipantTile({
@@ -14,16 +13,26 @@ export default function ParticipantTile({
 }) {
   if (!participant) return null;
 
+  const videoRef = useRef(null);
+
   const participantName = useMemo(
     () => participant.name || participant.identity || "Unknown",
     [participant.name, participant.identity]
   );
 
+  // Get camera track publication
+  const cameraPublication = useMemo(() => {
+    const camTrack = Array.from(participant.videoTracks.values()).find(
+      (pub) => pub.source === Track.Source.Camera
+    );
+    return camTrack || null;
+  }, [participant.videoTracks]);
+
   // ✅ real mic state from LiveKit (no local state)
   const isMicOn = !!participant.isMicrophoneEnabled;
 
   // ✅ camera state - check if camera is enabled
-  const isCameraEnabled = !!participant.isCameraEnabled;
+  const isCameraEnabled = cameraPublication && !cameraPublication.isMuted;
 
   // ✅ policy: DISABLED - allow all users to control their mic/camera
   const isLocal = !!participant.isLocal;
@@ -32,6 +41,19 @@ export default function ParticipantTile({
   // Local UI state only for button feedback if you want it
   const [cameraBusy, setCameraBusy] = useState(false);
   const [micBusy, setMicBusy] = useState(false);
+
+  // Attach video track to video element
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    const track = cameraPublication?.track;
+
+    if (videoElement && track) {
+      track.attach(videoElement);
+      return () => {
+        track.detach(videoElement);
+      };
+    }
+  }, [cameraPublication?.track]);
 
   const handleToggleCamera = async () => {
     if (cameraBusy) return;
@@ -69,9 +91,11 @@ export default function ParticipantTile({
       } bg-black aspect-[4/3] sm:aspect-video group`}
     >
       {isCameraEnabled ? (
-        <VideoTrack
-          participant={participant}
-          source={Track.Source.Camera}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
           className={`w-full h-full object-cover ${
             participant.isLocal ? "scale-x-[-1]" : ""
           }`}
