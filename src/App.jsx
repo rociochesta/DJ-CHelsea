@@ -283,19 +283,10 @@ function App() {
       audio={true}  // ✅ ALWAYS enable audio
       video={true}  // ✅ ALWAYS enable video
       options={{
-        // ✅ Force LiveKit to request permissions immediately
         publishDefaults: {
           audioDeviceId: micId || undefined,
           videoDeviceId: cameraId || undefined,
-          videoSimulcastLayers: [
-            { resolution: { width: 640, height: 360 }, encoding: { maxBitrate: 600_000 } },
-            { resolution: { width: 320, height: 180 }, encoding: { maxBitrate: 150_000 } },
-          ],
         },
-        // ✅ Enable adaptive video
-        adaptiveStream: true,
-        // ✅ Enable dynacast for better bandwidth management
-        dynacast: true,
       }}
       style={{ height: "100vh" }}
       data-lk-theme="default"
