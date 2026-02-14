@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useTrackByName } from "@livekit/components-react";
 import { Track } from "livekit-client";
 
 export default function ParticipantTile({
@@ -21,17 +20,26 @@ export default function ParticipantTile({
     [participant.name, participant.identity]
   );
 
-  // ✅ Use LiveKit's proper hook to get video track
-  const { publication: videoPublication } = useTrackByName(
-    participant,
-    Track.Source.Camera
-  );
+  // ✅ Safely get video track from participant
+  const videoPublication = useMemo(() => {
+    if (!participant?.videoTracks) return null;
+    
+    // Get camera track publication
+    for (const pub of participant.videoTracks.values()) {
+      if (pub.source === Track.Source.Camera) {
+        return pub;
+      }
+    }
+    
+    // Fallback: get first video track
+    return participant.videoTracks.values().next().value || null;
+  }, [participant]);
 
   // ✅ real mic state from LiveKit (no local state)
   const isMicOn = !!participant.isMicrophoneEnabled;
 
   // ✅ camera state (read from LiveKit publication)
-  const isCameraEnabled = !videoPublication?.isMuted;
+  const isCameraEnabled = videoPublication && !videoPublication.isMuted;
 
   // ✅ policy: only singer can unmute (AUTO mode)
   const isLocal = !!participant.isLocal;
