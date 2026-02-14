@@ -9,6 +9,7 @@ import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DebugPanel from "./Debugpanel";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
+import LocalCameraPreview from "./LocalCameraPreview";
 
 function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -245,6 +246,7 @@ function HostView({ roomCode, currentUser, roomState }) {
       <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
+      <LocalCameraPreview />
       <DebugPanel currentUser={currentUser} roomState={roomState} />
     </div>
   );

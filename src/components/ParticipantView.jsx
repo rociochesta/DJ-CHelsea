@@ -7,6 +7,7 @@ import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
+import LocalCameraPreview from "./LocalCameraPreview";
 import { searchKaraokeVideos } from "../utils/youtube";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
@@ -163,10 +164,11 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
         </div>
       </div>
 
-      {/* Chat, Settings, and Reactions */}
+      {/* Chat, Settings, Reactions, and Debug */}
       <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
+      <LocalCameraPreview />
     </div>
   );
 }
