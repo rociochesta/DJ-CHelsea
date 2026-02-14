@@ -9,6 +9,7 @@ import { useDevicePreferences } from "./hooks/useDevicePreferences";
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
 import ParticipantView from "./components/ParticipantView";
+import EnableMediaOnJoin from "./components/EnableMediaOnJoin";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -300,6 +301,7 @@ function App() {
       data-lk-theme="default"
     >
       <RoomAudioRenderer />
+      <EnableMediaOnJoin />
 
       {isHost ? (
         <HostView
