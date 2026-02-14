@@ -22,17 +22,26 @@ export default function ParticipantTile({
 
   // ✅ Safely get video track from participant
   const videoPublication = useMemo(() => {
-    if (!participant?.videoTracks) return null;
-    
+    if (!participant?.videoTracks) {
+      console.log(`[${participant?.identity}] No videoTracks`);
+      return null;
+    }
+
+    console.log(`[${participant?.identity}] Video tracks count:`, participant.videoTracks.size);
+
     // Get camera track publication
     for (const pub of participant.videoTracks.values()) {
+      console.log(`[${participant?.identity}] Track source:`, pub.source, 'Camera source:', Track.Source.Camera);
       if (pub.source === Track.Source.Camera) {
+        console.log(`[${participant?.identity}] Found camera track!`, pub.trackSid);
         return pub;
       }
     }
-    
+
     // Fallback: get first video track
-    return participant.videoTracks.values().next().value || null;
+    const firstTrack = participant.videoTracks.values().next().value || null;
+    console.log(`[${participant?.identity}] Using fallback track:`, firstTrack?.trackSid);
+    return firstTrack;
   }, [participant]);
 
   // ✅ real mic state from LiveKit (no local state)
@@ -54,6 +63,13 @@ export default function ParticipantTile({
     const el = videoElRef.current;
     const track = videoPublication?.track;
 
+    console.log(`[${participant?.identity}] Attach effect:`, {
+      hasElement: !!el,
+      hasTrack: !!track,
+      trackSid: track?.sid,
+      isMuted: videoPublication?.isMuted
+    });
+
     if (!el || !track) {
       // Clean up if no track
       if (el) {
@@ -65,8 +81,9 @@ export default function ParticipantTile({
     // Attach track to video element
     try {
       track.attach(el);
+      console.log(`[${participant?.identity}] ✅ Video track attached!`);
     } catch (e) {
-      console.error("Failed to attach video track:", e);
+      console.error(`[${participant?.identity}] Failed to attach video track:`, e);
     }
 
     // Cleanup: detach on unmount or when track changes
@@ -74,10 +91,10 @@ export default function ParticipantTile({
       try {
         track.detach(el);
       } catch (e) {
-        console.error("Failed to detach video track:", e);
+        console.error(`[${participant?.identity}] Failed to detach video track:`, e);
       }
     };
-  }, [videoPublication?.track]);
+  }, [videoPublication?.track, participant?.identity]);
 
   const handleToggleCamera = async () => {
     if (cameraBusy) return;
