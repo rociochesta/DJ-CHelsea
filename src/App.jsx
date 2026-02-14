@@ -280,14 +280,13 @@ function App() {
       token={lkToken}
       serverUrl={import.meta.env.VITE_LIVEKIT_URL}
       connect={true}
-      audio={true}  // ✅ ALWAYS enable audio
-      video={true}  // ✅ ALWAYS enable video
-      // options={{
-      //   publishDefaults: {
-      //     audioDeviceId: micId || undefined,
-      //     videoDeviceId: cameraId || undefined,
-      //   },
-      // }}
+      audio={true}
+      video={true}
+      options={{
+        videoCaptureDefaults: {
+          resolution: { width: 1280, height: 720 },
+        },
+      }}
       style={{ height: "100vh" }}
       data-lk-theme="default"
     >
