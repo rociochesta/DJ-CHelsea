@@ -80,24 +80,24 @@ export default function VideoChat({
     [currentUserId, userName]
   );
 
-  // 3) Optimized Mic Control
-  useEffect(() => {
-    if (!lkRoom) return;
+  // 3) Mic Control - DISABLED: Allow free mic/camera usage
+  // useEffect(() => {
+  //   if (!lkRoom) return;
 
-    const enforcePolicy = () => {
-      const isSinger = activeSingerName && String(userName).trim() === String(activeSingerName).trim();
-      const isForceMuted = !!participantMutes?.[localParticipantKey];
-      
-      const shouldBeEnabled = (micPolicy === "open" || isSinger) && !isForceMuted;
+  //   const enforcePolicy = () => {
+  //     const isSinger = activeSingerName && String(userName).trim() === String(activeSingerName).trim();
+  //     const isForceMuted = !!participantMutes?.[localParticipantKey];
+  //
+  //     const shouldBeEnabled = (micPolicy === "open" || isSinger) && !isForceMuted;
 
-      lkRoom.localParticipant.setMicrophoneEnabled(shouldBeEnabled).catch(() => {});
-    };
+  //     lkRoom.localParticipant.setMicrophoneEnabled(shouldBeEnabled).catch(() => {});
+  //   };
 
-    enforcePolicy();
-    // Use a slightly longer interval to prevent "Spamming" the LiveKit agent
-    const interval = setInterval(enforcePolicy, 2000);
-    return () => clearInterval(interval);
-  }, [lkRoom, micPolicy, activeSingerName, participantMutes, localParticipantKey, userName]);
+  //   enforcePolicy();
+  //   // Use a slightly longer interval to prevent "Spamming" the LiveKit agent
+  //   const interval = setInterval(enforcePolicy, 2000);
+  //   return () => clearInterval(interval);
+  // }, [lkRoom, micPolicy, activeSingerName, participantMutes, localParticipantKey, userName]);
 
   const toggleParticipantMute = useCallback(async (pKey) => {
     if (!roomCode) return;

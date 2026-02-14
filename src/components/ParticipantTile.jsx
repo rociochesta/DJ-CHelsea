@@ -41,9 +41,9 @@ export default function ParticipantTile({
   // ✅ camera state (read from LiveKit publication)
   const isCameraEnabled = videoPublication && !videoPublication.isMuted;
 
-  // ✅ policy: only singer can unmute (AUTO mode)
+  // ✅ policy: DISABLED - allow all users to control their mic/camera
   const isLocal = !!participant.isLocal;
-  const micAllowedByPolicy = !!isSinging;
+  const micAllowedByPolicy = true; // Always allow mic control
 
   // Local UI state only for button feedback if you want it
   const [cameraBusy, setCameraBusy] = useState(false);
@@ -156,21 +156,13 @@ export default function ParticipantTile({
 
           <button
             onClick={handleToggleMic}
-            disabled={micBusy || (isLocal && !micAllowedByPolicy)}
+            disabled={micBusy}
             className={`p-1.5 rounded-lg backdrop-blur-xl transition text-sm ${
-              isLocal && !micAllowedByPolicy
-                ? "bg-red-600/70 cursor-not-allowed"
-                : isMicOn
+              isMicOn
                 ? "bg-emerald-500/80 hover:bg-emerald-500"
                 : "bg-white/20 hover:bg-white/30"
             } ${micBusy ? "opacity-60 cursor-not-allowed" : ""}`}
-            title={
-              isLocal && !micAllowedByPolicy
-                ? "Muted by policy (only singer can unmute)"
-                : isMicOn
-                ? "Mute mic"
-                : "Unmute mic (if allowed)"
-            }
+            title={isMicOn ? "Mute mic" : "Unmute mic"}
           >
             {isMicOn ? "🎙️" : "🔇"}
           </button>
@@ -193,15 +185,6 @@ export default function ParticipantTile({
             {isNext && !isSinging && (
               <span className="px-1.5 py-0.5 rounded-md bg-yellow-500/80 text-[9px] font-bold whitespace-nowrap">
                 ⭐
-              </span>
-            )}
-
-            {isLocal && !micAllowedByPolicy && !isSinging && (
-              <span 
-                className="px-1.5 py-0.5 rounded-md bg-red-600/80 text-[9px] font-bold whitespace-nowrap"
-                title="Muted by policy - only singer can unmute"
-              >
-                🔒
               </span>
             )}
           </div>
