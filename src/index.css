@@ -12,12 +12,27 @@
   .btn-primary {
     @apply bg-karaoke-accent hover:bg-karaoke-accent/90 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105;
   }
-  
+
   .btn-secondary {
     @apply bg-karaoke-secondary hover:bg-karaoke-secondary/90 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200;
   }
-  
+
   .card {
     @apply bg-karaoke-card rounded-xl shadow-lg p-6;
   }
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.9) translateZ(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateZ(0);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
 }

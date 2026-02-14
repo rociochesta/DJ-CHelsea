@@ -8,6 +8,7 @@ import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DebugPanel from "./Debugpanel";
+import DeviceSettingsPanel from "./DeviceSettingsPanel";
 
 function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -240,8 +241,9 @@ function HostView({ roomCode, currentUser, roomState }) {
         </div>
       </div>
 
-      {/* Chat, Reactions, and Debug Panels */}
+      {/* Chat, Reactions, Settings, and Debug Panels */}
       <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
+      <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
       <DebugPanel currentUser={currentUser} roomState={roomState} />
     </div>

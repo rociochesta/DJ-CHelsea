@@ -6,6 +6,7 @@ import SongSearch from "./SongSearch";
 import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
+import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import { searchKaraokeVideos } from "../utils/youtube";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
@@ -162,8 +163,9 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
         </div>
       </div>
 
-      {/* Chat and Reactions */}
+      {/* Chat, Settings, and Reactions */}
       <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
+      <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
     </div>
   );

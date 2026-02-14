@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import PreJoinDeviceSetup from "./PreJoinDeviceSetup";
 
 function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [mode, setMode] = useState(null); // null, 'join', 'create'
   const [roomCode, setRoomCode] = useState("");
   const [userName, setUserName] = useState("");
   const [roomMode, setRoomMode] = useState("dj"); // 'dj' or 'karaoke'
+  const [showDeviceSetup, setShowDeviceSetup] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null); // stores action to execute after device setup
 
   const getDJName = () => {
     const n = userName.trim();
@@ -14,12 +17,30 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const handleJoinSubmit = (e) => {
     e.preventDefault();
     if (roomCode.length === 6 && userName.trim()) {
-      onJoinRoom(roomCode, userName.trim());
+      // Store the join action and show device setup
+      setPendingAction(() => () => onJoinRoom(roomCode, userName.trim()));
+      setShowDeviceSetup(true);
     }
   };
 
   const handleCreateSubmit = () => {
-    onCreateRoom(getDJName(), roomMode);
+    // Store the create action and show device setup
+    setPendingAction(() => () => onCreateRoom(getDJName(), roomMode));
+    setShowDeviceSetup(true);
+  };
+
+  const handleDeviceSetupContinue = () => {
+    // Execute the pending action after device setup
+    if (pendingAction) {
+      pendingAction();
+    }
+  };
+
+  const handleDeviceSetupSkip = () => {
+    // Skip device setup and execute the pending action
+    if (pendingAction) {
+      pendingAction();
+    }
   };
 
   return (
@@ -168,8 +189,24 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               </div>
 
+              {/* Device Setup Screen */}
+              {showDeviceSetup && (
+                <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
+                  <button
+                    onClick={() => setShowDeviceSetup(false)}
+                    className="text-white/70 hover:text-white transition mb-4"
+                  >
+                    ← Back
+                  </button>
+                  <PreJoinDeviceSetup
+                    onContinue={handleDeviceSetupContinue}
+                    onSkip={handleDeviceSetupSkip}
+                  />
+                </div>
+              )}
+
               {/* Create Room Mode Selection */}
-              {mode === "create" && (
+              {mode === "create" && !showDeviceSetup && (
                 <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
                   <button
                     onClick={() => setMode(null)}
@@ -257,7 +294,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               )}
 
               {/* Join mode */}
-              {mode === "join" && (
+              {mode === "join" && !showDeviceSetup && (
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
                   <div className="md:col-span-2">
                     <button

@@ -4,6 +4,7 @@ import "@livekit/components-styles";
 
 import { database, ref, onValue, set, isConfigured } from "./utils/firebase";
 import { generateRoomCode, generateUserId } from "./utils/helpers";
+import { useDevicePreferences } from "./hooks/useDevicePreferences";
 
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
@@ -22,6 +23,9 @@ function App() {
   // LiveKit token state
   const [lkToken, setLkToken] = useState(null);
   const [lkError, setLkError] = useState("");
+
+  // Device preferences
+  const { cameraId, micId } = useDevicePreferences();
 
   // Check if Firebase is configured
   if (!isConfigured) {
@@ -280,6 +284,8 @@ function App() {
       options={{
         // ✅ Force LiveKit to request permissions immediately
         publishDefaults: {
+          audioDeviceId: micId || undefined,
+          videoDeviceId: cameraId || undefined,
           videoSimulcastLayers: [
             { resolution: { width: 640, height: 360 }, encoding: { maxBitrate: 600_000 } },
             { resolution: { width: 320, height: 180 }, encoding: { maxBitrate: 150_000 } },
