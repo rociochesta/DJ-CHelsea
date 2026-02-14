@@ -202,6 +202,9 @@ function HostView({ roomCode, currentUser, roomState }) {
                 onMuteToggle={setParticipantMute}
                 onMuteAll={handleMuteAll}
                 queue={queue}
+                canControlMics={true}
+                currentUser={currentUser}
+                showControls={true}
               />
 
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">

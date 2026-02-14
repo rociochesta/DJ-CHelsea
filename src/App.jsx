@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
+import "@livekit/components-styles";
 
 import { database, ref, onValue, set, isConfigured } from "./utils/firebase";
 import { generateRoomCode, generateUserId } from "./utils/helpers";
@@ -274,12 +275,25 @@ function App() {
       token={lkToken}
       serverUrl={import.meta.env.VITE_LIVEKIT_URL}
       connect={true}
-      audio={isKaraoke}   // ✅ karaoke only
-      video={true}
+      audio={true}  // ✅ ALWAYS enable audio
+      video={true}  // ✅ ALWAYS enable video
+      options={{
+        // ✅ Force LiveKit to request permissions immediately
+        publishDefaults: {
+          videoSimulcastLayers: [
+            { resolution: { width: 640, height: 360 }, encoding: { maxBitrate: 600_000 } },
+            { resolution: { width: 320, height: 180 }, encoding: { maxBitrate: 150_000 } },
+          ],
+        },
+        // ✅ Enable adaptive video
+        adaptiveStream: true,
+        // ✅ Enable dynacast for better bandwidth management
+        dynacast: true,
+      }}
       style={{ height: "100vh" }}
       data-lk-theme="default"
     >
-      {isKaraoke && <RoomAudioRenderer />}
+      <RoomAudioRenderer />
 
       {isHost ? (
         <HostView
