@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTrackByName } from "@livekit/components-react";
+import { Track } from "livekit-client";
 
 export default function ParticipantTile({
   participant,
@@ -19,21 +21,17 @@ export default function ParticipantTile({
     [participant.name, participant.identity]
   );
 
-  // Get first camera publication safely
-  const videoTrack = useMemo(() => {
-    try {
-      const pub = participant.videoTracks?.values?.().next?.().value || null;
-      return pub?.videoTrack || null;
-    } catch {
-      return null;
-    }
-  }, [participant]);
+  // ✅ Use LiveKit's proper hook to get video track
+  const { publication: videoPublication } = useTrackByName(
+    participant,
+    Track.Source.Camera
+  );
 
   // ✅ real mic state from LiveKit (no local state)
   const isMicOn = !!participant.isMicrophoneEnabled;
 
-  // ✅ camera state (read from LiveKit)
-  const isCameraEnabled = !!participant.isCameraEnabled;
+  // ✅ camera state (read from LiveKit publication)
+  const isCameraEnabled = !videoPublication?.isMuted;
 
   // ✅ policy: only singer can unmute (AUTO mode)
   const isLocal = !!participant.isLocal;
@@ -43,40 +41,35 @@ export default function ParticipantTile({
   const [cameraBusy, setCameraBusy] = useState(false);
   const [micBusy, setMicBusy] = useState(false);
 
-  // ✅ IMPORTANT: attach/detach video track properly to avoid memory leak
+  // ✅ IMPORTANT: attach/detach video track properly
   useEffect(() => {
     const el = videoElRef.current;
+    const track = videoPublication?.track;
 
-    if (!el) return;
-
-    // If no track, ensure clean element
-    if (!videoTrack) {
-      try {
-        // extra cleanup
-        el.pause?.();
+    if (!el || !track) {
+      // Clean up if no track
+      if (el) {
         el.srcObject = null;
-      } catch {}
+      }
       return;
     }
 
-    // Attach
+    // Attach track to video element
     try {
-      videoTrack.attach(el);
+      track.attach(el);
     } catch (e) {
-      console.error("videoTrack.attach failed:", e);
+      console.error("Failed to attach video track:", e);
     }
 
     // Cleanup: detach on unmount or when track changes
     return () => {
       try {
-        videoTrack.detach(el);
-      } catch {}
-      try {
-        el.pause?.();
-        el.srcObject = null;
-      } catch {}
+        track.detach(el);
+      } catch (e) {
+        console.error("Failed to detach video track:", e);
+      }
     };
-  }, [videoTrack]);
+  }, [videoPublication?.track]);
 
   const handleToggleCamera = async () => {
     if (cameraBusy) return;
@@ -113,7 +106,7 @@ export default function ParticipantTile({
           : "border-white/10"
       } bg-black aspect-[4/3] sm:aspect-video group`}
     >
-      {videoTrack ? (
+      {videoPublication?.track && !videoPublication.isMuted ? (
         <video
           ref={videoElRef}
           autoPlay
@@ -132,6 +125,7 @@ export default function ParticipantTile({
             <p className="text-xs sm:text-sm text-white/70 truncate max-w-[10rem] mx-auto mt-2">
               {participantName}
             </p>
+            <p className="text-xs text-white/40 mt-1">Camera off</p>
           </div>
         </div>
       )}
