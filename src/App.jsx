@@ -282,17 +282,17 @@ function App() {
       connect={true}
       audio={true}  // ✅ ALWAYS enable audio
       video={true}  // ✅ ALWAYS enable video
-      options={{
-        publishDefaults: {
-          audioDeviceId: micId || undefined,
-          videoDeviceId: cameraId || undefined,
-        },
-      }}
+      // options={{
+      //   publishDefaults: {
+      //     audioDeviceId: micId || undefined,
+      //     videoDeviceId: cameraId || undefined,
+      //   },
+      // }}
       style={{ height: "100vh" }}
       data-lk-theme="default"
     >
       <RoomAudioRenderer />
-      <EnableMediaOnJoin />
+      {/* <EnableMediaOnJoin /> */}
 
       {isHost ? (
         <HostView
