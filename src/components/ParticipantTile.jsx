@@ -22,11 +22,22 @@ export default function ParticipantTile({
 
   // Get camera track publication
   const cameraPublication = useMemo(() => {
+    // Check if participant and videoTracks exist
+    if (!participant || !participant.videoTracks || typeof participant.videoTracks.values !== 'function') {
+      console.log(`[${participant?.identity}] videoTracks is null/undefined or not initialized`);
+      return null;
+    }
+
+    console.log(`[${participant?.identity}] videoTracks size:`, participant.videoTracks.size);
+    console.log(`[${participant?.identity}] videoTracks:`, Array.from(participant.videoTracks.values()));
+
     const camTrack = Array.from(participant.videoTracks.values()).find(
       (pub) => pub.source === Track.Source.Camera
     );
+
+    console.log(`[${participant?.identity}] Found camera track:`, camTrack);
     return camTrack || null;
-  }, [participant.videoTracks]);
+  }, [participant, participant?.videoTracks]);
 
   // ✅ real mic state from LiveKit (no local state)
   const isMicOn = !!participant.isMicrophoneEnabled;
