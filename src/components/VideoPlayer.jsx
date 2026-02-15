@@ -1,15 +1,54 @@
 import React, { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
 import HostCameraPreview from "./HostCameraPreview";
+import { useLocalParticipant } from "@livekit/components-react";
 
 const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   const [player, setPlayer] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [embedError, setEmbedError] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const { localParticipant } = useLocalParticipant();
 
   // ✅ prevents double-firing (YouTube sometimes fires onEnd weirdly)
   const lastEndRef = useRef(0);
   const syncIntervalRef = useRef(null);
+  const wasPlayingRef = useRef(false);
+  const cameraWasOnRef = useRef(false);
+
+  // ✅ AUTO CAMERA MANAGEMENT - Disable participant cameras during playback to save bandwidth
+  // This ONLY runs for non-host participants
+  useEffect(() => {
+    if (isHost || !localParticipant) return;
+
+    const isPlaying = playbackState?.isPlaying && currentSong?.videoId;
+    
+    // Video just started playing
+    if (isPlaying && !wasPlayingRef.current) {
+      wasPlayingRef.current = true;
+      
+      // Save current camera state
+      cameraWasOnRef.current = localParticipant.isCameraEnabled;
+      
+      // Disable camera to save bandwidth
+      if (cameraWasOnRef.current) {
+        console.log("📹 Video playing - disabling camera to save bandwidth");
+        localParticipant.setCameraEnabled(false).catch(console.error);
+      }
+    }
+    
+    // Video stopped
+    if (!isPlaying && wasPlayingRef.current) {
+      wasPlayingRef.current = false;
+      
+      // Re-enable camera if it was on before
+      if (cameraWasOnRef.current) {
+        console.log("📹 Video ended - re-enabling camera");
+        localParticipant.setCameraEnabled(true).catch(console.error);
+      }
+    }
+  }, [playbackState?.isPlaying, currentSong?.videoId, isHost, localParticipant]);
 
   // ✅ CONTINUOUS SYNC for participants - prevents lag and handles resume
   useEffect(() => {
@@ -30,13 +69,14 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
 
         // ✅ ONLY sync continuously for participants (DJ controls their own playback)
         if (!isHost) {
+          // Sync every 3 seconds (less aggressive for mobile battery/bandwidth)
           syncIntervalRef.current = setInterval(() => {
             try {
               const currentElapsed = Math.floor((Date.now() - playbackState.startTime) / 1000);
               const playerTime = Math.floor(player.getCurrentTime());
               
-              // If player is more than 2 seconds off, resync
-              if (Math.abs(currentElapsed - playerTime) > 2) {
+              // If player is more than 3 seconds off, resync
+              if (Math.abs(currentElapsed - playerTime) > 3) {
                 console.log(`🔄 Resyncing: DJ at ${currentElapsed}s, participant at ${playerTime}s`);
                 player.seekTo(currentElapsed, true);
                 player.playVideo();
@@ -44,7 +84,7 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
             } catch (error) {
               console.error("Sync interval error:", error);
             }
-          }, 2000);
+          }, 3000); // 3 seconds for better mobile performance
         }
       } else {
         player.pauseVideo();
@@ -107,17 +147,58 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
     onSkip?.();
   };
 
+  // ✅ FULLSCREEN BUTTON for participants
+  const handleFullscreen = () => {
+    const iframe = document.querySelector('iframe[src*="youtube.com"]');
+    if (iframe) {
+      if (iframe.requestFullscreen) {
+        iframe.requestFullscreen();
+      } else if (iframe.webkitRequestFullscreen) {
+        iframe.webkitRequestFullscreen();
+      } else if (iframe.mozRequestFullScreen) {
+        iframe.mozRequestFullScreen();
+      } else if (iframe.msRequestFullscreen) {
+        iframe.msRequestFullscreen();
+      }
+    }
+  };
+
+  // Track fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+    };
+  }, []);
+
   const opts = {
     height: "100%",
     width: "100%",
     playerVars: {
       autoplay: 1,
-      controls: isHost ? 1 : 0, // ✅ DJ gets full controls, participants get none
+      controls: isHost ? 1 : 0, // ✅ DJ gets full controls, participants get none (we add custom fullscreen)
       disablekb: isHost ? 0 : 1, // ✅ DJ can use keyboard, participants cannot
       modestbranding: 1,
       rel: 0,
-      fs: 1, // Fullscreen for everyone
+      fs: 1, // Fullscreen enabled
       iv_load_policy: 3, // No annotations
+      playsinline: 1, // Mobile optimization
     },
   };
 
@@ -148,15 +229,35 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
           </div>
         </div>
 
-        {isHost && (
-          <button
-            onClick={onSkip}
-            className="px-4 py-2 rounded-xl font-bold bg-[linear-gradient(90deg,#ef4444,#f97316)] hover:opacity-95 active:scale-[0.99] transition border border-white/10 shadow-[0_18px_60px_rgba(239,68,68,0.16)]"
-          >
-            Skip ⏭️
-          </button>
-        )}
+        <div className="flex gap-2">
+          {/* ✅ FULLSCREEN button for participants */}
+          {!isHost && !embedError && (
+            <button
+              onClick={handleFullscreen}
+              className="px-4 py-2 rounded-xl font-bold bg-[linear-gradient(90deg,#7c3aed,#3b82f6)] hover:opacity-95 active:scale-[0.99] transition border border-white/10 shadow-[0_18px_60px_rgba(124,58,237,0.16)]"
+              title="Fullscreen"
+            >
+              {isFullscreen ? "↙️ Exit" : "⛶ Fullscreen"}
+            </button>
+          )}
+
+          {isHost && (
+            <button
+              onClick={onSkip}
+              className="px-4 py-2 rounded-xl font-bold bg-[linear-gradient(90deg,#ef4444,#f97316)] hover:opacity-95 active:scale-[0.99] transition border border-white/10 shadow-[0_18px_60px_rgba(239,68,68,0.16)]"
+            >
+              Skip ⏭️
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* ✅ Performance tip for participants */}
+      {!isHost && playbackState?.isPlaying && (
+        <div className="mb-3 px-3 py-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-xs text-blue-300">
+          💡 <strong>Performance Tip:</strong> Your camera is auto-disabled during playback to reduce lag. It will turn back on when the song ends.
+        </div>
+      )}
 
       {/* Player Frame */}
       {embedError ? (
@@ -186,7 +287,7 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
               onReady={onReady}
               onError={onError}
               onEnd={onEnd}
-              onStateChange={onStateChange} // ✅ NEW: Handle manual play/pause
+              onStateChange={onStateChange} // ✅ Handle manual play/pause
               className="w-full h-full"
             />
           </div>
