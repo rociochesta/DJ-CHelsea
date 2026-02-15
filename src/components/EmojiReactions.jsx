@@ -121,7 +121,7 @@ function EmojiReactions({ roomCode, currentUser }) {
       </div>
 
       {/* Reaction picker button - Next to Chat */}
-<div className="fixed bottom-4 left-[7.5rem] z-40">
+      <div className="fixed bottom-4 left-80 sm:left-96 ml-4 z-40">
         {!showPicker ? (
           <button
             onClick={() => setShowPicker(true)}
