@@ -1,26 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
-import { useParticipants } from "@livekit/components-react";
-import { useTracks } from "@livekit/components-react";
-import { Track } from "livekit-client";
+import HostCameraPreview from "./HostCameraPreview";
 
-function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
+const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   const [player, setPlayer] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [embedError, setEmbedError] = useState(false);
 
   // ✅ prevents double-firing (YouTube sometimes fires onEnd weirdly)
   const lastEndRef = useRef(0);
-
-  // Get host camera for video preview when nothing is playing
-  const participants = useParticipants();
-  const hostParticipant = participants[0]; // First participant is usually the host
-  const cameraTracks = useTracks([Track.Source.Camera]);
-  const hostCameraTrack = cameraTracks.find(
-    (t) => t.participant?.identity === hostParticipant?.identity
-  );
-
-  const cameraVideoRef = useRef(null);
 
   useEffect(() => {
     if (!player || !playerReady || !playbackState) return;
@@ -42,21 +30,6 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
     setEmbedError(false);
     setPlayerReady(false);
   }, [currentSong?.videoId]);
-
-  // Attach host camera when no song is playing
-  useEffect(() => {
-    const videoElement = cameraVideoRef.current;
-    const track = hostCameraTrack?.publication?.track;
-
-    if (!currentSong && videoElement && track) {
-      track.attach(videoElement);
-      console.log("Host camera attached to video player");
-      return () => {
-        track.detach(videoElement);
-        console.log("Host camera detached from video player");
-      };
-    }
-  }, [hostCameraTrack?.publication?.track, currentSong]);
 
   const onReady = (event) => {
     setPlayer(event.target);
@@ -94,50 +67,11 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
   };
 
   if (!currentSong) {
-    const hasHostCamera = hostCameraTrack?.publication && !hostCameraTrack.publication.isMuted;
-
     return (
       <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5 md:p-7">
         <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
           <div className="aspect-video relative bg-gradient-to-br from-fuchsia-900/20 to-indigo-900/20">
-            {hasHostCamera ? (
-              <>
-                {/* Host Camera Feed */}
-                <video
-                  ref={cameraVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                />
-                {/* Overlay text */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/70 to-transparent p-6">
-                  <div className="text-xl md:text-2xl font-extrabold">
-                    <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
-                      DJ is Live
-                    </span>
-                  </div>
-                  <div className="mt-2 text-white/70">
-                    {isHost ? "Add songs to the queue to start the set." : "Waiting for the host to press play…"}
-                  </div>
-                </div>
-              </>
-            ) : (
-              /* No camera - show default */
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center px-6">
-                  <div className="text-6xl mb-4">🎧</div>
-                  <div className="text-xl md:text-2xl font-extrabold">
-                    <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
-                      No track loaded
-                    </span>
-                  </div>
-                  <div className="mt-2 text-white/60">
-                    {isHost ? "Add songs to the queue to start the set." : "Waiting for the host to press play…"}
-                  </div>
-                </div>
-              </div>
-            )}
+            <HostCameraPreview isHost={isHost} />
           </div>
         </div>
       </div>
@@ -204,6 +138,15 @@ function VideoPlayer({ currentSong, playbackState, onSkip, isHost }) {
       )}
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Only re-render if these values actually change
+  return (
+    prevProps.currentSong?.videoId === nextProps.currentSong?.videoId &&
+    prevProps.playbackState?.isPlaying === nextProps.playbackState?.isPlaying &&
+    prevProps.playbackState?.videoId === nextProps.playbackState?.videoId &&
+    prevProps.isHost === nextProps.isHost
+  );
+  // Note: onSkip is a function and will always be different, but we don't care
+});
 
 export default VideoPlayer;
