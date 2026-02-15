@@ -7,9 +7,7 @@ import SongSearch from "./SongSearch";
 import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
-import DebugPanel from "./Debugpanel";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
-import LocalCameraPreview from "./LocalCameraPreview";
 
 function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -153,7 +151,7 @@ function HostView({ roomCode, currentUser, roomState }) {
 
       <div className="relative p-4">
         <div className="max-w-[1800px] mx-auto">
-          {/* Static Banner - No animation */}
+          {/* Static Banner */}
           <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-6">
             <div className="relative h-28 bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
               <div className="relative p-5 flex items-center justify-between h-full">
@@ -179,16 +177,18 @@ function HostView({ roomCode, currentUser, roomState }) {
                   <div className="font-bold text-lg">{currentUser.name} 🎤</div>
                   
                   <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
-                    <span className="text-xs font-semibold text-emerald-400">Mic: AUTO (only singer)</span>
+                    <span className="text-xs font-semibold text-emerald-400">Mic: FREE (everyone can talk)</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Layout - Video left, Queue right */}
+          {/* Layout - Video + Singer on left, Queue on right */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            {/* Left Column - Video + Singer Spotlight */}
             <div className="xl:col-span-2 space-y-6">
+              {/* Video Player */}
               <VideoPlayer
                 currentSong={currentSong}
                 playbackState={roomState?.playbackState}
@@ -196,6 +196,7 @@ function HostView({ roomCode, currentUser, roomState }) {
                 isHost={true}
               />
 
+              {/* Singer Spotlight - Shows current singer prominently */}
               <SingerSpotlight
                 roomCode={roomCode}
                 currentSong={currentSong}
@@ -209,6 +210,7 @@ function HostView({ roomCode, currentUser, roomState }) {
                 showControls={true}
               />
 
+              {/* Song Search */}
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
                 <SongSearch
                   searchQuery={searchQuery}
@@ -226,6 +228,7 @@ function HostView({ roomCode, currentUser, roomState }) {
               </div>
             </div>
 
+            {/* Right Column - Queue */}
             <div className="space-y-6">
               <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
                 <SongQueue 
@@ -242,12 +245,10 @@ function HostView({ roomCode, currentUser, roomState }) {
         </div>
       </div>
 
-      {/* Chat, Reactions, Settings, and Debug Panels */}
+      {/* Chat, Reactions, and Settings (NO DEBUG COMPONENTS) */}
       <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
-      <LocalCameraPreview />
-      <DebugPanel currentUser={currentUser} roomState={roomState} />
     </div>
   );
 }
