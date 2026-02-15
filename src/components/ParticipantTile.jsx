@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Track } from "livekit-client";
-import { useTrack } from "@livekit/components-react";
+import { useTracks } from "@livekit/components-react";
 
 export default function ParticipantTile({
   participant,
@@ -20,12 +20,16 @@ export default function ParticipantTile({
 
   const participantName = participant.name || participant.identity || "Unknown";
 
-  // ✅ Use LiveKit's useTrack hook to get camera track
-  // This properly subscribes to track updates
-  const { publication: cameraPublication } = useTrack(
-    Track.Source.Camera,
-    participant
-  );
+  // ✅ Use useTracks to get all camera tracks, then filter for this participant
+  const tracks = useTracks([Track.Source.Camera]);
+  
+  const cameraPublication = useMemo(() => {
+    // Find the camera track for this specific participant
+    const trackRef = tracks.find(
+      (t) => t.participant?.identity === participant?.identity
+    );
+    return trackRef?.publication || null;
+  }, [tracks, participant?.identity]);
 
   // ✅ Real mic state from LiveKit
   const isMicOn = !!participant.isMicrophoneEnabled;

@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useLocalParticipant, useTrack } from "@livekit/components-react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
+import { useLocalParticipant, useTracks } from "@livekit/components-react";
 import { Track } from "livekit-client";
 
 export default function LocalCameraPreview() {
@@ -7,11 +7,16 @@ export default function LocalCameraPreview() {
   const videoRef = useRef(null);
   const { localParticipant } = useLocalParticipant();
   
-  // ✅ Use useTrack hook for local participant's camera
-  const { publication: cameraPublication } = useTrack(
-    Track.Source.Camera,
-    localParticipant
-  );
+  // ✅ Use useTracks hook for local participant's camera
+  const tracks = useTracks([Track.Source.Camera]);
+  
+  const cameraPublication = useMemo(() => {
+    // Find our own camera track
+    const trackRef = tracks.find(
+      (t) => t.participant?.identity === localParticipant?.identity
+    );
+    return trackRef?.publication || null;
+  }, [tracks, localParticipant?.identity]);
   
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [micEnabled, setMicEnabled] = useState(false);

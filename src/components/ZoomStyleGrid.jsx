@@ -1,12 +1,20 @@
-import React, { useEffect, useRef } from 'react';
-import { useParticipants, useTrack } from '@livekit/components-react';
+import React, { useEffect, useRef, useMemo } from 'react';
+import { useParticipants, useTracks } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 
 function ParticipantThumb({ participant, currentUser, onMuteToggle, isHost }) {
   const videoRef = useRef(null);
   
-  // ✅ Use useTrack hook instead of manual access
-  const { publication: videoTrackPub } = useTrack(Track.Source.Camera, participant);
+  // ✅ Use useTracks to get all camera tracks
+  const tracks = useTracks([Track.Source.Camera]);
+  
+  // Find this participant's camera track
+  const videoTrackPub = useMemo(() => {
+    const trackRef = tracks.find(
+      (t) => t.participant?.identity === participant?.identity
+    );
+    return trackRef?.publication || null;
+  }, [tracks, participant?.identity]);
   
   const participantName = participant?.name || participant?.identity || "Guest";
   const isCurrentUser = currentUser?.name === participantName || currentUser?.id === participant?.identity;
