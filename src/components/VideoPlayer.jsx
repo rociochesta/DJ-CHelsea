@@ -9,22 +9,58 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
 
   // ✅ prevents double-firing (YouTube sometimes fires onEnd weirdly)
   const lastEndRef = useRef(0);
+  const syncIntervalRef = useRef(null);
 
+  // ✅ CONTINUOUS SYNC for participants - prevents lag and handles resume
   useEffect(() => {
     if (!player || !playerReady || !playbackState) return;
 
+    // Clear any existing interval
+    if (syncIntervalRef.current) {
+      clearInterval(syncIntervalRef.current);
+      syncIntervalRef.current = null;
+    }
+
     try {
       if (playbackState.isPlaying && playbackState.videoId) {
+        // Immediate sync
         const elapsedSeconds = Math.floor((Date.now() - playbackState.startTime) / 1000);
         player.seekTo(elapsedSeconds, true);
         player.playVideo();
+
+        // ✅ ONLY sync continuously for participants (DJ controls their own playback)
+        if (!isHost) {
+          syncIntervalRef.current = setInterval(() => {
+            try {
+              const currentElapsed = Math.floor((Date.now() - playbackState.startTime) / 1000);
+              const playerTime = Math.floor(player.getCurrentTime());
+              
+              // If player is more than 2 seconds off, resync
+              if (Math.abs(currentElapsed - playerTime) > 2) {
+                console.log(`🔄 Resyncing: DJ at ${currentElapsed}s, participant at ${playerTime}s`);
+                player.seekTo(currentElapsed, true);
+                player.playVideo();
+              }
+            } catch (error) {
+              console.error("Sync interval error:", error);
+            }
+          }, 2000);
+        }
       } else {
         player.pauseVideo();
       }
     } catch (error) {
       console.error("Error syncing playback:", error);
     }
-  }, [player, playerReady, playbackState]);
+
+    // Cleanup interval on unmount or when dependencies change
+    return () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+    };
+  }, [player, playerReady, playbackState, isHost]);
 
   useEffect(() => {
     setEmbedError(false);
@@ -42,6 +78,25 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
     if (event.data === 101 || event.data === 150) setEmbedError(true);
   };
 
+  // ✅ Handle participant state changes (pause/play)
+  const onStateChange = (event) => {
+    // event.data values:
+    // -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (video cued)
+    
+    if (!isHost && playbackState?.isPlaying) {
+      // Participant manually paused/played - force resync to DJ time
+      if (event.data === 1) { // Playing
+        const elapsedSeconds = Math.floor((Date.now() - playbackState.startTime) / 1000);
+        const playerTime = Math.floor(player.getCurrentTime());
+        
+        if (Math.abs(elapsedSeconds - playerTime) > 1) {
+          console.log(`🔄 Manual play detected - syncing to DJ time: ${elapsedSeconds}s`);
+          player.seekTo(elapsedSeconds, true);
+        }
+      }
+    }
+  };
+
   // ✅ AUTO-PLAY NEXT
   const onEnd = () => {
     if (!isHost) return; // only host advances queue
@@ -57,8 +112,8 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
     width: "100%",
     playerVars: {
       autoplay: 1,
-      controls: isHost ? 1 : 0, // ✅ DJ gets full controls
-      disablekb: isHost ? 0 : 1, // ✅ DJ can use keyboard
+      controls: isHost ? 1 : 0, // ✅ DJ gets full controls, participants get none
+      disablekb: isHost ? 0 : 1, // ✅ DJ can use keyboard, participants cannot
       modestbranding: 1,
       rel: 0,
       fs: 1, // Fullscreen for everyone
@@ -109,7 +164,7 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
           <div className="aspect-video flex items-center justify-center">
             <div className="text-center p-8">
               <div className="text-5xl mb-4">🚫</div>
-              <div className="text-xl font-extrabold mb-2">Can’t embed this one</div>
+              <div className="text-xl font-extrabold mb-2">Can't embed this one</div>
               <div className="text-white/60 mb-4">
                 Publisher blocked external playback. (Love that for us.)
               </div>
@@ -130,7 +185,8 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
               opts={opts}
               onReady={onReady}
               onError={onError}
-              onEnd={onEnd}   // ✅ HERE
+              onEnd={onEnd}
+              onStateChange={onStateChange} // ✅ NEW: Handle manual play/pause
               className="w-full h-full"
             />
           </div>
