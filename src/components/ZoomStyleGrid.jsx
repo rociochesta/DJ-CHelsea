@@ -1,12 +1,27 @@
-import React from 'react';
-import { useParticipants } from '@livekit/components-react';
+import React, { useEffect, useRef } from 'react';
+import { useParticipants, useTrack } from '@livekit/components-react';
+import { Track } from 'livekit-client';
 
 function ParticipantThumb({ participant, currentUser, onMuteToggle, isHost }) {
-  const videoTrack = participant?.videoTracks?.values?.()?.next?.()?.value || null;
+  const videoRef = useRef(null);
+  
+  // ✅ Use useTrack hook instead of manual access
+  const { publication: videoTrackPub } = useTrack(Track.Source.Camera, participant);
+  
   const participantName = participant?.name || participant?.identity || "Guest";
   const isCurrentUser = currentUser?.name === participantName || currentUser?.id === participant?.identity;
   const isMicOn = !!participant?.isMicrophoneEnabled;
   const isCameraOn = !!participant?.isCameraEnabled;
+
+  // Attach video track when it's available
+  useEffect(() => {
+    if (!videoRef.current || !videoTrackPub?.track) return;
+    
+    videoTrackPub.track.attach(videoRef.current);
+    return () => {
+      videoTrackPub.track.detach(videoRef.current);
+    };
+  }, [videoTrackPub?.track]);
 
   const handleToggleCamera = async () => {
     if (participant?.setCameraEnabled) {
@@ -31,17 +46,9 @@ function ParticipantThumb({ participant, currentUser, onMuteToggle, isHost }) {
   return (
     <div className="relative flex-shrink-0 w-32 h-24 sm:w-40 sm:h-28 rounded-xl overflow-hidden border border-white/10 bg-black group">
       {/* Video or Avatar */}
-      {videoTrack?.videoTrack && isCameraOn ? (
+      {videoTrackPub?.track && isCameraOn ? (
         <video
-          ref={(el) => {
-            if (el && videoTrack?.videoTrack) {
-              try {
-                videoTrack.videoTrack.attach(el);
-              } catch (e) {
-                console.warn('Failed to attach video track:', e);
-              }
-            }
-          }}
+          ref={videoRef}
           autoPlay
           playsInline
           muted={participant?.isLocal}

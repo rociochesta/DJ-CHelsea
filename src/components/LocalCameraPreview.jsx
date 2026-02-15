@@ -1,11 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useLocalParticipant } from "@livekit/components-react";
+import { useLocalParticipant, useTrack } from "@livekit/components-react";
 import { Track } from "livekit-client";
 
 export default function LocalCameraPreview() {
   const [isOpen, setIsOpen] = useState(true);
   const videoRef = useRef(null);
   const { localParticipant } = useLocalParticipant();
+  
+  // ✅ Use useTrack hook for local participant's camera
+  const { publication: cameraPublication } = useTrack(
+    Track.Source.Camera,
+    localParticipant
+  );
+  
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [micEnabled, setMicEnabled] = useState(false);
 
@@ -32,20 +39,13 @@ export default function LocalCameraPreview() {
 
   // Attach video track
   useEffect(() => {
-    if (!videoRef.current || !localParticipant) return;
+    if (!videoRef.current || !cameraPublication?.track) return;
 
-    // Find camera track
-    const videoTrack = Array.from(localParticipant.videoTracks.values()).find(
-      (pub) => pub.source === Track.Source.Camera
-    );
-
-    if (videoTrack?.track) {
-      videoTrack.track.attach(videoRef.current);
-      return () => {
-        videoTrack.track.detach(videoRef.current);
-      };
-    }
-  }, [localParticipant, cameraEnabled]);
+    cameraPublication.track.attach(videoRef.current);
+    return () => {
+      cameraPublication.track.detach(videoRef.current);
+    };
+  }, [cameraPublication?.track]);
 
   const handleToggleCamera = async () => {
     if (!localParticipant) return;
@@ -167,9 +167,7 @@ export default function LocalCameraPreview() {
             <div>Audio Tracks: {localParticipant?.audioTracks?.size || 0}</div>
             <div>
               Camera Pub:{" "}
-              {Array.from(localParticipant?.videoTracks?.values() || [])
-                .find((pub) => pub.source === Track.Source.Camera)
-                ?.trackSid?.slice(0, 8) || "None"}
+              {cameraPublication?.trackSid?.slice(0, 8) || "None"}
             </div>
           </div>
         </div>
