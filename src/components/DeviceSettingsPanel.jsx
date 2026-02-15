@@ -182,16 +182,19 @@ export default function DeviceSettingsPanel() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 left-20 z-40 px-4 py-3 rounded-2xl bg-gradient-to-r from-fuchsia-600/90 to-indigo-600/90 hover:from-fuchsia-600 hover:to-indigo-600 text-white font-bold shadow-2xl border border-white/20 backdrop-blur-xl transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-4 right-4 z-40 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-xl transition-all hover:scale-105 active:scale-95"
         title="Audio & Video Settings"
       >
-        ⚙️ Settings
+        <div className="flex items-center gap-2">
+          <span className="text-xl">⚙️</span>
+          <span className="font-semibold">Settings</span>
+        </div>
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-4 left-20 z-40 w-96 max-h-[90vh] rounded-3xl border border-white/20 bg-black/95 backdrop-blur-2xl shadow-2xl flex flex-col overflow-hidden animate-scale-in">
+    <div className="fixed bottom-4 right-4 z-40 w-96 max-h-[90vh] rounded-3xl border border-white/20 bg-black/95 backdrop-blur-2xl shadow-2xl flex flex-col overflow-hidden animate-scale-in">
       {/* Header */}
       <div className="p-4 border-b border-white/10 bg-gradient-to-r from-fuchsia-900/40 to-indigo-900/40 flex items-center justify-between">
         <h3 className="font-bold text-lg">Audio & Video Settings</h3>

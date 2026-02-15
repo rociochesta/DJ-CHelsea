@@ -15,6 +15,16 @@ export default function SingerSpotlight({
 }) {
   const liveKitParticipants = useParticipants();
 
+  // Debug logging
+  console.log("🎤 SingerSpotlight participants:", liveKitParticipants.length);
+  console.log("🎤 Participants:", liveKitParticipants.map(p => ({
+    identity: p.identity,
+    name: p.name,
+    isLocal: p.isLocal,
+    cameraEnabled: p.isCameraEnabled,
+    micEnabled: p.isMicrophoneEnabled,
+  })));
+
   const currentSinger = currentSong?.requestedBy || currentSong?.singerName || "";
   const nextSong =
     queue && queue.length > 0

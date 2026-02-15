@@ -113,11 +113,12 @@ const [isOpen, setIsOpen] = useState(true);
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 left-4 z-40 px-4 py-3 rounded-2xl bg-gradient-to-r from-fuchsia-600/90 to-indigo-600/90 hover:from-fuchsia-600 hover:to-indigo-600 text-white font-bold shadow-2xl border border-white/20 backdrop-blur-xl transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-4 left-4 z-40 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-xl transition-all hover:scale-105 active:scale-95"
+        title="Open chat"
       >
         <div className="flex items-center gap-2">
           <span className="text-xl">💬</span>
-          <span>Chat</span>
+          <span className="font-semibold">Chat</span>
           {unreadCount > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-red-500 text-xs">
               {unreadCount}
