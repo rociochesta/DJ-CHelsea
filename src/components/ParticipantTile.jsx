@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Track } from "livekit-client";
+import { useTrack } from "@livekit/components-react";
 
 export default function ParticipantTile({
   participant,
@@ -14,44 +15,23 @@ export default function ParticipantTile({
   if (!participant) return null;
 
   const videoRef = useRef(null);
-
-  const participantName = useMemo(
-    () => participant.name || participant.identity || "Unknown",
-    [participant.name, participant.identity]
-  );
-
-  // Get camera track publication
-  const cameraPublication = useMemo(() => {
-    // Check if participant and videoTracks exist
-    if (!participant || !participant.videoTracks || typeof participant.videoTracks.values !== 'function') {
-      console.log(`[${participant?.identity}] videoTracks is null/undefined or not initialized`);
-      return null;
-    }
-
-    console.log(`[${participant?.identity}] videoTracks size:`, participant.videoTracks.size);
-    console.log(`[${participant?.identity}] videoTracks:`, Array.from(participant.videoTracks.values()));
-
-    const camTrack = Array.from(participant.videoTracks.values()).find(
-      (pub) => pub.source === Track.Source.Camera
-    );
-
-    console.log(`[${participant?.identity}] Found camera track:`, camTrack);
-    return camTrack || null;
-  }, [participant, participant?.videoTracks]);
-
-  // ✅ real mic state from LiveKit (no local state)
-  const isMicOn = !!participant.isMicrophoneEnabled;
-
-  // ✅ camera state - check if camera is enabled
-  const isCameraEnabled = cameraPublication && !cameraPublication.isMuted;
-
-  // ✅ policy: DISABLED - allow all users to control their mic/camera
-  const isLocal = !!participant.isLocal;
-  const micAllowedByPolicy = true; // Always allow mic control
-
-  // Local UI state only for button feedback if you want it
   const [cameraBusy, setCameraBusy] = useState(false);
   const [micBusy, setMicBusy] = useState(false);
+
+  const participantName = participant.name || participant.identity || "Unknown";
+
+  // ✅ Use LiveKit's useTrack hook to get camera track
+  // This properly subscribes to track updates
+  const { publication: cameraPublication } = useTrack(
+    Track.Source.Camera,
+    participant
+  );
+
+  // ✅ Real mic state from LiveKit
+  const isMicOn = !!participant.isMicrophoneEnabled;
+
+  // ✅ Camera state - check if camera track exists and is not muted
+  const isCameraEnabled = cameraPublication && !cameraPublication.isMuted;
 
   // Attach video track to video element
   useEffect(() => {
@@ -60,17 +40,20 @@ export default function ParticipantTile({
 
     if (videoElement && track) {
       track.attach(videoElement);
+      console.log(`[${participantName}] Video track attached`);
       return () => {
         track.detach(videoElement);
+        console.log(`[${participantName}] Video track detached`);
       };
     }
-  }, [cameraPublication?.track]);
+  }, [cameraPublication?.track, participantName]);
 
   const handleToggleCamera = async () => {
-    if (cameraBusy) return;
+    if (cameraBusy || !participant.setCameraEnabled) return;
     setCameraBusy(true);
     try {
       await participant.setCameraEnabled(!isCameraEnabled);
+      console.log(`[${participantName}] Camera toggled to: ${!isCameraEnabled}`);
     } catch (e) {
       console.error("Failed to toggle camera:", e);
     } finally {
@@ -79,11 +62,12 @@ export default function ParticipantTile({
   };
 
   const handleToggleMic = async () => {
-    if (micBusy) return;
+    if (micBusy || !participant.setMicrophoneEnabled) return;
     setMicBusy(true);
     try {
       const next = !participant.isMicrophoneEnabled;
       await participant.setMicrophoneEnabled(next);
+      console.log(`[${participantName}] Mic toggled to: ${next}`);
     } catch (e) {
       console.error("Failed to toggle mic:", e);
     } finally {
