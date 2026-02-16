@@ -17,6 +17,7 @@ export default function SingerSpotlight({
 
   // Debug logging
   console.log("🎤 SingerSpotlight participants:", liveKitParticipants.length);
+  console.log("🎤 currentUser:", currentUser);
   console.log("🎤 Participants:", liveKitParticipants.map(p => ({
     identity: p.identity,
     name: p.name,
@@ -77,8 +78,19 @@ export default function SingerSpotlight({
           const isNext = !!nextSinger && name === nextSinger;
           const isMuted = participantMutes?.[name] === true;
 
-          const isCurrentUser =
-            !!currentUser && (name === currentUser.name || p.identity === currentUser.id);
+          // Use p.isLocal to reliably detect the current user's participant
+          const isCurrentUser = p.isLocal;
+
+          console.log(`🎤 Participant ${name}:`, {
+            participantName: name,
+            participantIdentity: p.identity,
+            participantIsLocal: p.isLocal,
+            currentUserName: currentUser?.name,
+            currentUserId: currentUser?.id,
+            isCurrentUser,
+            showControls,
+            shouldShowControls: isCurrentUser && showControls
+          });
 
           return (
             <ParticipantTile
