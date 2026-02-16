@@ -2,8 +2,10 @@ import React, { useState, useMemo } from "react";
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 import VideoPlayer from "./VideoPlayer";
+import GoogleDrivePlayer from "./GoogleDrivePlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
+import StreamingQueue from "./StreamingQueue";
 import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
@@ -14,6 +16,12 @@ function HostView({ roomCode, currentUser, roomState }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Determine room mode
+  const roomMode = roomState?.roomMode || "karaoke";
+  const isStreaming = roomMode === "streaming";
+  const isDJ = roomMode === "dj";
+  const isKaraoke = roomMode === "karaoke";
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -51,22 +59,26 @@ function HostView({ roomCode, currentUser, roomState }) {
     const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
     await update(playbackRef, {
       isPlaying: true,
-      videoId: song.videoId,
+      videoId: song.videoId || song.fileId, // Support both YouTube and Google Drive
       startTime: Date.now(),
     });
 
-    // Auto-unmute the singer
-    const singerName = song.requestedBy || song.singerName;
-    if (singerName) {
-      await setParticipantMute(singerName, false);
+    // Auto-unmute the singer (only in karaoke mode)
+    if (isKaraoke) {
+      const singerName = song.requestedBy || song.singerName;
+      if (singerName) {
+        await setParticipantMute(singerName, false);
+      }
     }
   };
 
   const handleSkipSong = async () => {
-    // Mute current singer
-    const currentSinger = roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-    if (currentSinger) {
-      await setParticipantMute(currentSinger, true);
+    // Mute current singer (only in karaoke mode)
+    if (isKaraoke) {
+      const currentSinger = roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+      if (currentSinger) {
+        await setParticipantMute(currentSinger, true);
+      }
     }
 
     const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
@@ -80,9 +92,7 @@ function HostView({ roomCode, currentUser, roomState }) {
     
     const queue = roomState?.queue ? Object.values(roomState.queue) : [];
     if (queue.length > 0) {
-      const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
-      const nextSong = sortedQueue[0];
-      setTimeout(() => handlePlaySong(nextSong), 500);
+      await handlePlaySong(queue[0]);
     }
   };
 
@@ -91,28 +101,38 @@ function HostView({ roomCode, currentUser, roomState }) {
     await remove(songRef);
   };
 
-  const handleMoveSongUp = async (song, currentIndex) => {
-    if (currentIndex === 0) return;
-    const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
-    const prevSong = sortedQueue[currentIndex - 1];
-    
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
-    const prevSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${prevSong.id}/addedAt`);
-    
-    await set(songRef, prevSong.addedAt);
-    await set(prevSongRef, song.addedAt);
+  const handleMoveSongUp = async (songId) => {
+    const queue = roomState?.queue ? Object.values(roomState.queue).sort((a, b) => a.addedAt - b.addedAt) : [];
+    const index = queue.findIndex(s => s.id === songId);
+    if (index > 0) {
+      const temp = queue[index - 1].addedAt;
+      queue[index - 1].addedAt = queue[index].addedAt;
+      queue[index].addedAt = temp;
+
+      const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
+      const updates = {};
+      queue.forEach(song => {
+        updates[song.id] = song;
+      });
+      await update(queueRef, updates);
+    }
   };
 
-  const handleMoveSongDown = async (song, currentIndex) => {
-    const sortedQueue = [...queue].sort((a, b) => a.addedAt - b.addedAt);
-    if (currentIndex === sortedQueue.length - 1) return;
-    const nextSong = sortedQueue[currentIndex + 1];
-    
-    const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${song.id}/addedAt`);
-    const nextSongRef = ref(database, `karaoke-rooms/${roomCode}/queue/${nextSong.id}/addedAt`);
-    
-    await set(songRef, nextSong.addedAt);
-    await set(nextSongRef, song.addedAt);
+  const handleMoveSongDown = async (songId) => {
+    const queue = roomState?.queue ? Object.values(roomState.queue).sort((a, b) => a.addedAt - b.addedAt) : [];
+    const index = queue.findIndex(s => s.id === songId);
+    if (index < queue.length - 1 && index >= 0) {
+      const temp = queue[index + 1].addedAt;
+      queue[index + 1].addedAt = queue[index].addedAt;
+      queue[index].addedAt = temp;
+
+      const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
+      const updates = {};
+      queue.forEach(song => {
+        updates[song.id] = song;
+      });
+      await update(queueRef, updates);
+    }
   };
 
   const setParticipantMute = async (participantName, muted) => {
@@ -142,6 +162,13 @@ function HostView({ roomCode, currentUser, roomState }) {
     name: currentUser?.name
   }), [currentUser?.id, currentUser?.name]);
 
+  // Get mode label for display
+  const getModeLabel = () => {
+    if (isDJ) return "DJ Mode";
+    if (isStreaming) return "Streaming Mode";
+    return "Karaoke Mode";
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
       <div className="absolute inset-0 bg-[#070712]" />
@@ -163,7 +190,7 @@ function HostView({ roomCode, currentUser, roomState }) {
 
                   <h1 className="mt-2 text-3xl font-extrabold">
                     <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
-                      DJ Mode
+                      {getModeLabel()}
                     </span>
                   </h1>
 
@@ -176,76 +203,103 @@ function HostView({ roomCode, currentUser, roomState }) {
                   <div className="text-xs text-white/50">Host</div>
                   <div className="font-bold text-lg">{currentUser.name} 🎤</div>
                   
-                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
-                    <span className="text-xs font-semibold text-emerald-400">Mic: FREE (everyone can talk)</span>
-                  </div>
+                  {isDJ && (
+                    <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
+                      <span className="text-xs font-semibold text-emerald-400">Mic: FREE (everyone can talk)</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Layout - Video + Singer on left, Queue on right */}
+          {/* Layout - Video + Content on left, Queue on right */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Left Column - Video + Singer Spotlight */}
+            {/* Left Column - Video + Controls */}
             <div className="xl:col-span-2 space-y-6">
-              {/* Video Player */}
-              <VideoPlayer
-                currentSong={currentSong}
-                playbackState={roomState?.playbackState}
-                onSkip={handleSkipSong}
-                isHost={true}
-              />
+              {/* Video Player - Switch between YouTube and Google Drive */}
+              {isStreaming ? (
+                <GoogleDrivePlayer
+                  fileId={currentSong?.fileId}
+                  title={currentSong?.title}
+                  playbackState={roomState?.playbackState}
+                  onSkip={handleSkipSong}
+                  isHost={true}
+                  requestedBy={currentSong?.requestedBy}
+                />
+              ) : (
+                <VideoPlayer
+                  currentSong={currentSong}
+                  playbackState={roomState?.playbackState}
+                  onSkip={handleSkipSong}
+                  isHost={true}
+                />
+              )}
 
-              {/* Singer Spotlight - Shows current singer prominently */}
-              <SingerSpotlight
-                roomCode={roomCode}
-                currentSong={currentSong}
-                participants={participants}
-                participantMutes={participantMutes}
-                onMuteToggle={setParticipantMute}
-                onMuteAll={handleMuteAll}
-                queue={queue}
-                canControlMics={true}
-                currentUser={currentUser}
-                showControls={true}
-              />
-
-              {/* Song Search */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
-                <SongSearch
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  onSearch={handleSearch}
-                  isSearching={isSearching}
-                  searchResults={searchResults}
-                  onAddToQueue={handleAddToQueue}
-                  hasSearched={hasSearched}
-                  currentUser={currentUser}
-                  participants={participants}
+              {/* Singer Spotlight - Only show in Karaoke mode */}
+              {isKaraoke && (
+                <SingerSpotlight
                   roomCode={roomCode}
-                  isParticipant={false}
+                  currentSong={currentSong}
+                  participants={participants}
+                  participantMutes={participantMutes}
+                  onMuteToggle={setParticipantMute}
+                  onMuteAll={handleMuteAll}
+                  queue={queue}
+                  canControlMics={true}
+                  currentUser={currentUser}
+                  showControls={true}
                 />
-              </div>
+              )}
+
+              {/* Search/Upload Section - Switch between YouTube and Google Drive */}
+              {isStreaming ? (
+                <StreamingQueue
+                  roomCode={roomCode}
+                  queue={queue}
+                  currentSong={currentSong}
+                  isHost={true}
+                  currentUser={currentUser}
+                />
+              ) : (
+                <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
+                  <SongSearch
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    onSearch={handleSearch}
+                    isSearching={isSearching}
+                    searchResults={searchResults}
+                    onAddToQueue={handleAddToQueue}
+                    hasSearched={hasSearched}
+                    currentUser={currentUser}
+                    participants={participants}
+                    roomCode={roomCode}
+                    isParticipant={false}
+                  />
+                </div>
+              )}
             </div>
 
-            {/* Right Column - Queue */}
-            <div className="space-y-6">
-              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
-                <SongQueue 
-                  queue={queue} 
-                  onPlaySong={handlePlaySong} 
-                  onDeleteSong={handleDeleteSong}
-                  onMoveSongUp={handleMoveSongUp}
-                  onMoveSongDown={handleMoveSongDown}
-                  isHost={true} 
-                />
+            {/* Right Column - Queue (only for non-streaming modes) */}
+            {!isStreaming && (
+              <div className="space-y-6">
+                <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
+                  <SongQueue 
+                    queue={queue} 
+                    onPlaySong={handlePlaySong} 
+                    onDeleteSong={handleDeleteSong}
+                    onMoveSongUp={handleMoveSongUp}
+                    onMoveSongDown={handleMoveSongDown}
+                    isHost={true} 
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Chat, Reactions, and Settings (NO DEBUG COMPONENTS) */}
+      {/* Chat, Reactions, and Settings */}
       <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />

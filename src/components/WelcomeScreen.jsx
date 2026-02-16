@@ -5,7 +5,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [mode, setMode] = useState(null); // null, 'join', 'create'
   const [roomCode, setRoomCode] = useState("");
   const [userName, setUserName] = useState("");
-  const [roomMode, setRoomMode] = useState("dj"); // 'dj' or 'karaoke'
+  const [roomMode, setRoomMode] = useState("dj"); // 'dj', 'karaoke', or 'streaming'
   const [showDeviceSetup, setShowDeviceSetup] = useState(false);
   const [pendingAction, setPendingAction] = useState(null); // stores action to execute after device setup
 
@@ -41,6 +41,12 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
     if (pendingAction) {
       pendingAction();
     }
+  };
+
+  const getModeLabel = () => {
+    if (roomMode === "dj") return "DJ";
+    if (roomMode === "karaoke") return "Karaoke";
+    return "Streaming";
   };
 
   return (
@@ -122,56 +128,29 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 }}
               />
 
-              <div className="absolute left-5 md:left-7 top-4 md:top-5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/35 text-[11px] tracking-widest uppercase">
-                  <span
-                    className="w-2 h-2 rounded-full bg-fuchsia-400"
-                    style={{
-                      boxShadow: "0 0 18px rgba(232,121,249,0.95)",
-                      animation: "pulseGlow 1.6s ease-in-out infinite",
-                    }}
-                  />
-                  NOW SPINNING
-                </div>
+              <div className="absolute bottom-5 left-5 md:bottom-7 md:left-7">
+                <h1 className="text-4xl md:text-6xl font-extrabold">
+                  <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
+                    3PM Karaoke
+                  </span>
+                </h1>
+                <p className="mt-2 text-base md:text-lg text-white/90">
+                  Sad Song Court, but make it synchronized
+                </p>
               </div>
-
-              <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white/10" />
             </div>
 
+            {/* Content */}
             <div className="p-6 md:p-10">
-              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/30 text-xs tracking-widest uppercase">
-                    <span className="w-2 h-2 rounded-full bg-fuchsia-400 shadow-[0_0_18px_rgba(232,121,249,0.8)]" />
-                    Saturday Night • NA DJ Mode
-                  </div>
-
-                  <h1 className="mt-4 text-4xl md:text-6xl font-extrabold leading-tight">
-                    <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)] drop-shadow-[0_6px_20px_rgba(255,0,153,0.25)]">
-                      DJ CHELSEA NA
-                    </span>
-                  </h1>
-
-                  <p className="mt-3 text-white/75 text-base md:text-lg max-w-2xl">
-                    Queue songs. Spin chaos. Stay anyway.
+              {/* Initial mode select */}
+              {!mode && !showDeviceSetup && (
+                <div className="text-center">
+                  <p className="text-white/60 mb-6">
+                    Sing karaoke with friends in real-time. <br className="hidden sm:inline" />
+                    No more laggy screen sharing.
                   </p>
-                </div>
 
-                <div className="flex flex-col md:items-end gap-3 w-full md:w-auto">
-                  <div className="w-full md:w-auto">
-                    <label className="block text-xs tracking-widest uppercase text-white/50 mb-2">
-                      Your name (optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      placeholder='Leave empty = "DJ"'
-                      className="w-full md:w-80 px-4 py-3 rounded-xl bg-black/30 border border-white/10 focus:outline-none focus:border-fuchsia-400/60"
-                    />
-                  </div>
-
-                  <div className="flex gap-3 flex-wrap md:justify-end w-full">
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
                       onClick={() => setMode("create")}
                       className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 active:scale-[0.99] transition shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_18px_60px_rgba(255,0,153,0.20)]"
@@ -220,7 +199,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                     Select how you want to run your room
                   </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     {/* DJ Mode */}
                     <button
                       onClick={() => setRoomMode("dj")}
@@ -282,13 +261,44 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         <li>✓ Echo compensation</li>
                       </ul>
                     </button>
+
+                    {/* Streaming Mode */}
+                    <button
+                      onClick={() => setRoomMode("streaming")}
+                      className={`p-6 rounded-2xl border-2 transition text-left ${
+                        roomMode === "streaming"
+                          ? "border-fuchsia-500 bg-fuchsia-500/10"
+                          : "border-white/10 bg-black/25 hover:border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="text-4xl">📺</div>
+                        {roomMode === "streaming" && (
+                          <div className="w-6 h-6 rounded-full bg-fuchsia-500 flex items-center justify-center">
+                            <svg className="w-4 h-4" fill="white" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <h3 className="text-xl font-bold mb-2">Streaming Mode</h3>
+                      <p className="text-sm text-white/70 mb-3">
+                        Watch your own videos together
+                      </p>
+                      <ul className="text-xs text-white/60 space-y-1">
+                        <li>✓ Upload from Google Drive</li>
+                        <li>✓ Synced video playback</li>
+                        <li>✓ No bandwidth limits</li>
+                        <li>✓ Perfect for movie nights</li>
+                      </ul>
+                    </button>
                   </div>
 
                   <button
                     onClick={handleCreateSubmit}
                     className="w-full px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 transition"
                   >
-                    Create {roomMode === "dj" ? "DJ" : "Karaoke"} Room
+                    Create {getModeLabel()} Room
                   </button>
                 </div>
               )}
