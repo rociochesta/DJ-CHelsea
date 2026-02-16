@@ -167,55 +167,50 @@ function App() {
     };
   }, [roomCode, screen, currentUser?.name]);
 
-  const handleCreateRoom = async (djNameInput, roomMode = "dj") => {
-    const code = generateRoomCode();
-    const chosenDj = djNameInput || currentUser.name;
+  const handleCreateRoom = (chosenDj, roomMode, externalVideoLink) => {
+  const code = generateRoomCode();
+  setRoomCode(code);
 
-    setDjName(chosenDj);
-    localStorage.setItem("karaoke-djname", chosenDj);
-    localStorage.setItem("karaoke-username", chosenDj);
+  const updatedUser = { ...currentUser, name: chosenDj };
+  setCurrentUser(updatedUser);
+  localStorage.setItem("karaoke-username", chosenDj);
+  localStorage.setItem("karaoke-djname", chosenDj);
 
-    // Update currentUser with DJ name immediately
-    const updatedUser = { ...currentUser, name: chosenDj };
-    setCurrentUser(updatedUser);
+  setIsHost(true);
 
-    setRoomCode(code);
-    setIsHost(true);
+  const roomRef = ref(database, `karaoke-rooms/${code}`);
+  set(roomRef, {
+    hostId: updatedUser.id,
+    hostName: chosenDj,
+    createdAt: Date.now(),
+    roomMode: roomMode,
+    
+    // ADD THESE TWO LINES:
+    externalVideoLink: externalVideoLink || null,
+    useExternalVideo: !!externalVideoLink,
 
-    const roomRef = ref(database, `karaoke-rooms/${code}`);
-
-    await set(roomRef, {
-      hostId: updatedUser.id,
-      hostName: chosenDj,
-      roomMode: roomMode,
-      meta: { djName: chosenDj, roomMode: roomMode },
-      createdAt: Date.now(),
-      micPolicy: roomMode === "karaoke" ? "auto" : "open",
-      activeSingerId: null,
-      activeSingerName: null,
-
-      queue: [],
-      currentSong: null,
-
-      participants: {
-        [updatedUser.id]: {
-          id: updatedUser.id,
-          name: chosenDj,
-          role: "host",
-          joinedAt: Date.now(),
-        },
+    micPolicy: roomMode === "karaoke" ? "auto" : "open",
+    activeSingerId: null,
+    activeSingerName: null,
+    queue: [],
+    currentSong: null,
+    participants: {
+      [updatedUser.id]: {
+        id: updatedUser.id,
+        name: chosenDj,
+        role: "host",
+        joinedAt: Date.now(),
       },
+    },
+    playbackState: {
+      isPlaying: false,
+      currentTime: 0,
+      videoId: null,
+    },
+  });
 
-      playbackState: {
-        isPlaying: false,
-        currentTime: 0,
-        videoId: null,
-      },
-    });
-
-    setScreen("room");
-  };
-
+  setScreen("room");
+};
   const handleJoinRoom = (code, userName) => {
     const upper = code.toUpperCase();
     setRoomCode(upper);

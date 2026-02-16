@@ -10,6 +10,7 @@ import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
+import ExternalVideoPrompt from "./ExternalVideoPrompt";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,7 +74,8 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
       <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl opacity-50 bg-fuchsia-600" />
       <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.18),transparent_55%)]" />
-
+{/* ADD THIS: */}
+<ExternalVideoPrompt videoLink={roomState?.externalVideoLink} />
       <div className="relative p-4">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}

@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import PreJoinDeviceSetup from "./PreJoinDeviceSetup";
 
 function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
-  const [mode, setMode] = useState(null); // null, 'join', 'create'
+  const [mode, setMode] = useState(null);
   const [roomCode, setRoomCode] = useState("");
   const [userName, setUserName] = useState("");
-  const [roomMode, setRoomMode] = useState("dj"); // 'dj', 'karaoke', or 'streaming'
+  const [roomMode, setRoomMode] = useState("dj");
+  const [useExternalVideo, setUseExternalVideo] = useState(false);
+  const [externalVideoLink, setExternalVideoLink] = useState("");
   const [showDeviceSetup, setShowDeviceSetup] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -23,7 +25,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   };
 
   const handleCreateSubmit = () => {
-    setPendingAction(() => () => onCreateRoom(getDJName(), roomMode));
+    setPendingAction(() => () => onCreateRoom(getDJName(), roomMode, useExternalVideo ? externalVideoLink : null));
     setShowDeviceSetup(true);
   };
 
@@ -47,7 +49,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
-      {/* Background */}
       <div className="absolute inset-0 bg-[#070712]" />
       <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl opacity-50 bg-fuchsia-600" />
       <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
@@ -56,7 +57,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-5xl">
           <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-white/5 backdrop-blur-xl">
-            {/* Banner */}
             <div className="relative h-44 md:h-60 overflow-hidden">
               <video
                 className="absolute inset-0 w-full h-full object-cover"
@@ -66,10 +66,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 muted
                 playsInline
               />
-
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.46)_44%,rgba(0,0,0,0.18)_100%)]" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.14),transparent_60%)]" />
-
               <div className="absolute bottom-5 left-5 md:bottom-7 md:left-7">
                 <h1 className="text-4xl md:text-6xl font-extrabold">
                   <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
@@ -82,16 +80,13 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               </div>
             </div>
 
-            {/* Content */}
             <div className="p-6 md:p-10">
-              {/* Initial mode select */}
               {!mode && !showDeviceSetup && (
                 <div className="text-center">
                   <p className="text-white/60 mb-6">
                     Sing karaoke with friends in real-time. <br className="hidden sm:inline" />
                     No more laggy screen sharing.
                   </p>
-
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
                       onClick={() => setMode("create")}
@@ -99,7 +94,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                     >
                       Start a Room
                     </button>
-
                     <button
                       onClick={() => setMode("join")}
                       className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/15 active:scale-[0.99] transition border border-white/10"
@@ -110,7 +104,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               )}
 
-              {/* Device Setup Screen */}
               {showDeviceSetup && (
                 <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
                   <button
@@ -126,7 +119,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               )}
 
-              {/* Create Room Mode Selection */}
               {mode === "create" && !showDeviceSetup && (
                 <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
                   <button
@@ -137,12 +129,9 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                   </button>
 
                   <h2 className="text-2xl font-bold mb-2">Choose Room Mode</h2>
-                  <p className="text-white/60 mb-6">
-                    Select how you want to run your room
-                  </p>
+                  <p className="text-white/60 mb-6">Select how you want to run your room</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    {/* DJ Mode */}
                     <button
                       onClick={() => setRoomMode("dj")}
                       className={`p-6 rounded-2xl border-2 transition text-left ${
@@ -162,9 +151,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         )}
                       </div>
                       <h3 className="text-xl font-bold mb-2">DJ Mode</h3>
-                      <p className="text-sm text-white/70 mb-3">
-                        Classic music session - no karaoke features
-                      </p>
+                      <p className="text-sm text-white/70 mb-3">Classic music session - no karaoke features</p>
                       <ul className="text-xs text-white/60 space-y-1">
                         <li>✓ Queue and play songs</li>
                         <li>✓ Video only (no mic echo)</li>
@@ -173,7 +160,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       </ul>
                     </button>
 
-                    {/* Karaoke Mode */}
                     <button
                       onClick={() => setRoomMode("karaoke")}
                       className={`p-6 rounded-2xl border-2 transition text-left ${
@@ -193,18 +179,15 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         )}
                       </div>
                       <h3 className="text-xl font-bold mb-2">Karaoke Mode</h3>
-                      <p className="text-sm text-white/70 mb-3">
-                        Full karaoke experience with live singing
-                      </p>
+                      <p className="text-sm text-white/70 mb-3">Full karaoke experience with live singing</p>
                       <ul className="text-xs text-white/60 space-y-1">
                         <li>✓ Live mic for singers</li>
                         <li>✓ Singer spotlight view</li>
-                        <li>✓ Auto mic policy (only singer unmuted)</li>
+                        <li>✓ Auto mic policy</li>
                         <li>✓ Echo compensation</li>
                       </ul>
                     </button>
 
-                    {/* Streaming Mode */}
                     <button
                       onClick={() => setRoomMode("streaming")}
                       className={`p-6 rounded-2xl border-2 transition text-left ${
@@ -224,9 +207,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         )}
                       </div>
                       <h3 className="text-xl font-bold mb-2">Streaming Mode</h3>
-                      <p className="text-sm text-white/70 mb-3">
-                        Watch your own videos together
-                      </p>
+                      <p className="text-sm text-white/70 mb-3">Watch your own videos together</p>
                       <ul className="text-xs text-white/60 space-y-1">
                         <li>✓ Upload from Google Drive</li>
                         <li>✓ Synced video playback</li>
@@ -234,6 +215,43 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         <li>✓ Perfect for movie nights</li>
                       </ul>
                     </button>
+                  </div>
+
+                  <div className="mb-6 p-5 rounded-2xl border border-white/10 bg-black/25">
+                    <label className="flex items-start gap-3 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={useExternalVideo}
+                        onChange={(e) => setUseExternalVideo(e.target.checked)}
+                        className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 checked:bg-fuchsia-500"
+                      />
+                      <div className="flex-1">
+                        <div className="font-bold text-white group-hover:text-fuchsia-300 transition">
+                          Use external video chat (Zoom, Google Meet, etc.)
+                        </div>
+                        <div className="text-sm text-white/60 mt-1">
+                          Everyone will use an external link for video/audio chat. Your app handles synced playback only.
+                        </div>
+                      </div>
+                    </label>
+
+                    {useExternalVideo && (
+                      <div className="mt-4 animate-fade-in">
+                        <label className="block text-sm font-semibold text-white/80 mb-2">
+                          Video Chat Link (Zoom, Google Meet, etc.)
+                        </label>
+                        <input
+                          type="url"
+                          value={externalVideoLink}
+                          onChange={(e) => setExternalVideoLink(e.target.value)}
+                          placeholder="https://zoom.us/j/123456789 or meet.google.com/abc-defg-hij"
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20 text-sm"
+                        />
+                        <div className="mt-2 text-xs text-white/50">
+                          💡 Tip: Create your Zoom/Meet link first, then paste it here. Everyone will be prompted to join when they enter the room.
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <button
@@ -245,7 +263,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               )}
 
-              {/* Join mode */}
               {mode === "join" && !showDeviceSetup && (
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
                   <div className="md:col-span-2">
@@ -256,17 +273,12 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       ← Back
                     </button>
                     <h2 className="mt-3 text-2xl font-bold">Join the room</h2>
-                    <p className="mt-2 text-white/60">
-                      Enter your name + the 6-character code.
-                    </p>
+                    <p className="mt-2 text-white/60">Enter your name + the 6-character code.</p>
                   </div>
-
                   <div className="md:col-span-3 rounded-2xl border border-white/10 bg-black/30 p-5 md:p-6 backdrop-blur-xl">
                     <form onSubmit={handleJoinSubmit} className="space-y-4">
                       <div>
-                        <label className="block text-sm font-semibold text-white/80 mb-2">
-                          Your name
-                        </label>
+                        <label className="block text-sm font-semibold text-white/80 mb-2">Your name</label>
                         <input
                           type="text"
                           value={userName}
@@ -276,24 +288,18 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           required
                         />
                       </div>
-
                       <div>
-                        <label className="block text-sm font-semibold text-white/80 mb-2">
-                          Room code
-                        </label>
+                        <label className="block text-sm font-semibold text-white/80 mb-2">Room code</label>
                         <input
                           type="text"
                           value={roomCode}
-                          onChange={(e) =>
-                            setRoomCode(e.target.value.toUpperCase())
-                          }
+                          onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                           placeholder="ABC123"
                           maxLength={6}
                           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-indigo-400/70 focus:ring-2 focus:ring-indigo-400/20 text-center text-2xl font-mono tracking-[0.35em]"
                           required
                         />
                       </div>
-
                       <button
                         type="submit"
                         disabled={roomCode.length !== 6 || !userName.trim()}
@@ -306,30 +312,15 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               )}
 
-              {/* Bottom cards */}
               {mode !== "join" && mode !== "create" && (
                 <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    {
-                      t: "Sad Song Court",
-                      d: "Bring your tragic bangers. We will judge lovingly and cry privately.",
-                    },
-                    {
-                      t: "Always respectful",
-                      d: "Flirty tracks allowed. No inspirational speeches. No emotional jump scares.",
-                    },
-                    {
-                      t: "Why this song?",
-                      d: "Optional. But if it's unhinged, you owe us a one-line explanation.",
-                    },
+                    { t: "Sad Song Court", d: "Bring your tragic bangers. We will judge lovingly and cry privately." },
+                    { t: "Always respectful", d: "Flirty tracks allowed. No inspirational speeches. No emotional jump scares." },
+                    { t: "Why this song?", d: "Optional. But if it's unhinged, you owe us a one-line explanation." },
                   ].map((x) => (
-                    <div
-                      key={x.t}
-                      className="rounded-2xl border border-white/10 bg-black/25 p-5 backdrop-blur-xl"
-                    >
-                      <div className="text-sm font-bold text-white/90">
-                        {x.t}
-                      </div>
+                    <div key={x.t} className="rounded-2xl border border-white/10 bg-black/25 p-5 backdrop-blur-xl">
+                      <div className="text-sm font-bold text-white/90">{x.t}</div>
                       <div className="mt-2 text-white/60">{x.d}</div>
                     </div>
                   ))}
@@ -337,7 +328,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               )}
             </div>
           </div>
-
           <div className="mt-6 text-center text-xs text-white/40">
             NA-friendly • chaos-controlled • no inspirational speeches (we're busy)
           </div>
