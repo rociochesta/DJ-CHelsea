@@ -7,7 +7,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [userName, setUserName] = useState("");
   const [roomMode, setRoomMode] = useState("dj"); // 'dj', 'karaoke', or 'streaming'
   const [showDeviceSetup, setShowDeviceSetup] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null); // stores action to execute after device setup
+  const [pendingAction, setPendingAction] = useState(null);
 
   const getDJName = () => {
     const n = userName.trim();
@@ -17,27 +17,23 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const handleJoinSubmit = (e) => {
     e.preventDefault();
     if (roomCode.length === 6 && userName.trim()) {
-      // Store the join action and show device setup
       setPendingAction(() => () => onJoinRoom(roomCode, userName.trim()));
       setShowDeviceSetup(true);
     }
   };
 
   const handleCreateSubmit = () => {
-    // Store the create action and show device setup
     setPendingAction(() => () => onCreateRoom(getDJName(), roomMode));
     setShowDeviceSetup(true);
   };
 
   const handleDeviceSetupContinue = () => {
-    // Execute the pending action after device setup
     if (pendingAction) {
       pendingAction();
     }
   };
 
   const handleDeviceSetupSkip = () => {
-    // Skip device setup and execute the pending action
     if (pendingAction) {
       pendingAction();
     }
@@ -57,25 +53,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
       <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.18),transparent_55%)]" />
 
-      {/* Local keyframes */}
-      <style>{`
-        @keyframes sweep {
-          0%   { transform: translateX(-120%); opacity: 0; }
-          10%  { opacity: 0.8; }
-          50%  { opacity: 0.8; }
-          90%  { opacity: 0.6; }
-          100% { transform: translateX(120%); opacity: 0; }
-        }
-        @keyframes spinSlow {
-          0% { transform: translate(-50%, -50%) rotate(0deg); }
-          100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-        @keyframes pulseGlow {
-          0%,100% { opacity: .75; }
-          50% { opacity: 1; }
-        }
-      `}</style>
-
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-5xl">
           <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-white/5 backdrop-blur-xl">
@@ -92,41 +69,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.46)_44%,rgba(0,0,0,0.18)_100%)]" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.14),transparent_60%)]" />
-
-              <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    "linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.18) 45%, rgba(255,0,153,0.10) 55%, transparent 100%)",
-                  mixBlendMode: "screen",
-                  animation: "sweep 3.8s ease-in-out infinite",
-                }}
-              />
-
-              <div
-                className="absolute right-10 md:right-14 top-1/2 pointer-events-none"
-                style={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: "9999px",
-                  background:
-                    "conic-gradient(from 0deg, rgba(255,0,153,0.0), rgba(255,0,153,0.35), rgba(99,102,241,0.30), rgba(255,210,74,0.25), rgba(255,0,153,0.0))",
-                  opacity: 0.55,
-                  animation: "spinSlow 2.8s linear infinite",
-                  transform: "translate(-50%, -50%)",
-                }}
-              />
-              <div
-                className="absolute right-10 md:right-14 top-1/2 pointer-events-none"
-                style={{
-                  width: 92,
-                  height: 92,
-                  borderRadius: "9999px",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  boxShadow: "0 0 40px rgba(255,0,153,0.16)",
-                  transform: "translate(-50%, -50%)",
-                }}
-              />
 
               <div className="absolute bottom-5 left-5 md:bottom-7 md:left-7">
                 <h1 className="text-4xl md:text-6xl font-extrabold">
@@ -166,7 +108,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                     </button>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Device Setup Screen */}
               {showDeviceSetup && (
