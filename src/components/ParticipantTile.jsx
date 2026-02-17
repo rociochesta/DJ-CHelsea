@@ -51,6 +51,15 @@ export default function ParticipantTile({
     }
   }, [cameraPublication?.track, participantName]);
 
+  // Auto-mute/unmute when host changes our mute state in Firebase
+  useEffect(() => {
+    if (!isCurrentUser || !participant.setMicrophoneEnabled) return;
+
+    if (isMuted && participant.isMicrophoneEnabled) {
+      participant.setMicrophoneEnabled(false).catch(console.error);
+    }
+  }, [isMuted, isCurrentUser, participant]);
+
   const handleToggleCamera = async () => {
     if (cameraBusy || !participant.setCameraEnabled) return;
     setCameraBusy(true);
