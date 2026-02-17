@@ -31,11 +31,12 @@ export default function StreamingQueue({
       const newVideoRef = push(queueRef);
 
       await set(newVideoRef, {
+        id: newVideoRef.key,
         fileId: fileId.trim(),
         title: videoTitle.trim(),
         requestedBy: currentUser.name,
         addedAt: Date.now(),
-        type: "google-drive", // differentiate from YouTube videos
+        type: "google-drive",
       });
 
       setFileId("");
@@ -46,6 +47,37 @@ export default function StreamingQueue({
       alert("❌ Failed to add video. Please try again.");
     } finally {
       setIsAdding(false);
+    }
+  };
+
+  const handlePlayVideo = async (video) => {
+    if (!isHost) return;
+
+    try {
+      // Set as current song
+      const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
+      await set(currentSongRef, {
+        fileId: video.fileId,
+        title: video.title,
+        requestedBy: video.requestedBy,
+        addedAt: video.addedAt,
+        type: "google-drive",
+      });
+
+      // Remove from queue
+      const videoRef = ref(database, `karaoke-rooms/${roomCode}/queue/${video.id}`);
+      await remove(videoRef);
+
+      // Update playback state
+      const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
+      await set(playbackRef, {
+        isPlaying: true,
+        videoId: video.fileId,
+        startTime: Date.now(),
+      });
+    } catch (error) {
+      console.error("Failed to play video:", error);
+      alert("❌ Failed to play video. Please try again.");
     }
   };
 
@@ -195,12 +227,20 @@ export default function StreamingQueue({
                 </div>
 
                 {isHost && (
-                  <button
-                    onClick={() => handleRemoveFromQueue(video.id)}
-                    className="flex-shrink-0 px-3 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 text-sm font-semibold transition"
-                  >
-                    Remove
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handlePlayVideo(video)}
+                      className="flex-shrink-0 px-4 py-2 rounded-lg bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-300 text-sm font-semibold transition"
+                    >
+                      Play ▶️
+                    </button>
+                    <button
+                      onClick={() => handleRemoveFromQueue(video.id)}
+                      className="flex-shrink-0 px-3 py-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-300 text-sm font-semibold transition"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 )}
               </div>
             ))}
