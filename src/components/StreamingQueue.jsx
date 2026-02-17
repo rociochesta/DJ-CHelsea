@@ -2,49 +2,50 @@ import React, { useState } from "react";
 import { database, ref, push, set, remove } from "../utils/firebase";
 
 /**
- * StreamingQueue - manages queue of Google Drive videos
- * Host can add videos by pasting Google Drive file IDs
+ * StreamingQueue - manages queue of videos for streaming mode
+ * Host can add videos by pasting any direct video URL (.mp4, Dropbox, etc.)
  */
-export default function StreamingQueue({ 
-  roomCode, 
-  queue, 
+export default function StreamingQueue({
+  roomCode,
+  queue,
   currentSong,
-  isHost, 
-  currentUser 
+  isHost,
+  currentUser
 }) {
-  const [fileId, setFileId] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAddVideo = async (e) => {
     e.preventDefault();
-    
-    if (!fileId.trim() || !videoTitle.trim()) {
-      alert("Please enter both file ID and video title");
+
+    if (!videoUrl.trim() || !videoTitle.trim()) {
+      alert("Please enter both a video URL and title");
       return;
     }
 
     setIsAdding(true);
 
     try {
+      const finalUrl = normalizeVideoUrl(videoUrl.trim());
+
       const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
       const newVideoRef = push(queueRef);
 
       await set(newVideoRef, {
         id: newVideoRef.key,
-        fileId: fileId.trim(),
+        videoUrl: finalUrl,
         title: videoTitle.trim(),
         requestedBy: currentUser.name,
         addedAt: Date.now(),
-        type: "google-drive",
+        type: "streaming",
       });
 
-      setFileId("");
+      setVideoUrl("");
       setVideoTitle("");
-      alert("✅ Video added to queue!");
     } catch (error) {
       console.error("Failed to add video:", error);
-      alert("❌ Failed to add video. Please try again.");
+      alert("Failed to add video. Please try again.");
     } finally {
       setIsAdding(false);
     }
@@ -54,30 +55,27 @@ export default function StreamingQueue({
     if (!isHost) return;
 
     try {
-      // Set as current song
       const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
       await set(currentSongRef, {
-        fileId: video.fileId,
+        videoUrl: video.videoUrl,
         title: video.title,
         requestedBy: video.requestedBy,
         addedAt: video.addedAt,
-        type: "google-drive",
+        type: "streaming",
       });
 
-      // Remove from queue
       const videoRef = ref(database, `karaoke-rooms/${roomCode}/queue/${video.id}`);
       await remove(videoRef);
 
-      // Update playback state
       const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
       await set(playbackRef, {
         isPlaying: true,
-        videoId: video.fileId,
+        videoId: video.videoUrl,
         startTime: Date.now(),
       });
     } catch (error) {
       console.error("Failed to play video:", error);
-      alert("❌ Failed to play video. Please try again.");
+      alert("Failed to play video. Please try again.");
     }
   };
 
@@ -92,46 +90,30 @@ export default function StreamingQueue({
     }
   };
 
-  const extractFileIdFromUrl = (input) => {
-    // If user pastes full Google Drive URL, extract file ID
-    const match = input.match(/\/d\/([a-zA-Z0-9_-]+)/);
-    if (match) {
-      return match[1];
-    }
-    // If it's just the ID, return as is
-    return input.trim();
-  };
-
-  const handleFileIdChange = (e) => {
-    const input = e.target.value;
-    const extracted = extractFileIdFromUrl(input);
-    setFileId(extracted);
-  };
-
   return (
     <div className="space-y-6">
       {/* Add Video Form (Host Only) */}
       {isHost && (
         <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <span>📺</span> Add Video from Google Drive
+            <span>📺</span> Add Video
           </h3>
-          
+
           <form onSubmit={handleAddVideo} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-white/80 mb-2">
-                Google Drive File ID or Share Link
+                Video URL
               </label>
               <input
                 type="text"
-                value={fileId}
-                onChange={handleFileIdChange}
-                placeholder="Paste share link or file ID"
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20 font-mono text-sm"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="Paste any video URL (Dropbox, direct .mp4 link, Google Drive, etc.)"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20 text-sm"
                 disabled={isAdding}
               />
               <div className="mt-2 text-xs text-white/50">
-                Example: https://drive.google.com/file/d/<strong>FILE_ID_HERE</strong>/view
+                Supports: Dropbox links, direct .mp4 URLs, Google Drive share links
               </div>
             </div>
 
@@ -151,7 +133,7 @@ export default function StreamingQueue({
 
             <button
               type="submit"
-              disabled={isAdding || !fileId.trim() || !videoTitle.trim()}
+              disabled={isAdding || !videoUrl.trim() || !videoTitle.trim()}
               className="w-full px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               {isAdding ? "Adding..." : "Add to Queue"}
@@ -160,13 +142,12 @@ export default function StreamingQueue({
 
           <div className="mt-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
             <div className="text-sm text-blue-200 space-y-2">
-              <div className="font-bold">📝 How to share from Google Drive:</div>
-              <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>Upload your video to Google Drive</li>
-                <li>Right-click → Share → Change to "Anyone with the link"</li>
-                <li>Copy the link and paste it above</li>
-                <li>Give it a title and add to queue</li>
-              </ol>
+              <div className="font-bold">How to get video links:</div>
+              <ul className="list-disc list-inside space-y-1 text-xs">
+                <li><strong>Dropbox:</strong> Share link, change <code>?dl=0</code> to <code>?dl=1</code> (auto-converted)</li>
+                <li><strong>Google Drive:</strong> Share as "Anyone with link", paste the share URL</li>
+                <li><strong>Direct link:</strong> Any .mp4 / .webm URL works</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -186,7 +167,6 @@ export default function StreamingQueue({
                 Added by: <span className="text-white">{currentSong.requestedBy}</span>
               </div>
             </div>
-            <div className="text-4xl">▶️</div>
           </div>
         </div>
       )}
@@ -232,7 +212,7 @@ export default function StreamingQueue({
                       onClick={() => handlePlayVideo(video)}
                       className="flex-shrink-0 px-4 py-2 rounded-lg bg-fuchsia-500/20 hover:bg-fuchsia-500/30 text-fuchsia-300 text-sm font-semibold transition"
                     >
-                      Play ▶️
+                      Play
                     </button>
                     <button
                       onClick={() => handleRemoveFromQueue(video.id)}
@@ -248,7 +228,7 @@ export default function StreamingQueue({
         )}
       </div>
 
-      {/* Participant View - Simple message */}
+      {/* Participant View */}
       {!isHost && (
         <div className="text-center text-sm text-white/50 p-4 rounded-xl bg-white/5">
           Only the host can add videos. Sit back and enjoy! 🍿
@@ -256,4 +236,28 @@ export default function StreamingQueue({
       )}
     </div>
   );
+}
+
+/**
+ * Convert common share URLs to direct download URLs the <video> tag can play.
+ */
+function normalizeVideoUrl(url) {
+  // Dropbox: change ?dl=0 to ?dl=1
+  if (url.includes("dropbox.com")) {
+    return url.replace(/[?&]dl=0/, "?dl=1");
+  }
+
+  // Google Drive share link → direct download
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) {
+    return `https://drive.google.com/uc?export=download&confirm=t&id=${driveMatch[1]}`;
+  }
+
+  // Google Drive already-direct link
+  if (url.includes("drive.google.com/uc")) {
+    return url;
+  }
+
+  // Already a direct URL
+  return url;
 }

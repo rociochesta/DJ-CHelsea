@@ -1,16 +1,15 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 
 /**
- * GoogleDrivePlayer - plays videos from Google Drive with synced playback
+ * StreamingVideoPlayer - plays videos from any direct URL with synced playback.
  *
- * Uses an HTML5 <video> element instead of an iframe to avoid Google's
- * frame-ancestors CSP blocking and to get full playback control (play, pause,
- * seek) for proper time-sync across all participants.
+ * Uses HTML5 <video> element for full playback control (play, pause, seek).
+ * Accepts any direct video URL (Dropbox ?dl=1, direct .mp4, Google Drive /uc, etc.)
  *
- * URL: https://drive.google.com/uc?export=download&id=FILE_ID
+ * Kept as GoogleDrivePlayer export name for backward compat with imports.
  */
 const GoogleDrivePlayer = React.memo(({
-  fileId,
+  videoUrl,
   title,
   playbackState,
   onSkip,
@@ -22,11 +21,6 @@ const GoogleDrivePlayer = React.memo(({
   const [videoError, setVideoError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Direct download URL works as a video source without CSP issues
-  const videoUrl = fileId
-    ? `https://drive.google.com/uc?export=download&id=${fileId}`
-    : null;
-
   // Sync playback to global time (same pattern as VideoPlayer.jsx)
   useEffect(() => {
     const video = videoRef.current;
@@ -37,7 +31,7 @@ const GoogleDrivePlayer = React.memo(({
       syncIntervalRef.current = null;
     }
 
-    if (playbackState.isPlaying && fileId) {
+    if (playbackState.isPlaying && videoUrl) {
       const elapsedSeconds = (Date.now() - playbackState.startTime) / 1000;
       video.currentTime = elapsedSeconds;
       video.play().catch((e) => console.warn("Autoplay blocked:", e));
@@ -65,7 +59,7 @@ const GoogleDrivePlayer = React.memo(({
         syncIntervalRef.current = null;
       }
     };
-  }, [playbackState?.isPlaying, playbackState?.startTime, fileId, isHost]);
+  }, [playbackState?.isPlaying, playbackState?.startTime, videoUrl, isHost]);
 
   // If participant manually pauses/seeks, snap back to global time
   const handlePlay = useCallback(() => {
@@ -87,13 +81,14 @@ const GoogleDrivePlayer = React.memo(({
   }, [isHost, onSkip]);
 
   const handleError = useCallback(() => {
+    console.error("Video playback error for URL:", videoUrl);
     setVideoError(true);
-  }, []);
+  }, [videoUrl]);
 
-  // Reset error state when fileId changes
+  // Reset error state when URL changes
   useEffect(() => {
     setVideoError(false);
-  }, [fileId]);
+  }, [videoUrl]);
 
   // Fullscreen
   const handleFullscreen = () => {
@@ -115,7 +110,7 @@ const GoogleDrivePlayer = React.memo(({
     };
   }, []);
 
-  if (!fileId) {
+  if (!videoUrl) {
     return (
       <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5 md:p-7">
         <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
@@ -124,7 +119,7 @@ const GoogleDrivePlayer = React.memo(({
               <div className="text-5xl mb-4">📺</div>
               <div className="text-xl font-extrabold mb-2">No video playing</div>
               <div className="text-white/60">
-                Host will add a video from their Google Drive
+                Host will add a video to the queue
               </div>
             </div>
           </div>
@@ -179,14 +174,17 @@ const GoogleDrivePlayer = React.memo(({
             <div className="text-center p-8">
               <div className="text-5xl mb-4">🚫</div>
               <div className="text-xl font-extrabold mb-2">Can't play this video</div>
-              <div className="text-white/60 mb-4">
-                Make sure the video is shared as "Anyone with the link can view"
+              <div className="text-white/60 mb-2">
+                The URL might not support direct playback.
+              </div>
+              <div className="text-white/40 text-xs mb-4 break-all max-w-md mx-auto">
+                {videoUrl}
               </div>
               <button
-                onClick={() => window.open(`https://drive.google.com/file/d/${fileId}/view`, "_blank")}
+                onClick={() => window.open(videoUrl, "_blank")}
                 className="px-5 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 transition"
               >
-                Open in Google Drive
+                Open link directly
               </button>
             </div>
           </div>
@@ -199,6 +197,7 @@ const GoogleDrivePlayer = React.memo(({
               src={videoUrl}
               className="w-full h-full bg-black"
               controls={isHost}
+              crossOrigin="anonymous"
               playsInline
               onPlay={handlePlay}
               onEnded={handleEnded}
@@ -207,21 +206,11 @@ const GoogleDrivePlayer = React.memo(({
           </div>
         </div>
       )}
-
-      {/* Instructions for host */}
-      {isHost && (
-        <div className="mt-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-          <div className="text-sm text-blue-200">
-            <strong>Tip:</strong> To add videos, upload them to Google Drive,
-            share as "Anyone with the link", and paste the share link or file ID.
-          </div>
-        </div>
-      )}
     </div>
   );
 }, (prevProps, nextProps) => {
   return (
-    prevProps.fileId === nextProps.fileId &&
+    prevProps.videoUrl === nextProps.videoUrl &&
     prevProps.title === nextProps.title &&
     prevProps.playbackState?.isPlaying === nextProps.playbackState?.isPlaying &&
     prevProps.playbackState?.startTime === nextProps.playbackState?.startTime &&

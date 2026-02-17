@@ -111,7 +111,7 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
           {/* Video Player - Switch between YouTube and Google Drive */}
           {isStreaming ? (
             <GoogleDrivePlayer
-              fileId={currentSong?.fileId}
+              videoUrl={currentSong?.videoUrl}
               title={currentSong?.title}
               playbackState={roomState?.playbackState}
               isHost={false}
