@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Track } from "livekit-client";
 import { useTracks } from "@livekit/components-react";
+import { Mic, MicOff, Video, VideoOff, Settings } from "lucide-react";
 
 export default function ParticipantTile({
   participant,
@@ -18,43 +19,33 @@ export default function ParticipantTile({
   const [micBusy, setMicBusy] = useState(false);
 
   const participantName = participant.name || participant.identity || "Unknown";
+  const muteKey = participant.identity || participantName; // ✅ use identity when possible
 
-  // ✅ Use useTracks to get all camera tracks, then filter for this participant
   const tracks = useTracks([Track.Source.Camera]);
-  
+
   const cameraPublication = useMemo(() => {
-    // Find the camera track for this specific participant
     const trackRef = tracks.find(
       (t) => t.participant?.identity === participant?.identity
     );
     return trackRef?.publication || null;
   }, [tracks, participant?.identity]);
 
-  // ✅ Real mic state from LiveKit
   const isMicOn = !!participant.isMicrophoneEnabled;
+  const isCameraEnabled = !!cameraPublication && !cameraPublication.isMuted;
 
-  // ✅ Camera state - check if camera track exists and is not muted
-  const isCameraEnabled = cameraPublication && !cameraPublication.isMuted;
-
-  // Attach video track to video element
   useEffect(() => {
-    const videoElement = videoRef.current;
+    const el = videoRef.current;
     const track = cameraPublication?.track;
 
-    if (videoElement && track) {
-      track.attach(videoElement);
-      console.log(`[${participantName}] Video track attached`);
-      return () => {
-        track.detach(videoElement);
-        console.log(`[${participantName}] Video track detached`);
-      };
+    if (el && track) {
+      track.attach(el);
+      return () => track.detach(el);
     }
-  }, [cameraPublication?.track, participantName]);
+  }, [cameraPublication?.track]);
 
-  // Auto-mute/unmute when host changes our mute state in Firebase
+  // If host muted you (firebase), enforce mute locally (only for current user)
   useEffect(() => {
-    if (!isCurrentUser || !participant.setMicrophoneEnabled) return;
-
+    if (!isCurrentUser || !participant?.setMicrophoneEnabled) return;
     if (isMuted && participant.isMicrophoneEnabled) {
       participant.setMicrophoneEnabled(false).catch(console.error);
     }
@@ -65,7 +56,6 @@ export default function ParticipantTile({
     setCameraBusy(true);
     try {
       await participant.setCameraEnabled(!isCameraEnabled);
-      console.log(`[${participantName}] Camera toggled to: ${!isCameraEnabled}`);
     } catch (e) {
       console.error("Failed to toggle camera:", e);
     } finally {
@@ -79,7 +69,6 @@ export default function ParticipantTile({
     try {
       const next = !participant.isMicrophoneEnabled;
       await participant.setMicrophoneEnabled(next);
-      console.log(`[${participantName}] Mic toggled to: ${next}`);
     } catch (e) {
       console.error("Failed to toggle mic:", e);
     } finally {
@@ -87,15 +76,26 @@ export default function ParticipantTile({
     }
   };
 
+  const frameClass = isSinging
+    ? "border-fuchsia-500/50"
+    : isNext
+    ? "border-indigo-400/30"
+    : "border-white/10";
+
+  const outlineBtn = (tone = "fuchsia") =>
+    tone === "indigo"
+      ? "border-indigo-500/30 hover:border-indigo-400/45 hover:shadow-[0_0_14px_rgba(99,102,241,0.14)]"
+      : tone === "neutral"
+      ? "border-white/10 hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.10)]"
+      : "border-fuchsia-500/35 hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)]";
+
   return (
     <div
-      className={`relative rounded-2xl overflow-hidden border ${
-        isSinging
-          ? "border-fuchsia-500 ring-4 ring-fuchsia-500/30"
-          : isNext
-          ? "border-yellow-500/50 ring-2 ring-yellow-500/20"
-          : "border-white/10"
-      } bg-black aspect-[4/3] sm:aspect-video group`}
+      className={[
+        "relative rounded-3xl overflow-hidden border bg-black/40 aspect-[4/3] sm:aspect-video",
+        "backdrop-blur-md shadow-lg",
+        frameClass,
+      ].join(" ")}
     >
       {isCameraEnabled ? (
         <video
@@ -108,9 +108,9 @@ export default function ParticipantTile({
           }`}
         />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-fuchsia-900/30 to-indigo-900/30">
-          <div className="text-center">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-indigo-600 flex items-center justify-center text-xl sm:text-2xl font-bold mx-auto">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+          <div className="text-center px-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md flex items-center justify-center text-xl sm:text-2xl font-semibold mx-auto text-white/85">
               {participantName?.charAt(0)?.toUpperCase() || "?"}
             </div>
             <p className="text-xs sm:text-sm text-white/70 truncate max-w-[10rem] mx-auto mt-2">
@@ -121,83 +121,107 @@ export default function ParticipantTile({
         </div>
       )}
 
-      {/* Controls overlay - always visible for current user */}
+      {/* Controls overlay (current user) */}
       {isCurrentUser && (
-        <div className="absolute top-2 right-2 flex gap-1.5">
+        <div className="absolute top-3 right-3 flex gap-2">
           <button
             onClick={handleToggleCamera}
             disabled={cameraBusy}
-            className={`p-1.5 rounded-lg backdrop-blur-xl transition text-sm ${
-              isCameraEnabled
-                ? "bg-white/20 hover:bg-white/30"
-                : "bg-red-500/80 hover:bg-red-500"
-            } ${cameraBusy ? "opacity-60 cursor-not-allowed" : ""}`}
+            className={[
+              "w-10 h-10 rounded-2xl border bg-white/[0.03] backdrop-blur-md",
+              "text-white/80 transition active:scale-[0.98]",
+              outlineBtn("neutral"),
+              cameraBusy ? "opacity-60 cursor-not-allowed" : "",
+            ].join(" ")}
             title={isCameraEnabled ? "Turn camera off" : "Turn camera on"}
           >
-            {isCameraEnabled ? "📷" : "🚫"}
+            {isCameraEnabled ? (
+              <VideoOff className="w-4 h-4 mx-auto" />
+            ) : (
+              <Video className="w-4 h-4 mx-auto" />
+            )}
           </button>
 
           <button
             onClick={handleToggleMic}
             disabled={micBusy}
-            className={`p-2 rounded-lg backdrop-blur-xl transition text-sm font-bold ${
-              isMicOn
-                ? "bg-emerald-500/80 hover:bg-emerald-500"
-                : "bg-red-500/80 hover:bg-red-500 animate-pulse"
-            } ${micBusy ? "opacity-60 cursor-not-allowed" : ""}`}
+            className={[
+              "w-10 h-10 rounded-2xl border bg-white/[0.03] backdrop-blur-md",
+              "text-white/80 transition active:scale-[0.98]",
+              outlineBtn("fuchsia"),
+              micBusy ? "opacity-60 cursor-not-allowed" : "",
+            ].join(" ")}
             title={isMicOn ? "Mute mic" : "Unmute mic"}
           >
-            {isMicOn ? "🎙️" : "🔇"}
+            {isMicOn ? (
+              <MicOff className="w-4 h-4 mx-auto" />
+            ) : (
+              <Mic className="w-4 h-4 mx-auto" />
+            )}
           </button>
 
           <button
             onClick={() => window.dispatchEvent(new CustomEvent("open-device-settings"))}
-            className="p-1.5 rounded-lg backdrop-blur-xl bg-white/20 hover:bg-white/30 transition text-sm"
+            className={[
+              "w-10 h-10 rounded-2xl border bg-white/[0.03] backdrop-blur-md",
+              "text-white/80 transition active:scale-[0.98]",
+              outlineBtn("indigo"),
+            ].join(" ")}
             title="Device settings"
           >
-            ⚙️
+            <Settings className="w-4 h-4 mx-auto" />
           </button>
         </div>
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/80 to-transparent p-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-            <span className="text-xs font-semibold truncate">
-              {participantName}
-            </span>
+      {/* Bottom bar (structured glass, no gradient) */}
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg px-3 py-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-semibold text-white/85 truncate">
+                  {participantName}
+                </span>
 
-            {isSinging && (
-              <span className="px-1.5 py-0.5 rounded-md bg-fuchsia-500 text-[9px] font-bold whitespace-nowrap flex items-center gap-0.5">
-                🎤
-              </span>
-            )}
+                {isSinging && (
+                  <span className="text-[10px] px-2 py-1 rounded-2xl border border-fuchsia-500/25 text-white/80">
+                    Singing
+                  </span>
+                )}
 
-            {isNext && !isSinging && (
-              <span className="px-1.5 py-0.5 rounded-md bg-yellow-500/80 text-[9px] font-bold whitespace-nowrap">
-                ⭐
-              </span>
+                {isNext && !isSinging && (
+                  <span className="text-[10px] px-2 py-1 rounded-2xl border border-indigo-500/25 text-white/70">
+                    Next
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {canControlMics && (
+              <button
+                onClick={() => onMuteToggle(muteKey, !isMuted)}
+                className={[
+                  "w-10 h-10 rounded-2xl border bg-transparent",
+                  "text-white/80 transition active:scale-[0.98]",
+                  isMuted ? outlineBtn("indigo") : outlineBtn("fuchsia"),
+                ].join(" ")}
+                title={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? (
+                  <Mic className="w-4 h-4 mx-auto" />
+                ) : (
+                  <MicOff className="w-4 h-4 mx-auto" />
+                )}
+              </button>
             )}
           </div>
-
-          {canControlMics && (
-            <button
-              onClick={() => onMuteToggle(participantName, !isMuted)}
-              className={`p-1 rounded-md transition shrink-0 text-xs ${
-                isMuted
-                  ? "bg-red-500/90 hover:bg-red-500"
-                  : "bg-emerald-500/90 hover:bg-emerald-500"
-              }`}
-              title={isMuted ? "Unmute" : "Mute"}
-            >
-              {isMuted ? "🔇" : "🎙️"}
-            </button>
-          )}
         </div>
       </div>
 
+      {/* Subtle singer frame (no pulsing neon border) */}
       {isSinging && (
-        <div className="absolute inset-0 pointer-events-none border-4 border-fuchsia-500 rounded-2xl animate-pulse" />
+        <div className="absolute inset-0 pointer-events-none border border-fuchsia-500/20 rounded-3xl" />
       )}
     </div>
   );

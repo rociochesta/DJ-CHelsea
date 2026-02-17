@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
+
 import VideoPlayer from "./VideoPlayer";
 import GoogleDrivePlayer from "./GoogleDrivePlayer";
 import SongQueue from "./SongQueue";
@@ -11,6 +12,8 @@ import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
+
+import { Mic, Radio, MonitorPlay, Headphones } from "lucide-react";
 
 function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -178,59 +181,66 @@ function HostView({ roomCode, currentUser, roomState }) {
     [currentUser?.id, currentUser?.name]
   );
 
-  // Get mode label for display
-  const getModeLabel = () => {
-    if (isDJ) return "DJ Mode";
-    if (isStreaming) return "Streaming Mode";
-    return "Karaoke Mode";
-  };
+  const modeMeta = useMemo(() => {
+    if (isDJ) return { label: "DJ Mode", Icon: Headphones };
+    if (isStreaming) return { label: "Streaming Mode", Icon: MonitorPlay };
+    return { label: "Karaoke Mode", Icon: Mic };
+  }, [isDJ, isStreaming]);
+
+  const ModeIcon = modeMeta.Icon;
 
   return (
     <div className="min-h-screen relative overflow-x-hidden text-white">
-      {/* Background */}
+      {/* Background system (3PM) */}
       <div className="absolute inset-0 bg-[#070712]" />
-      <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl opacity-50 bg-fuchsia-600" />
-      <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.18),transparent_55%)]" />
+      {/* very soft accents only */}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.08),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.08),transparent_55%)]" />
 
       {/* Content */}
       <div className="relative p-4 pb-28">
-        <div className="max-w-[1800px] mx-auto">
-          {/* ✅ Sticky external video banner (now in-flow, won't cover top) */}
+        <div className="max-w-[1800px] mx-auto space-y-6">
+          {/* External prompt (sticky, in-flow) */}
           <ExternalVideoPrompt videoLink={roomState?.externalVideoLink} />
 
-          {/* Static Banner */}
-          <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-6">
-            <div className="relative h-28 bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
-              <div className="relative p-5 flex items-center justify-between h-full">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/35 text-xs tracking-widest uppercase">
-                    <span className="w-2 h-2 rounded-full bg-fuchsia-400 shadow-[0_0_18px_rgba(232,121,249,0.8)]" />
-                    Host Console
+          {/* Hero / Banner (clean glass, structured) */}
+          <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg">
+            <div className="p-6 sm:p-7">
+              <div className="flex items-start justify-between gap-6">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-xs tracking-widest uppercase text-white/45">
+                    <ModeIcon className="w-4 h-4 text-white/55" />
+                    <span>Host Console</span>
                   </div>
 
-                  <h1 className="mt-2 text-3xl font-extrabold">
+                  <h1 className="mt-2 text-3xl sm:text-4xl font-extrabold leading-tight">
                     <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
-                      {getModeLabel()}
+                      {modeMeta.label}
                     </span>
                   </h1>
 
-                  <div className="mt-1 text-sm text-white/70">
-                    Room:{" "}
-                    <span className="font-mono text-white tracking-[0.2em] bg-black/35 px-2 py-1 rounded-lg">
+                  <div className="mt-2 text-sm text-white/55">
+                    Room{" "}
+                    <span className="font-mono text-white/80 tracking-[0.18em] px-2 py-1 rounded-xl border border-white/10 bg-white/[0.02]">
                       {roomCode}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <div className="text-xs text-white/50">Host</div>
-                  <div className="font-bold text-lg">{currentUser.name} 🎤</div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-xs text-white/45">Host</div>
+                  <div className="mt-1 inline-flex items-center gap-2 justify-end">
+                    <div className="w-9 h-9 rounded-2xl border border-white/10 bg-white/[0.02] flex items-center justify-center">
+                      <Radio className="w-4 h-4 text-white/70" />
+                    </div>
+                    <div className="font-semibold text-base sm:text-lg text-white/90">
+                      {currentUser?.name}
+                    </div>
+                  </div>
 
                   {isDJ && (
-                    <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
-                      <span className="text-xs font-semibold text-emerald-400">
-                        Mic: FREE (everyone can talk)
+                    <div className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-emerald-500/20 bg-white/[0.02]">
+                      <span className="text-xs font-semibold text-emerald-300/90">
+                        Mic: open (everyone can talk)
                       </span>
                     </div>
                   )}
@@ -239,11 +249,10 @@ function HostView({ roomCode, currentUser, roomState }) {
             </div>
           </div>
 
-          {/* Layout - Video + Content on left, Queue on right */}
+          {/* Layout */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Left Column - Video + Controls */}
+            {/* Left */}
             <div className="xl:col-span-2 space-y-6">
-              {/* Video Player - Switch between YouTube and Google Drive */}
               {isStreaming ? (
                 <GoogleDrivePlayer
                   videoUrl={currentSong?.videoUrl}
@@ -262,7 +271,6 @@ function HostView({ roomCode, currentUser, roomState }) {
                 />
               )}
 
-              {/* Singer Spotlight - Show in all modes */}
               <SingerSpotlight
                 roomCode={roomCode}
                 currentSong={isKaraoke ? currentSong : null}
@@ -275,7 +283,6 @@ function HostView({ roomCode, currentUser, roomState }) {
                 currentUser={currentUser}
               />
 
-              {/* Search/Upload Section - Switch between YouTube and Google Drive */}
               {isStreaming ? (
                 <StreamingQueue
                   roomCode={roomCode}
@@ -285,7 +292,7 @@ function HostView({ roomCode, currentUser, roomState }) {
                   currentUser={currentUser}
                 />
               ) : (
-                <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
+                <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
                   <SongSearch
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
@@ -303,7 +310,7 @@ function HostView({ roomCode, currentUser, roomState }) {
               )}
             </div>
 
-            {/* Right Column - Chat + Queue */}
+            {/* Right */}
             <div className="space-y-6">
               <ChatPanel
                 roomCode={roomCode}
@@ -313,7 +320,7 @@ function HostView({ roomCode, currentUser, roomState }) {
               />
 
               {!isStreaming && (
-                <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
+                <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
                   <SongQueue
                     queue={queue}
                     onPlaySong={handlePlaySong}
@@ -329,7 +336,7 @@ function HostView({ roomCode, currentUser, roomState }) {
         </div>
       </div>
 
-      {/* Reactions and Settings */}
+      {/* Reactions and Settings (these still need 3PM restyle) */}
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
     </div>
