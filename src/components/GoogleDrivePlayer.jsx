@@ -22,7 +22,7 @@ const GoogleDrivePlayer = React.memo(({
   const [embedError, setEmbedError] = useState(false);
 
   // Construct Google Drive embed URL
-  const embedUrl = fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
+  const embedUrl = fileId ? `https://drive.google.com/file/d/${fileId}/preview?autoplay=1` : null;
 
   // Use startTime as a key to force iframe reload when host starts/restarts playback
   const syncKey = `${fileId}-${playbackState?.startTime || 0}`;
@@ -109,14 +109,6 @@ const GoogleDrivePlayer = React.memo(({
               allowFullScreen
               onError={() => setEmbedError(true)}
             />
-            {/* Overlay to block participant controls - prevents pause/seek desync */}
-            {!isHost && (
-              <div
-                className="absolute inset-0"
-                style={{ pointerEvents: "auto" }}
-                title="Playback is synced by the host"
-              />
-            )}
           </div>
         </div>
       )}
@@ -124,7 +116,7 @@ const GoogleDrivePlayer = React.memo(({
       {/* Sync info for participants */}
       {!isHost && (
         <div className="mt-3 text-center text-xs text-white/40">
-          Playback is synced by the host
+          Click play on the video to start watching. When the host switches videos, it will reload automatically.
         </div>
       )}
 
