@@ -2,7 +2,7 @@
 // Put your slide images in public/slides/ and reference the filename here.
 // Supports: PNG, JPG, or PDF (first page).
 
-const MEETING_READINGS = [
+const meetingReadings = [
   {
     id: "who-is-an-addict",
     title: "Who Is an Addict?",
@@ -35,4 +35,4 @@ const MEETING_READINGS = [
   },
 ];
 
-export default MEETING_READINGS;
+export default meetingReadings;
