@@ -14,7 +14,6 @@ import {
   Sparkles,
 } from "lucide-react";
 
-// Replace emoji reactions with lucide-only mapping
 const QUICK_REACTIONS = [
   { key: "fire", label: "🔥", icon: Flame },
   { key: "love", label: "❤️", icon: Heart },
@@ -25,7 +24,6 @@ const QUICK_REACTIONS = [
   { key: "wow", label: "💯", icon: Sparkles },
 ];
 
-// Throttle helper
 const throttle = (func, limit) => {
   let inThrottle;
   return function (...args) {
@@ -41,17 +39,17 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [isOpen, setIsOpen] = useState(true);
-  const messagesEndRef = useRef(null);
-  const chatContainerRef = useRef(null);
 
-  // Throttled update function
+  const chatContainerRef = useRef(null);
+  const inputRef = useRef(null);
+
+  // Track whether user is near bottom (so we don't yank them around)
+  const stickToBottomRef = useRef(true);
+
   const updateMessages = useRef(
-    throttle((messageList) => {
-      setMessages(messageList);
-    }, 100)
+    throttle((messageList) => setMessages(messageList), 100)
   ).current;
 
-  // Listen to chat messages
   useEffect(() => {
     if (!roomCode) return;
 
@@ -74,11 +72,30 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     return () => unsubscribe();
   }, [roomCode, updateMessages]);
 
-  // Auto-scroll to bottom when new messages arrive
+  // 👇 track if user scrolls up
   useEffect(() => {
-    if (isOpen && messagesEndRef.current) {
+    const el = chatContainerRef.current;
+    if (!el) return;
+
+    const onScroll = () => {
+      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      stickToBottomRef.current = distanceFromBottom < 120;
+    };
+
+    el.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [isOpen]);
+
+  // ✅ scroll only the chat container (not the page), and only if user is near bottom
+  useEffect(() => {
+    const el = chatContainerRef.current;
+    if (!isOpen || !el) return;
+
+    if (stickToBottomRef.current) {
       requestAnimationFrame(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
       });
     }
   }, [messages.length, isOpen]);
@@ -98,26 +115,35 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
       userName: currentUser.name,
       message: messageToSend,
       timestamp: Date.now(),
-    }).catch((err) => {
-      console.error("Failed to send message:", err);
-      setMessage(messageToSend);
-    });
+    })
+      .then(() => {
+        // keep typing flow
+        requestAnimationFrame(() => inputRef.current?.focus());
+      })
+      .catch((err) => {
+        console.error("Failed to send message:", err);
+        setMessage(messageToSend);
+      });
   };
 
   const handleSendReaction = (reaction) => {
     const chatRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
     const newMessageRef = push(chatRef);
 
-    // Keep existing wire format (message is emoji string) so your DB / other clients don't break.
     set(newMessageRef, {
       userId: currentUser.id,
       userName: currentUser.name,
-      message: reaction.label,
+      message: reaction.label, // keeping existing DB format
       isEmoji: true,
       timestamp: Date.now(),
-    }).catch((err) => {
-      console.error("Failed to send reaction:", err);
-    });
+    })
+      .then(() => {
+        // keep focus in input (don’t kick them out of typing)
+        requestAnimationFrame(() => inputRef.current?.focus());
+      })
+      .catch((err) => {
+        console.error("Failed to send reaction:", err);
+      });
   };
 
   const CardShell = ({ children, className = "", style }) => (
@@ -140,6 +166,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
         <h3 className={["font-semibold", compact ? "text-sm" : "text-base"].join(" ")}>
           Chat
         </h3>
+
         {currentSong?.title ? (
           <div className="hidden sm:flex items-center gap-2 ml-3 text-xs text-white/50">
             <Sparkles className="w-3.5 h-3.5" />
@@ -148,15 +175,15 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
         ) : null}
       </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => setIsOpen(false)}
-          className="px-3 py-1.5 rounded-xl border border-white/10 bg-transparent text-white/70 hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)] transition active:scale-[0.98]"
-          title="Minimize"
-        >
-          <Minus className="w-4 h-4" />
-        </button>
-      </div>
+      <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => setIsOpen(false)}
+        className="px-3 py-1.5 rounded-xl border border-white/10 bg-transparent text-white/70 hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)] transition active:scale-[0.98]"
+        title="Minimize"
+      >
+        <Minus className="w-4 h-4" />
+      </button>
     </div>
   );
 
@@ -168,16 +195,20 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
           return (
             <button
               key={r.key}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()} // ✅ don't steal focus
               onClick={() => handleSendReaction(r)}
               className={[
                 "shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl",
                 "border border-fuchsia-500/25 text-white/80 bg-transparent",
-                "hover:border-fuchsia-400/40 hover:text-white hover:shadow-[0_0_14px_rgba(232,121,249,0.14)]",
-                "transition active:scale-[0.98]",
+                "hover:border-fuchsia-400/45 hover:text-white",
+                "hover:shadow-[0_0_14px_rgba(232,121,249,0.18)]",
+                "active:scale-[0.98] transition",
               ].join(" ")}
               title={r.key}
             >
-              <Icon className="w-4 h-4" />
+              {/* subtle neon icon behavior */}
+              <Icon className="w-4 h-4 text-white/75 group-hover:text-white" />
               <span className="text-xs font-medium">{r.key}</span>
             </button>
           );
@@ -204,18 +235,17 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
             <MessageSquare className="w-5 h-5 text-white/50" />
           </div>
           <div className="mt-3">No messages yet</div>
-          <div className="text-xs mt-1 text-white/35">Say something to start the chaos (politely).</div>
+          <div className="text-xs mt-1 text-white/35">
+            Say something to start the chaos (politely).
+          </div>
         </div>
       ) : (
         messages.map((msg) => {
           const isMe = msg.userId === currentUser.id;
           const isEmojiOnly =
             msg.isEmoji ||
-            (msg.message &&
-              msg.message.length <= 2 &&
-              /^\p{Emoji}+$/u.test(msg.message));
+            (msg.message && msg.message.length <= 2 && /^\p{Emoji}+$/u.test(msg.message));
 
-          // Keep emoji messages readable but avoid “emoji UI” elsewhere
           const bubbleClass = isEmojiOnly
             ? "bg-transparent border-transparent text-3xl px-2 py-1"
             : isMe
@@ -226,43 +256,25 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
             <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[80%] ${isMe ? "items-end" : "items-start"} flex flex-col`}>
                 {!isMe && (
-                  <div className="text-[10px] text-white/45 mb-1 px-2">
-                    {msg.userName}
-                  </div>
+                  <div className="text-[10px] text-white/45 mb-1 px-2">{msg.userName}</div>
                 )}
 
-                <div
-                  className={[
-                    "rounded-2xl border",
-                    "px-3 py-2 text-sm",
-                    "shadow-sm",
-                    bubbleClass,
-                  ].join(" ")}
-                >
+                <div className={["rounded-2xl border px-3 py-2 text-sm shadow-sm", bubbleClass].join(" ")}>
                   {msg.message}
                 </div>
-
-                {!compact && msg.timestamp ? (
-                  <div className="text-[10px] text-white/25 mt-1 px-2">
-                    {new Date(msg.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </div>
-                ) : null}
               </div>
             </div>
           );
         })
       )}
-      <div ref={messagesEndRef} />
     </div>
   );
 
-  const Input = ({ compact = false }) => (
+  const Input = () => (
     <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-black/20">
       <div className="flex gap-2">
         <input
+          ref={inputRef}
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -279,6 +291,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
         <button
           type="submit"
           disabled={!message.trim()}
+          onMouseDown={(e) => e.preventDefault()} // ✅ keep focus behavior consistent
           className={[
             "inline-flex items-center gap-2 px-3 py-2 rounded-xl",
             "bg-transparent border border-fuchsia-500/35 text-white/85",
@@ -295,11 +308,12 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     </form>
   );
 
-  // --- INLINE MODE (embedded in layout) ---
+  // INLINE
   if (inline) {
     if (!isOpen) {
       return (
         <button
+          type="button"
           onClick={() => setIsOpen(true)}
           className={[
             "w-full px-4 py-3 rounded-2xl text-left",
@@ -321,15 +335,16 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
         <Header compact />
         <Messages compact />
         <ReactionsRow />
-        <Input compact />
+        <Input />
       </CardShell>
     );
   }
 
-  // --- FLOATING MODE (original behavior, restyled) ---
+  // FLOATING
   if (!isOpen) {
     return (
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
         className={[
           "fixed bottom-4 left-4 z-40",
@@ -357,13 +372,10 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
             <h3 className="font-semibold">Chat</h3>
           </div>
           <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setIsOpen(false)}
-            className={[
-              "px-3 py-1.5 rounded-xl",
-              "bg-transparent border border-white/10 text-white/70",
-              "hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)]",
-              "transition active:scale-[0.98]",
-            ].join(" ")}
+            className="px-3 py-1.5 rounded-xl bg-transparent border border-white/10 text-white/70 hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)] transition active:scale-[0.98]"
             title="Close"
           >
             <X className="w-4 h-4" />
