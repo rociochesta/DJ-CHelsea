@@ -2,10 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
 import HostCameraPreview from "./HostCameraPreview";
 import {
-  useLocalParticipant,
   useParticipants,
-  ParticipantTile as LKParticipantTile,
+  TrackLoop,
+  VideoTrack,
+  AudioTrack,
 } from "@livekit/components-react";
+import { Track } from "livekit-client";
 
 const VideoPlayer = React.memo(
   function VideoPlayer({
@@ -267,29 +269,57 @@ const VideoPlayer = React.memo(
       const shouldShowHostTile =
         !isHost && showHostWhenIdle && isDJ && hostCandidate;
 
-      return (
-        <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5 md:p-7">
-          <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
-            <div className="aspect-video relative bg-gradient-to-br from-fuchsia-900/20 to-indigo-900/20">
-              {shouldShowHostTile ? (
-                <div className="absolute inset-0">
-                  <LKParticipantTile participant={hostCandidate} className="w-full h-full" />
-                  <div className="absolute inset-0 bg-black/35" />
-                  <div className="absolute left-4 top-4 rounded-2xl px-4 py-3 border border-white/10 bg-white/10 backdrop-blur-md">
-                    <div className="text-lg font-extrabold text-fuchsia-200">DJ is live</div>
-                    <div className="text-xs text-white/60">Waiting for the host to press play…</div>
-                  </div>
+// ✅ IDLE (no song)
+if (!currentSong) {
+  const isDJ = roomMode === "dj";
+  const shouldShowHostTile = !isHost && showHostWhenIdle && isDJ && hostCandidate;
+
+  return (
+    <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5 md:p-7">
+      <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
+        <div className="aspect-video relative bg-gradient-to-br from-fuchsia-900/20 to-indigo-900/20">
+          {shouldShowHostTile ? (
+            <div className="absolute inset-0">
+              {/* ✅ Host camera (remote participant) */}
+              <TrackLoop
+                tracks={[
+                  { participant: hostCandidate, source: Track.Source.Camera },
+                ]}
+              >
+                <VideoTrack className="w-full h-full object-cover" />
+              </TrackLoop>
+
+              {/* ✅ Optional: host audio (so participants hear DJ talking even when idle) */}
+              <TrackLoop
+                tracks={[
+                  { participant: hostCandidate, source: Track.Source.Microphone },
+                ]}
+              >
+                <AudioTrack />
+              </TrackLoop>
+
+              <div className="absolute inset-0 bg-black/35" />
+
+              <div className="absolute left-4 top-4 rounded-2xl px-4 py-3 border border-white/10 bg-white/10 backdrop-blur-md">
+                <div className="text-lg font-extrabold text-fuchsia-200">
+                  DJ is live
                 </div>
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  {/* fallback: keep old behavior for host / non-DJ */}
-                  <HostCameraPreview isHost={isHost} />
+                <div className="text-xs text-white/60">
+                  Waiting for the host to press play…
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              {/* fallback: keep old behavior for host / non-DJ */}
+              <HostCameraPreview isHost={isHost} />
+            </div>
+          )}
         </div>
-      );
+      </div>
+    </div>
+  );
+}
     }
 
     return (
