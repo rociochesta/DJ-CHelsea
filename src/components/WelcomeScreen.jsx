@@ -11,9 +11,12 @@ import {
 import PreJoinDeviceSetup from "./PreJoinDeviceSetup";
 
 function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
-  const [mode, setMode] = useState(null);
+  const [mode, setMode] = useState(null); // null | "create" | "join"
   const [roomCode, setRoomCode] = useState("");
-  const [userName, setUserName] = useState("");
+
+  // ✅ separate names (future-proof for host transfer)
+  const [hostName, setHostName] = useState("");
+  const [participantName, setParticipantName] = useState("");
 
   // backend modes: dj, karaoke, streaming
   const [roomMode, setRoomMode] = useState("dj");
@@ -23,7 +26,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [showDeviceSetup, setShowDeviceSetup] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
-  // Rotating banner images (put simpler ones here later)
+  // ✅ Rotating banners only (text static)
   const heroBanners = useMemo(
     () => [
       "/banners/3pm-jam.png",
@@ -49,20 +52,21 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
     return () => clearInterval(t);
   }, [heroBanners]);
 
-  const getDJName = () => userName.trim() || "DJ";
+  const getHostName = () => hostName.trim() || "DJ";
 
   const handleJoinSubmit = (e) => {
     e.preventDefault();
-    if (roomCode.length === 6 && userName.trim()) {
-      setPendingAction(() => () => onJoinRoom(roomCode, userName.trim()));
+    if (roomCode.length === 6 && participantName.trim()) {
+      setPendingAction(() => () => onJoinRoom(roomCode, participantName.trim()));
       setShowDeviceSetup(true);
     }
   };
 
   const handleCreateSubmit = () => {
+    if (!hostName.trim()) return; // ✅ require host name
     setPendingAction(
       () => () =>
-        onCreateRoom(getDJName(), roomMode, useExternalVideo ? externalVideoLink : null)
+        onCreateRoom(getHostName(), roomMode, useExternalVideo ? externalVideoLink : null)
     );
     setShowDeviceSetup(true);
   };
@@ -77,42 +81,16 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   };
 
   const cards = [
-    {
-      key: "dj",
-      t: "3PM Jam",
-      d: "Bring your tragic bangers. We’ll vibe responsibly and cry privately.",
-      chip: "Queue • vibes • no mic drama",
-      Icon: Headphones,
-    },
-    {
-      key: "karaoke",
-      t: "3PM Karaoke",
-      d: "Live singing, spotlight, consent-based chaos. No emotional jump scares.",
-      chip: "Mic • spotlight • rules",
-      Icon: Mic,
-    },
-    {
-      key: "streaming",
-      t: "3PM Streaming",
-      d: "Watch together in sync. Pause like an adult. Rewind like a villain.",
-      chip: "Sync • playback • watch party",
-      Icon: MonitorPlay,
-    },
-    {
-      key: "meeting",
-      t: "3PM Meeting (Soon)",
-      d: "Zoom but prettier. Same humans, better UI, fewer reasons to scream.",
-      chip: "Overlay • tools • polish",
-      Icon: Users,
-      soon: true,
-    },
+    { t: "3PM Jam", d: "Bring your tragic bangers. We’ll vibe responsibly and cry privately.", chip: "Queue • vibes • no mic drama", Icon: Headphones },
+    { t: "3PM Karaoke", d: "Live singing, spotlight, consent-based chaos. No emotional jump scares.", chip: "Mic • spotlight • rules", Icon: Mic },
+    { t: "3PM Streaming", d: "Watch together in sync. Pause like an adult. Rewind like a villain.", chip: "Sync • playback • watch party", Icon: MonitorPlay },
+    { t: "3PM Meeting (Soon)", d: "Zoom but prettier. Same humans, better UI, fewer reasons to scream.", chip: "Overlay • tools • polish", Icon: Users, soon: true },
   ];
 
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
-      {/* Background: calmer, less gamey */}
       <div className="absolute inset-0 bg-[#070712]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.10),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.10),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.12),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.12),transparent_60%)]" />
 
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-5xl">
@@ -127,24 +105,24 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 decoding="async"
               />
 
-              {/* Make overlay more “professional”: fewer gradients, more tint */}
-              <div className="absolute inset-0 bg-black/55" />
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.65)_0%,rgba(0,0,0,0.35)_50%,rgba(0,0,0,0.20)_100%)]" />
+              {/* light overlays */}
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.44)_48%,rgba(0,0,0,0.18)_100%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.14),transparent_60%)]" />
 
               <div className="absolute bottom-5 left-5 md:bottom-7 md:left-7">
-                {/* Static title (no gradient) */}
-                <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-                  <span className="text-fuchsia-300">3PM</span>{" "}
-                  <span className="text-white">Hub</span>
+                <h1 className="text-4xl md:text-6xl font-extrabold">
+                  <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
+                    3PM Hub
+                  </span>
                 </h1>
-                <p className="mt-2 text-base md:text-lg text-white/85 max-w-[44ch]">
+                <p className="mt-2 text-base md:text-lg text-white/90">
                   Everything happens here. Emotionally supervised chaos.
                 </p>
               </div>
             </div>
 
             <div className="p-6 md:p-10">
-              {/* CTA */}
+              {/* LANDING CTA */}
               {!mode && !showDeviceSetup && (
                 <div className="text-center">
                   <p className="text-white/60 mb-6">
@@ -152,12 +130,16 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    {/* Neon outline buttons */}
                     <button
-                      onClick={() => setMode("create")}
+                      onClick={() => {
+                        setMode("create");
+                        // optional: clear join-only fields
+                        setRoomCode("");
+                        setParticipantName("");
+                      }}
                       className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold
-                        border border-fuchsia-400/50 bg-transparent
-                        hover:border-fuchsia-300 hover:shadow-[0_0_0_1px_rgba(255,0,153,0.25),0_0_30px_rgba(255,0,153,0.18)]
+                        border border-fuchsia-400/55 bg-transparent
+                        hover:border-fuchsia-300 hover:shadow-[0_0_0_1px_rgba(255,0,153,0.22),0_0_34px_rgba(255,0,153,0.18)]
                         active:scale-[0.99] transition"
                     >
                       <span className="inline-flex items-center gap-2">
@@ -167,7 +149,11 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                     </button>
 
                     <button
-                      onClick={() => setMode("join")}
+                      onClick={() => {
+                        setMode("join");
+                        // optional: clear create-only fields
+                        setHostName("");
+                      }}
                       className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold
                         border border-white/15 bg-white/5
                         hover:bg-white/8 hover:border-white/25
@@ -208,52 +194,46 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                     ← Back
                   </button>
 
-                  <h2 className="text-2xl font-bold mb-2">Choose your chaos</h2>
-                  <p className="text-white/60 mb-6">Select what kind of room you’re running today.</p>
+                  <h2 className="text-2xl font-bold mb-2">Create a room</h2>
+                  <p className="text-white/60 mb-6">Host name first. Chaos second.</p>
+
+                  {/* ✅ host name */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-white/80 mb-2">
+                      Host name
+                    </label>
+                    <input
+                      type="text"
+                      value={hostName}
+                      onChange={(e) => setHostName(e.target.value)}
+                      placeholder="DJ Chelsea’s supervisor"
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
+                      required
+                    />
+                  </div>
+
+                  <h3 className="text-lg font-bold mb-3">Choose mode</h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    {/* JAM */}
                     <ModeCard
                       active={roomMode === "dj"}
                       onClick={() => setRoomMode("dj")}
                       title="Jam Mode"
                       subtitle="Listening party. Feelings allowed. Sermons not."
-                      bullets={[
-                        "Queue and play",
-                        "Video-only (clean audio)",
-                        "Perfect for “I’m fine” playlists",
-                        "Zero mic chaos",
-                      ]}
                       Icon={Headphones}
                     />
-
-                    {/* KARAOKE */}
                     <ModeCard
                       active={roomMode === "karaoke"}
                       onClick={() => setRoomMode("karaoke")}
                       title="Karaoke Mode"
-                      subtitle="Full chaos, live singing, spotlight — consent-based."
-                      bullets={[
-                        "Live mic for singers",
-                        "Singer spotlight view",
-                        "Auto mic policy",
-                        "“Respectful but unhinged” ready",
-                      ]}
+                      subtitle="Live mic, spotlight, consent-based chaos."
                       Icon={Mic}
                     />
-
-                    {/* STREAMING */}
                     <ModeCard
                       active={roomMode === "streaming"}
                       onClick={() => setRoomMode("streaming")}
                       title="Streaming Mode"
-                      subtitle="Watch together, synced. Pause like an adult."
-                      bullets={[
-                        "Synced video playback",
-                        "Shared time controls",
-                        "Movie nights, clip nights, chaos nights",
-                        "Your vibe, your rules",
-                      ]}
+                      subtitle="Watch together in sync. Pause like an adult."
                       Icon={MonitorPlay}
                     />
                   </div>
@@ -271,7 +251,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           Use external video chat (Zoom, Meet, etc.)
                         </div>
                         <div className="text-sm text-white/60 mt-1">
-                          Your app handles the synced experience. Video chat lives elsewhere.
+                          3PM sync runs here. Video chat lives elsewhere.
                         </div>
                       </div>
                     </label>
@@ -289,7 +269,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20 text-sm"
                         />
                         <div className="mt-2 text-xs text-white/50">
-                          Tip: paste the link here so people don’t ask “where’s the Zoom” 14 times.
+                          Tip: paste the link so nobody asks “where’s the Zoom” 14 times.
                         </div>
                       </div>
                     )}
@@ -297,9 +277,11 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
                   <button
                     onClick={handleCreateSubmit}
+                    disabled={!hostName.trim()}
                     className="w-full px-6 py-3 rounded-xl font-semibold
                       border border-fuchsia-400/55 bg-transparent
-                      hover:border-fuchsia-300 hover:shadow-[0_0_0_1px_rgba(255,0,153,0.25),0_0_34px_rgba(255,0,153,0.20)]
+                      disabled:opacity-40 disabled:cursor-not-allowed
+                      hover:border-fuchsia-300 hover:shadow-[0_0_0_1px_rgba(255,0,153,0.22),0_0_34px_rgba(255,0,153,0.18)]
                       transition"
                   >
                     <span className="inline-flex items-center justify-center gap-2">
@@ -332,8 +314,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         </label>
                         <input
                           type="text"
-                          value={userName}
-                          onChange={(e) => setUserName(e.target.value)}
+                          value={participantName}
+                          onChange={(e) => setParticipantName(e.target.value)}
                           placeholder="Someone emotionally responsible"
                           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                           required
@@ -357,7 +339,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
                       <button
                         type="submit"
-                        disabled={roomCode.length !== 6 || !userName.trim()}
+                        disabled={roomCode.length !== 6 || !participantName.trim()}
                         className="w-full px-6 py-3 rounded-xl font-semibold
                           border border-white/15 bg-white/5
                           disabled:opacity-40 disabled:cursor-not-allowed
@@ -380,7 +362,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         soon ? "opacity-65" : ""
                       }`}
                     >
-                      {/* Icon NEXT to title */}
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center">
                           <Icon className="w-5 h-5 text-white/85" />
@@ -412,13 +393,13 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   );
 }
 
-function ModeCard({ active, onClick, title, subtitle, bullets, Icon }) {
+function ModeCard({ active, onClick, title, subtitle, Icon }) {
   return (
     <button
       onClick={onClick}
       className={`p-6 rounded-2xl border transition text-left ${
         active
-          ? "border-fuchsia-400/60 bg-white/5 shadow-[0_0_0_1px_rgba(255,0,153,0.18),0_0_30px_rgba(255,0,153,0.10)]"
+          ? "border-fuchsia-400/60 bg-white/5 shadow-[0_0_0_1px_rgba(255,0,153,0.18),0_0_28px_rgba(255,0,153,0.10)]"
           : "border-white/10 bg-black/20 hover:border-white/20"
       }`}
     >
@@ -440,13 +421,7 @@ function ModeCard({ active, onClick, title, subtitle, bullets, Icon }) {
       </div>
 
       <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-sm text-white/70 mb-3">{subtitle}</p>
-
-      <ul className="text-xs text-white/55 space-y-1">
-        {bullets.map((b) => (
-          <li key={b}>✓ {b}</li>
-        ))}
-      </ul>
+      <p className="text-sm text-white/70">{subtitle}</p>
     </button>
   );
 }
