@@ -9,9 +9,11 @@ import {
   AudioTrack,
 } from "@livekit/components-react";
 import { Track } from "livekit-client";
+import { database, ref, update } from "../utils/firebase";
 
 const VideoPlayer = React.memo(
   function VideoPlayer({
+    roomCode,
     currentSong,
     playbackState,
     onSkip,
@@ -43,6 +45,7 @@ const VideoPlayer = React.memo(
     const syncIntervalRef = useRef(null);
     const wasPlayingRef = useRef(false);
     const cameraWasOnRef = useRef(false);
+    const hostSyncLockRef = useRef(false);
 
     // ✅ PERFORMANCE MODE (OPT-IN): only disable camera if user enables it
     useEffect(() => {
@@ -107,7 +110,11 @@ const VideoPlayer = React.memo(
           );
           player.seekTo(elapsedSeconds, true);
           player.playVideo();
+hostSyncLockRef.current = true;
+setTimeout(() => (hostSyncLockRef.current = false), 200);
 
+player.seekTo(elapsedSeconds, true);
+player.playVideo();
           if (!isHost) {
             syncIntervalRef.current = setInterval(() => {
               try {
@@ -128,10 +135,12 @@ const VideoPlayer = React.memo(
               }
             }, 3000);
           }
-        } else {
-          // ✅ host paused/stopped -> pause everyone
-          player.pauseVideo();
-        }
+  } else {
+  hostSyncLockRef.current = true;
+  setTimeout(() => (hostSyncLockRef.current = false), 200);
+
+  player.pauseVideo();
+}
       } catch (error) {
         console.error("Error syncing playback:", error);
       }
@@ -162,49 +171,79 @@ const VideoPlayer = React.memo(
 
     // ✅ Enforce host pause globally:
     // If host paused (playbackState.isPlaying === false), participants cannot keep playing.
-    const onStateChange = (event) => {
-      if (isHost) return;
-      if (!player) return;
+const onStateChange = async (event) => {
+  if (!player) return;
 
-      // participant tried to play while host paused
-      if (playbackState && playbackState.isPlaying === false && event.data === 1) {
-        try {
-          player.pauseVideo();
-        } catch (e) {
-          console.error("Failed to enforce host pause:", e);
-        }
+  // YouTube states:
+  // 0 ended, 1 playing, 2 paused, 3 buffering
+
+  // ✅ HOST: broadcast pause/play to Firebase
+  if (isHost && playbackState?.videoId) {
+    if (hostSyncLockRef.current) return;
+
+    const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
+
+    try {
+      // Host paused
+      if (event.data === 2) {
+        const t = Math.floor(player.getCurrentTime());
+        await update(playbackRef, {
+          isPlaying: false,
+          pausedAtSeconds: t,
+        });
         return;
       }
 
-      // existing anti-pause rule (only when host is playing)
-      if (!isHost && playbackState?.isPlaying && player) {
-        const elapsedSeconds = Math.floor(
-          (Date.now() - playbackState.startTime) / 1000
-        );
+      // Host playing / resuming
+      if (event.data === 1) {
+        const pausedAtSeconds =
+          typeof playbackState?.pausedAtSeconds === "number"
+            ? playbackState.pausedAtSeconds
+            : Math.floor(player.getCurrentTime());
 
-        if (event.data === 2) {
-          try {
-            player.seekTo(elapsedSeconds, true);
-            player.playVideo();
-          } catch (e) {
-            console.error("Failed to force resume after pause:", e);
-          }
-          return;
-        }
-
-        if (event.data === 1) {
-          try {
-            const playerTime = Math.floor(player.getCurrentTime());
-            if (Math.abs(elapsedSeconds - playerTime) > 1) {
-              player.seekTo(elapsedSeconds, true);
-            }
-            player.playVideo();
-          } catch (e) {
-            console.error("Failed to sync on manual play:", e);
-          }
-        }
+        await update(playbackRef, {
+          isPlaying: true,
+          startTime: Date.now() - pausedAtSeconds * 1000,
+          pausedAtSeconds: null,
+        });
+        return;
       }
-    };
+    } catch (e) {
+      console.error("Failed to broadcast host playback:", e);
+    }
+  }
+
+  // ✅ PARTICIPANTS: cannot play if host paused
+  if (!isHost && playbackState && playbackState.isPlaying === false && event.data === 1) {
+    try {
+      player.pauseVideo();
+    } catch (e) {}
+    return;
+  }
+
+  // ✅ PARTICIPANTS: keep sync when playing
+  if (!isHost && playbackState?.isPlaying) {
+    const elapsedSeconds = Math.floor((Date.now() - playbackState.startTime) / 1000);
+
+    if (event.data === 2) {
+      try {
+        player.seekTo(elapsedSeconds, true);
+        player.playVideo();
+      } catch (e) {}
+      return;
+    }
+
+    if (event.data === 1) {
+      try {
+        const playerTime = Math.floor(player.getCurrentTime());
+        if (Math.abs(elapsedSeconds - playerTime) > 1) {
+          player.seekTo(elapsedSeconds, true);
+        }
+        player.playVideo();
+      } catch (e) {}
+    }
+  }
+};
 
     const onEnd = () => {
       if (!isHost) return;

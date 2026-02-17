@@ -310,12 +310,13 @@ function HostView({ roomCode, currentUser, roomState }) {
                   requestedBy={currentSong?.requestedBy}
                 />
               ) : (
-                <VideoPlayer
-                  currentSong={currentSong}
-                  playbackState={roomState?.playbackState}
-                  onSkip={handleSkipSong}
-                  isHost={true}
-                />
+<VideoPlayer
+  roomCode={roomCode}
+  currentSong={currentSong}
+  playbackState={roomState?.playbackState}
+  onSkip={handleSkipSong}
+  isHost={true}
+/>
               )}
 
               <SingerSpotlight

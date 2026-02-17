@@ -172,7 +172,8 @@ const ONE_SONG_MESSAGES = [
               requestedBy={currentSong?.requestedBy}
             />
           ) : (
- <VideoPlayer
+<VideoPlayer
+  roomCode={roomCode}
   currentSong={currentSong}
   playbackState={roomState?.playbackState}
   isHost={false}
