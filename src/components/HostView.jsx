@@ -14,8 +14,10 @@ import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
 
 import HostControlPanel from "./HostControlPanel";
+import MeetingDisplay from "./MeetingDisplay";
+import MeetingReadingsList from "./MeetingReadingsList";
 
-import { Mic, Radio, MonitorPlay, Headphones, Sliders } from "lucide-react";
+import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen } from "lucide-react";
 
 function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,6 +31,7 @@ function HostView({ roomCode, currentUser, roomState }) {
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
   const isKaraoke = roomMode === "karaoke";
+  const isMeeting = roomMode === "meeting";
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -189,6 +192,11 @@ function HostView({ roomCode, currentUser, roomState }) {
     await update(controlsRef, updates);
   };
 
+  const handleSelectReading = async (readingId) => {
+    const readingRef = ref(database, `karaoke-rooms/${roomCode}/activeReadingId`);
+    await set(readingRef, readingId);
+  };
+
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
   const participants = roomState?.participants ? Object.values(roomState.participants) : [];
   const currentSong = roomState?.currentSong;
@@ -206,8 +214,9 @@ function HostView({ roomCode, currentUser, roomState }) {
   const modeMeta = useMemo(() => {
     if (isDJ) return { label: "DJ Mode", Icon: Headphones };
     if (isStreaming) return { label: "Streaming Mode", Icon: MonitorPlay };
+    if (isMeeting) return { label: "Meeting Mode", Icon: BookOpen };
     return { label: "Karaoke Mode", Icon: Mic };
-  }, [isDJ, isStreaming]);
+  }, [isDJ, isStreaming, isMeeting]);
 
   const ModeIcon = modeMeta.Icon;
 
@@ -285,7 +294,13 @@ function HostView({ roomCode, currentUser, roomState }) {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Left */}
             <div className="xl:col-span-2 space-y-6">
-              {isStreaming ? (
+              {isMeeting ? (
+                <MeetingDisplay
+                  activeReadingId={roomState?.activeReadingId || null}
+                  isHost={true}
+                  onSelectReading={handleSelectReading}
+                />
+              ) : isStreaming ? (
                 <GoogleDrivePlayer
                   videoUrl={currentSong?.videoUrl}
                   title={currentSong?.title}
@@ -316,35 +331,44 @@ function HostView({ roomCode, currentUser, roomState }) {
                 micsLocked={roomState?.hostControls?.micsLocked || false}
               />
 
-              {isStreaming ? (
-                <StreamingQueue
-                  roomCode={roomCode}
-                  queue={queue}
-                  currentSong={currentSong}
-                  isHost={true}
-                  currentUser={currentUser}
-                />
-              ) : (
-                <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
-                  <SongSearch
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                    onSearch={handleSearch}
-                    isSearching={isSearching}
-                    searchResults={searchResults}
-                    onAddToQueue={handleAddToQueue}
-                    hasSearched={hasSearched}
-                    currentUser={currentUser}
-                    participants={participants}
+              {!isMeeting && (
+                isStreaming ? (
+                  <StreamingQueue
                     roomCode={roomCode}
-                    isParticipant={false}
+                    queue={queue}
+                    currentSong={currentSong}
+                    isHost={true}
+                    currentUser={currentUser}
                   />
-                </div>
+                ) : (
+                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
+                    <SongSearch
+                      searchQuery={searchQuery}
+                      setSearchQuery={setSearchQuery}
+                      onSearch={handleSearch}
+                      isSearching={isSearching}
+                      searchResults={searchResults}
+                      onAddToQueue={handleAddToQueue}
+                      hasSearched={hasSearched}
+                      currentUser={currentUser}
+                      participants={participants}
+                      roomCode={roomCode}
+                      isParticipant={false}
+                    />
+                  </div>
+                )
               )}
             </div>
 
             {/* Right */}
             <div className="space-y-6">
+              {isMeeting && (
+                <MeetingReadingsList
+                  activeReadingId={roomState?.activeReadingId || null}
+                  onSelectReading={handleSelectReading}
+                />
+              )}
+
               <ChatPanel
                 roomCode={roomCode}
                 currentUser={memoizedUser}
@@ -352,7 +376,7 @@ function HostView({ roomCode, currentUser, roomState }) {
                 inline={true}
               />
 
-              {!isStreaming && (
+              {!isStreaming && !isMeeting && (
                 <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
                   <SongQueue
                     queue={queue}

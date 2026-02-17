@@ -122,15 +122,21 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
   const onStateChange = (event) => {
     // event.data values:
     // -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (video cued)
-    
-    if (!isHost && playbackState?.isPlaying) {
-      // Participant manually paused/played - force resync to DJ time
-      if (event.data === 1) { // Playing
+
+    if (!isHost && playbackState?.isPlaying && player) {
+      if (event.data === 2) {
+        // Participant manually paused — force resume and resync immediately
+        const elapsedSeconds = Math.floor((Date.now() - playbackState.startTime) / 1000);
+        console.log(`🔄 Participant paused - forcing resync to host time: ${elapsedSeconds}s`);
+        player.seekTo(elapsedSeconds, true);
+        player.playVideo();
+      } else if (event.data === 1) {
+        // Playing — check if in sync with host
         const elapsedSeconds = Math.floor((Date.now() - playbackState.startTime) / 1000);
         const playerTime = Math.floor(player.getCurrentTime());
-        
+
         if (Math.abs(elapsedSeconds - playerTime) > 1) {
-          console.log(`🔄 Manual play detected - syncing to DJ time: ${elapsedSeconds}s`);
+          console.log(`🔄 Manual play detected - syncing to host time: ${elapsedSeconds}s`);
           player.seekTo(elapsedSeconds, true);
         }
       }
@@ -296,14 +302,13 @@ const VideoPlayer = React.memo(function VideoPlayer({ currentSong, playbackState
     </div>
   );
 }, (prevProps, nextProps) => {
-  // Only re-render if these values actually change
   return (
     prevProps.currentSong?.videoId === nextProps.currentSong?.videoId &&
     prevProps.playbackState?.isPlaying === nextProps.playbackState?.isPlaying &&
     prevProps.playbackState?.videoId === nextProps.playbackState?.videoId &&
+    prevProps.playbackState?.startTime === nextProps.playbackState?.startTime &&
     prevProps.isHost === nextProps.isHost
   );
-  // Note: onSkip is a function and will always be different, but we don't care
 });
 
 export default VideoPlayer;

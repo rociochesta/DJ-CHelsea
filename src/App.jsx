@@ -192,9 +192,10 @@ function App() {
     micPolicy: roomMode === "karaoke" ? "auto" : "open",
     hostControls: {
       micsLocked: false,
-      autoMuteOnJoin: roomMode === "karaoke",
+      autoMuteOnJoin: roomMode === "karaoke" || roomMode === "meeting",
       onlySingerMic: roomMode === "karaoke",
     },
+    activeReadingId: null,
     activeSingerId: null,
     activeSingerName: null,
     queue: [],

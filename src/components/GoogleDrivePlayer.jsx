@@ -73,6 +73,17 @@ const GoogleDrivePlayer = React.memo(({
     }
   }, [isHost, playbackState]);
 
+  // If participant pauses while host is playing, force resume and resync
+  const handlePause = useCallback(() => {
+    if (isHost || !playbackState?.isPlaying) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const elapsedSeconds = (Date.now() - playbackState.startTime) / 1000;
+    video.currentTime = elapsedSeconds;
+    video.play().catch(() => {});
+  }, [isHost, playbackState]);
+
   // Auto-advance when video ends (host only)
   const handleEnded = useCallback(() => {
     if (isHost && onSkip) {
@@ -199,6 +210,7 @@ const GoogleDrivePlayer = React.memo(({
               controls={isHost}
               playsInline
               onPlay={handlePlay}
+              onPause={handlePause}
               onEnded={handleEnded}
               onError={handleError}
             />

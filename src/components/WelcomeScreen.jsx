@@ -77,6 +77,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const getModeLabel = () => {
     if (roomMode === "dj") return "Jam";
     if (roomMode === "karaoke") return "Karaoke";
+    if (roomMode === "meeting") return "Meeting";
     return "Streaming";
   };
 
@@ -84,7 +85,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
     { t: "3PM Jam", d: "Bring your tragic bangers. We’ll vibe responsibly and cry privately.", chip: "Queue • vibes • no mic drama", Icon: Headphones },
     { t: "3PM Karaoke", d: "Live singing, spotlight, consent-based chaos. No emotional jump scares.", chip: "Mic • spotlight • rules", Icon: Mic },
     { t: "3PM Streaming", d: "Watch together in sync. Pause like an adult. Rewind like a villain.", chip: "Sync • playback • watch party", Icon: MonitorPlay },
-    { t: "3PM Meeting (Soon)", d: "Zoom but prettier. Same humans, better UI, fewer reasons to scream.", chip: "Overlay • tools • polish", Icon: Users, soon: true },
+    { t: "3PM Meeting", d: "Readings, structure, and shared screen. Emotionally supervised.", chip: "Readings • structure • mic control", Icon: Users },
   ];
 
   return (
@@ -214,7 +215,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
                   <h3 className="text-lg font-bold mb-3">Choose mode</h3>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <ModeCard
                       active={roomMode === "dj"}
                       onClick={() => setRoomMode("dj")}
@@ -235,6 +236,13 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       title="Streaming Mode"
                       subtitle="Watch together in sync. Pause like an adult."
                       Icon={MonitorPlay}
+                    />
+                    <ModeCard
+                      active={roomMode === "meeting"}
+                      onClick={() => setRoomMode("meeting")}
+                      title="Meeting Mode"
+                      subtitle="Readings, structure, and shared screen. No chaos."
+                      Icon={Users}
                     />
                   </div>
 

@@ -13,7 +13,9 @@ import EmojiReactions from "./EmojiReactions";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
 
-import { Mic, MonitorPlay, Headphones, User } from "lucide-react";
+import MeetingDisplay from "./MeetingDisplay";
+
+import { Mic, MonitorPlay, Headphones, User, BookOpen } from "lucide-react";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,6 +27,7 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
   const isKaraoke = roomMode === "karaoke";
+  const isMeeting = roomMode === "meeting";
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -68,8 +71,9 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
   const modeMeta = useMemo(() => {
     if (isDJ) return { label: "DJ Mode", Icon: Headphones };
     if (isStreaming) return { label: "Streaming Mode", Icon: MonitorPlay };
+    if (isMeeting) return { label: "Meeting Mode", Icon: BookOpen };
     return { label: "Karaoke Mode", Icon: Mic };
-  }, [isDJ, isStreaming]);
+  }, [isDJ, isStreaming, isMeeting]);
 
   const ModeIcon = modeMeta.Icon;
 
@@ -121,8 +125,14 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
             </div>
           </div>
 
-          {/* Video */}
-          {isStreaming ? (
+          {/* Video / Meeting Display */}
+          {isMeeting ? (
+            <MeetingDisplay
+              activeReadingId={roomState?.activeReadingId || null}
+              isHost={false}
+              onSelectReading={() => {}}
+            />
+          ) : isStreaming ? (
             <GoogleDrivePlayer
               videoUrl={currentSong?.videoUrl}
               title={currentSong?.title}
@@ -152,55 +162,66 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
           />
 
           {/* Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              {isStreaming ? (
-                <StreamingQueue
+          {!isMeeting && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                {isStreaming ? (
+                  <StreamingQueue
+                    roomCode={roomCode}
+                    queue={queue}
+                    currentSong={currentSong}
+                    isHost={false}
+                    currentUser={currentUser}
+                  />
+                ) : (
+                  <div className="space-y-6">
+                    <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
+                      <SongSearch
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        onSearch={handleSearch}
+                        isSearching={isSearching}
+                        searchResults={searchResults}
+                        onAddToQueue={handleAddToQueue}
+                        hasSearched={hasSearched}
+                        currentUser={currentUser}
+                        participants={participants}
+                        roomCode={roomCode}
+                        isParticipant={true}
+                      />
+                    </div>
+
+                    <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
+                      <SongQueue
+                        queue={queue}
+                        onPlaySong={null}
+                        onDeleteSong={null}
+                        isHost={false}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <ChatPanel
                   roomCode={roomCode}
-                  queue={queue}
+                  currentUser={memoizedUser}
                   currentSong={currentSong}
-                  isHost={false}
-                  currentUser={currentUser}
+                  inline={true}
                 />
-              ) : (
-                <div className="space-y-6">
-                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
-                    <SongSearch
-                      searchQuery={searchQuery}
-                      setSearchQuery={setSearchQuery}
-                      onSearch={handleSearch}
-                      isSearching={isSearching}
-                      searchResults={searchResults}
-                      onAddToQueue={handleAddToQueue}
-                      hasSearched={hasSearched}
-                      currentUser={currentUser}
-                      participants={participants}
-                      roomCode={roomCode}
-                      isParticipant={true}
-                    />
-                  </div>
-
-                  <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
-                    <SongQueue
-                      queue={queue}
-                      onPlaySong={null}
-                      onDeleteSong={null}
-                      isHost={false}
-                    />
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
+          )}
 
-            <div>
-              <ChatPanel
-                roomCode={roomCode}
-                currentUser={memoizedUser}
-                currentSong={currentSong}
-                inline={true}
-              />
-            </div>
-          </div>
+          {isMeeting && (
+            <ChatPanel
+              roomCode={roomCode}
+              currentUser={memoizedUser}
+              currentSong={currentSong}
+              inline={true}
+            />
+          )}
         </div>
       </div>
 
