@@ -144,9 +144,10 @@ export default function StreamingQueue({
             <div className="text-sm text-blue-200 space-y-2">
               <div className="font-bold">How to get video links:</div>
               <ul className="list-disc list-inside space-y-1 text-xs">
-                <li><strong>Dropbox:</strong> Share link, change <code>?dl=0</code> to <code>?dl=1</code> (auto-converted)</li>
-                <li><strong>Google Drive:</strong> Share as "Anyone with link", paste the share URL</li>
-                <li><strong>Direct link:</strong> Any .mp4 / .webm URL works</li>
+                <li><strong>Dropbox:</strong> Upload file, share link, paste it here (auto-converted)</li>
+                <li><strong>catbox.moe:</strong> Drag & drop upload, paste the direct link</li>
+                <li><strong>Any direct link:</strong> .mp4 or .webm URL</li>
+                <li className="text-yellow-300"><strong>Important:</strong> File must be .mp4 or .webm (browsers can't play .mkv/.avi)</li>
               </ul>
             </div>
           </div>
@@ -242,9 +243,12 @@ export default function StreamingQueue({
  * Convert common share URLs to direct download URLs the <video> tag can play.
  */
 function normalizeVideoUrl(url) {
-  // Dropbox: change ?dl=0 to ?dl=1
+  // Dropbox: replace domain with dl.dropboxusercontent.com for direct streaming
   if (url.includes("dropbox.com")) {
-    return url.replace(/[?&]dl=0/, "?dl=1");
+    let direct = url.replace("www.dropbox.com", "dl.dropboxusercontent.com");
+    // Remove any dl=0 or dl=1 params (not needed with dl subdomain)
+    direct = direct.replace(/[?&]dl=[01]/, "");
+    return direct;
   }
 
   // Google Drive share link → direct download

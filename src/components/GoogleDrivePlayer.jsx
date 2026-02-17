@@ -197,7 +197,6 @@ const GoogleDrivePlayer = React.memo(({
               src={videoUrl}
               className="w-full h-full bg-black"
               controls={isHost}
-              crossOrigin="anonymous"
               playsInline
               onPlay={handlePlay}
               onEnded={handleEnded}
