@@ -12,7 +12,6 @@ import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
-
 import MeetingDisplay from "./MeetingDisplay";
 
 import { Mic, MonitorPlay, Headphones, User, BookOpen } from "lucide-react";
@@ -43,7 +42,25 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
     }
   };
 
+  const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+  const participants = roomState?.participants ? Object.values(roomState.participants) : [];
+  const currentSong = roomState?.currentSong;
+  const participantMutes = roomState?.participantMutes || {};
+
+  // ✅ TEMP RULE: participant can only have one queued song (until host override exists)
+  const userName = currentUser?.name || "";
+  const userAlreadyQueued = useMemo(() => {
+    if (!userName) return false;
+    return queue.some((s) => (s?.requestedBy || "") === userName);
+  }, [queue, userName]);
+
   const handleAddToQueue = async (video, requestedBy) => {
+    // ✅ block >1 request per participant (for now)
+    if (userAlreadyQueued) {
+      alert("You already have a song in the queue 🎧\nWait until it plays (or the host clears it).");
+      return;
+    }
+
     const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
     const newSongRef = push(queueRef);
 
@@ -57,11 +74,6 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
       addedAt: Date.now(),
     });
   };
-
-  const queue = roomState?.queue ? Object.values(roomState.queue) : [];
-  const participants = roomState?.participants ? Object.values(roomState.participants) : [];
-  const currentSong = roomState?.currentSong;
-  const participantMutes = roomState?.participantMutes || {};
 
   const memoizedUser = useMemo(
     () => ({ id: currentUser?.id, name: currentUser?.name }),
@@ -79,16 +91,13 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
 
   return (
     <div className="min-h-screen relative overflow-x-hidden text-white">
-      {/* Background system (3PM) */}
       <div className="absolute inset-0 bg-[#070712]" />
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.08),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.08),transparent_55%)]" />
 
       <div className="relative p-4 pb-28">
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* External prompt (sticky, in-flow) */}
           <ExternalVideoPrompt videoLink={roomState?.externalVideoLink} />
 
-          {/* Header (3PM glass, no pills) */}
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
             <div className="flex items-start justify-between gap-6">
               <div className="min-w-0">
@@ -145,12 +154,15 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
               currentSong={currentSong}
               playbackState={roomState?.playbackState}
               isHost={false}
+              // ✅ we’ll use this in VideoPlayer to make “Performance Mode” opt-in
+              performanceModeOptIn={true}
             />
           )}
 
           {/* Spotlight */}
           <SingerSpotlight
             roomCode={roomCode}
+            roomMode={roomMode}
             currentSong={isKaraoke ? currentSong : null}
             participantMutes={participantMutes}
             onMuteToggle={() => {}}
@@ -159,9 +171,10 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
             canControlMics={false}
             currentUser={currentUser}
             micsLocked={roomState?.hostControls?.micsLocked || false}
+            // ✅ helps DJ mode choose “host first” when idle
+            preferHostWhenIdle={isDJ}
           />
 
-          {/* Content */}
           {!isMeeting && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
@@ -188,44 +201,35 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
                         participants={participants}
                         roomCode={roomCode}
                         isParticipant={true}
+                        // Optional: if SongSearch supports disabling UI, you can use this:
+                        // disabled={userAlreadyQueued}
                       />
+                      {userAlreadyQueued && (
+                        <div className="mt-3 text-xs text-white/45">
+                          You already have a song queued. (Host override coming later.)
+                        </div>
+                      )}
                     </div>
 
                     <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
-                      <SongQueue
-                        queue={queue}
-                        onPlaySong={null}
-                        onDeleteSong={null}
-                        isHost={false}
-                      />
+                      <SongQueue queue={queue} onPlaySong={null} onDeleteSong={null} isHost={false} />
                     </div>
                   </div>
                 )}
               </div>
 
               <div>
-                <ChatPanel
-                  roomCode={roomCode}
-                  currentUser={memoizedUser}
-                  currentSong={currentSong}
-                  inline={true}
-                />
+                <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
               </div>
             </div>
           )}
 
           {isMeeting && (
-            <ChatPanel
-              roomCode={roomCode}
-              currentUser={memoizedUser}
-              currentSong={currentSong}
-              inline={true}
-            />
+            <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
           )}
         </div>
       </div>
 
-      {/* Reactions + Settings (these components still need 3PM restyle) */}
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
     </div>
