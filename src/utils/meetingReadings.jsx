@@ -7,7 +7,7 @@ const meetingReadings = [
     id: "who-is-an-addict",
     title: "Who Is an Addict?",
     slides: [
-      "/readings/who-is-an-addict-1.png",
+      "/slides/who-is-an-addict-1.png",
       // "/readings/who-is-an-addict-2.png",
       // "/readings/who-is-an-addict-3.png",
     ],
