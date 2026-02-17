@@ -1,31 +1,32 @@
-// Meeting readings / agenda items
-// Populate the `body` field with full text content later.
+// Meeting readings / slides
+// Put your slide images in public/slides/ and reference the filename here.
+// Supports: PNG, JPG, or PDF (first page).
 
 const MEETING_READINGS = [
   {
     id: "who-is-an-addict",
     title: "Who Is an Addict?",
-    body: "",
+    slide: "/slides/who-is-an-addict.png",
   },
   {
     id: "what-is-the-na-program",
     title: "What Is the NA Program?",
-    body: "",
+    slide: "/slides/what-is-the-na-program.png",
   },
   {
     id: "why-are-we-here",
     title: "Why Are We Here?",
-    body: "",
+    slide: "/slides/why-are-we-here.png",
   },
   {
     id: "how-it-works",
     title: "How It Works",
-    body: "",
+    slide: "/slides/how-it-works.png",
   },
   {
     id: "twelve-traditions",
     title: "The Twelve Traditions of NA",
-    body: "",
+    slide: "/slides/twelve-traditions.png",
   },
 ];
 
