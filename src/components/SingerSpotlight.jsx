@@ -151,7 +151,7 @@ export default function SingerSpotlight({
             className={[
               "w-10 h-10 rounded-2xl border bg-white/[0.03] backdrop-blur-md",
               "text-white/75 transition active:scale-[0.98]",
-              outlineBtn("neutral"),
+              "border-white/10 hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.10)]",
             ].join(" ")}
             title="Collapse"
           >
