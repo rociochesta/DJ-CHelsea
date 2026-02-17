@@ -125,19 +125,18 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
             />
           )}
 
-          {/* Singer Spotlight - Only show in Karaoke mode */}
-          {isKaraoke && (
+          {/* Singer Spotlight - Show in Karaoke and Streaming modes */}
+          {(isKaraoke || isStreaming) && (
             <div className="mt-6">
               <SingerSpotlight
                 roomCode={roomCode}
-                currentSong={currentSong}
+                currentSong={isKaraoke ? currentSong : null}
                 participantMutes={participantMutes}
-                onMuteToggle={() => {}} // No-op for participants
-                onMuteAll={() => {}} // No-op for participants
-                queue={queue}
+                onMuteToggle={() => {}}
+                onMuteAll={() => {}}
+                queue={isKaraoke ? queue : []}
                 canControlMics={false}
                 currentUser={currentUser}
-                showControls={false}
               />
             </div>
           )}

@@ -237,19 +237,18 @@ function HostView({ roomCode, currentUser, roomState }) {
                 />
               )}
 
-              {/* Singer Spotlight - Only show in Karaoke mode */}
-              {isKaraoke && (
+              {/* Singer Spotlight - Show in Karaoke and Streaming modes */}
+              {(isKaraoke || isStreaming) && (
                 <SingerSpotlight
                   roomCode={roomCode}
-                  currentSong={currentSong}
+                  currentSong={isKaraoke ? currentSong : null}
                   participants={participants}
                   participantMutes={participantMutes}
                   onMuteToggle={setParticipantMute}
                   onMuteAll={handleMuteAll}
-                  queue={queue}
+                  queue={isKaraoke ? queue : []}
                   canControlMics={true}
                   currentUser={currentUser}
-                  showControls={true}
                 />
               )}
 

@@ -10,7 +10,6 @@ export default function ParticipantTile({
   onMuteToggle,
   canControlMics = true,
   isCurrentUser = false,
-  showControls = false,
 }) {
   if (!participant) return null;
 
@@ -113,9 +112,9 @@ export default function ParticipantTile({
         </div>
       )}
 
-      {/* Controls overlay - show for current user */}
-      {isCurrentUser && showControls && (
-        <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Controls overlay - always visible for current user */}
+      {isCurrentUser && (
+        <div className="absolute top-2 right-2 flex gap-1.5">
           <button
             onClick={handleToggleCamera}
             disabled={cameraBusy}
@@ -132,10 +131,10 @@ export default function ParticipantTile({
           <button
             onClick={handleToggleMic}
             disabled={micBusy}
-            className={`p-1.5 rounded-lg backdrop-blur-xl transition text-sm ${
+            className={`p-2 rounded-lg backdrop-blur-xl transition text-sm font-bold ${
               isMicOn
                 ? "bg-emerald-500/80 hover:bg-emerald-500"
-                : "bg-white/20 hover:bg-white/30"
+                : "bg-red-500/80 hover:bg-red-500 animate-pulse"
             } ${micBusy ? "opacity-60 cursor-not-allowed" : ""}`}
             title={isMicOn ? "Mute mic" : "Unmute mic"}
           >

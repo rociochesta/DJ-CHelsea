@@ -275,7 +275,7 @@ function App() {
       token={lkToken}
       serverUrl={import.meta.env.VITE_LIVEKIT_URL}
       connect={true}
-      audio={true}
+      audio={false}
       video={true}
       options={{
         videoCaptureDefaults: {

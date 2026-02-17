@@ -11,7 +11,6 @@ export default function SingerSpotlight({
   queue,
   canControlMics = true,
   currentUser,
-  showControls = false,
 }) {
   const liveKitParticipants = useParticipants();
 
@@ -81,17 +80,6 @@ export default function SingerSpotlight({
           // Use p.isLocal to reliably detect the current user's participant
           const isCurrentUser = p.isLocal;
 
-          console.log(`🎤 Participant ${name}:`, {
-            participantName: name,
-            participantIdentity: p.identity,
-            participantIsLocal: p.isLocal,
-            currentUserName: currentUser?.name,
-            currentUserId: currentUser?.id,
-            isCurrentUser,
-            showControls,
-            shouldShowControls: isCurrentUser && showControls
-          });
-
           return (
             <ParticipantTile
               key={p.identity}
@@ -102,7 +90,6 @@ export default function SingerSpotlight({
               onMuteToggle={onMuteToggle}
               canControlMics={canControlMics}
               isCurrentUser={isCurrentUser}
-              showControls={showControls}
             />
           );
         })}

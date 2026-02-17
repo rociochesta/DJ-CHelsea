@@ -1,27 +1,31 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 
 /**
  * GoogleDrivePlayer - plays videos from Google Drive with synced playback
- * 
- * To use:
- * 1. Upload video to Google Drive
- * 2. Right-click video → Share → Anyone with the link can view
- * 3. Copy the file ID from the share link (e.g., https://drive.google.com/file/d/FILE_ID_HERE/view)
- * 4. Pass the FILE_ID to this component
+ *
+ * Sync strategy: Google Drive /preview iframes don't expose a JS API for seeking.
+ * To keep participants in sync, the iframe is keyed on `playbackState.startTime`.
+ * Whenever the host starts/restarts a video, startTime changes, which forces every
+ * client to remount a fresh iframe — everyone starts from the beginning together.
+ * The iframe controls are hidden via CSS pointer-events so participants can't
+ * independently pause/seek and get out of sync.
  */
-const GoogleDrivePlayer = React.memo(({ 
-  fileId, 
-  title, 
-  playbackState, 
-  onSkip, 
+const GoogleDrivePlayer = React.memo(({
+  fileId,
+  title,
+  playbackState,
+  onSkip,
   isHost,
-  requestedBy 
+  requestedBy
 }) => {
   const iframeRef = useRef(null);
   const [embedError, setEmbedError] = useState(false);
 
   // Construct Google Drive embed URL
   const embedUrl = fileId ? `https://drive.google.com/file/d/${fileId}/preview` : null;
+
+  // Use startTime as a key to force iframe reload when host starts/restarts playback
+  const syncKey = `${fileId}-${playbackState?.startTime || 0}`;
 
   const handleSkip = () => {
     if (onSkip) {
@@ -88,15 +92,16 @@ const GoogleDrivePlayer = React.memo(({
                 onClick={() => window.open(`https://drive.google.com/file/d/${fileId}/view`, "_blank")}
                 className="px-5 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 transition"
               >
-                Open in Google Drive ↗️
+                Open in Google Drive
               </button>
             </div>
           </div>
         </div>
       ) : (
         <div className="rounded-2xl border border-white/10 bg-black/60 overflow-hidden shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_30px_90px_rgba(124,58,237,0.10)]">
-          <div className="aspect-video">
+          <div className="aspect-video relative">
             <iframe
+              key={syncKey}
               ref={iframeRef}
               src={embedUrl}
               className="w-full h-full"
@@ -104,7 +109,22 @@ const GoogleDrivePlayer = React.memo(({
               allowFullScreen
               onError={() => setEmbedError(true)}
             />
+            {/* Overlay to block participant controls - prevents pause/seek desync */}
+            {!isHost && (
+              <div
+                className="absolute inset-0"
+                style={{ pointerEvents: "auto" }}
+                title="Playback is synced by the host"
+              />
+            )}
           </div>
+        </div>
+      )}
+
+      {/* Sync info for participants */}
+      {!isHost && (
+        <div className="mt-3 text-center text-xs text-white/40">
+          Playback is synced by the host
         </div>
       )}
 
@@ -112,7 +132,7 @@ const GoogleDrivePlayer = React.memo(({
       {isHost && (
         <div className="mt-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
           <div className="text-sm text-blue-200">
-            <strong>💡 Tip:</strong> To add videos, upload them to Google Drive, 
+            <strong>Tip:</strong> To add videos, upload them to Google Drive,
             share as "Anyone with the link", and paste the file ID below.
           </div>
         </div>
@@ -120,11 +140,11 @@ const GoogleDrivePlayer = React.memo(({
     </div>
   );
 }, (prevProps, nextProps) => {
-  // Only re-render if these values actually change
   return (
     prevProps.fileId === nextProps.fileId &&
     prevProps.title === nextProps.title &&
     prevProps.playbackState?.isPlaying === nextProps.playbackState?.isPlaying &&
+    prevProps.playbackState?.startTime === nextProps.playbackState?.startTime &&
     prevProps.isHost === nextProps.isHost
   );
 });
