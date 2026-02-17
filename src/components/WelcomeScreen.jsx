@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Headphones,
-  Mic2,
+  Mic,
   MonitorPlay,
-  HandHeart,
-  ExternalLink,
-  Check,
+  Users,
+  ArrowRight,
+  Plus,
+  LogIn,
 } from "lucide-react";
 import PreJoinDeviceSetup from "./PreJoinDeviceSetup";
 
@@ -14,6 +15,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [roomCode, setRoomCode] = useState("");
   const [userName, setUserName] = useState("");
 
+  // backend modes: dj, karaoke, streaming
   const [roomMode, setRoomMode] = useState("dj");
 
   const [useExternalVideo, setUseExternalVideo] = useState(false);
@@ -21,10 +23,10 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [showDeviceSetup, setShowDeviceSetup] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
-  // ✅ Rotating banners only (text stays static)
+  // Rotating banner images (put simpler ones here later)
   const heroBanners = useMemo(
     () => [
-      "/banners/dj_chelsea_banner.gif", // Jam (DJ)
+      "/banners/3pm-jam.png",
       "/banners/3pm-karaoke.png",
       "/banners/3pm-streaming.png",
       "/banners/3pm-meeting.png",
@@ -47,10 +49,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
     return () => clearInterval(t);
   }, [heroBanners]);
 
-  const getDJName = () => {
-    const n = userName.trim();
-    return n || "DJ";
-  };
+  const getDJName = () => userName.trim() || "DJ";
 
   const handleJoinSubmit = (e) => {
     e.preventDefault();
@@ -77,47 +76,43 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
     return "Streaming";
   };
 
-  const landingCards = [
+  const cards = [
     {
+      key: "dj",
       t: "3PM Jam",
       d: "Bring your tragic bangers. We’ll vibe responsibly and cry privately.",
       chip: "Queue • vibes • no mic drama",
       Icon: Headphones,
     },
     {
+      key: "karaoke",
       t: "3PM Karaoke",
-      d: "Live singing, spotlight, and consent-based chaos. No emotional jump scares.",
+      d: "Live singing, spotlight, consent-based chaos. No emotional jump scares.",
       chip: "Mic • spotlight • rules",
-      Icon: Mic2,
+      Icon: Mic,
     },
     {
+      key: "streaming",
       t: "3PM Streaming",
       d: "Watch together in sync. Pause like an adult. Rewind like a villain.",
       chip: "Sync • playback • watch party",
       Icon: MonitorPlay,
     },
     {
+      key: "meeting",
       t: "3PM Meeting (Soon)",
       d: "Zoom but prettier. Same humans, better UI, fewer reasons to scream.",
       chip: "Overlay • tools • polish",
-      Icon: HandHeart,
+      Icon: Users,
       soon: true,
     },
   ];
 
-  const SelectCheck = ({ on }) =>
-    on ? (
-      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-fuchsia-500/90 border border-white/10">
-        <Check className="w-4 h-4" />
-      </span>
-    ) : null;
-
   return (
     <div className="min-h-screen relative overflow-hidden text-white">
+      {/* Background: calmer, less gamey */}
       <div className="absolute inset-0 bg-[#070712]" />
-      <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl opacity-40 bg-fuchsia-600" />
-      <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-35 bg-indigo-600" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.14),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.12),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.10),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.10),transparent_60%)]" />
 
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-5xl">
@@ -132,56 +127,62 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 decoding="async"
               />
 
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.80)_0%,rgba(0,0,0,0.48)_44%,rgba(0,0,0,0.18)_100%)]" />
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.12),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.10),transparent_60%)]" />
+              {/* Make overlay more “professional”: fewer gradients, more tint */}
+              <div className="absolute inset-0 bg-black/55" />
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.65)_0%,rgba(0,0,0,0.35)_50%,rgba(0,0,0,0.20)_100%)]" />
 
               <div className="absolute bottom-5 left-5 md:bottom-7 md:left-7">
-                <h1 className="text-4xl md:text-6xl font-extrabold">
-                  <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
-                    3PM Hub
-                  </span>
+                {/* Static title (no gradient) */}
+                <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
+                  <span className="text-fuchsia-300">3PM</span>{" "}
+                  <span className="text-white">Hub</span>
                 </h1>
-
-                <p className="mt-2 text-base md:text-lg text-white/90">
+                <p className="mt-2 text-base md:text-lg text-white/85 max-w-[44ch]">
                   Everything happens here. Emotionally supervised chaos.
                 </p>
-
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {["NA-friendly", "chaos-controlled", "no inspirational speeches"].map((x) => (
-                    <span
-                      key={x}
-                      className="px-3 py-1 rounded-full text-xs bg-black/35 border border-white/10"
-                    >
-                      {x}
-                    </span>
-                  ))}
-                </div>
               </div>
             </div>
 
             <div className="p-6 md:p-10">
+              {/* CTA */}
               {!mode && !showDeviceSetup && (
                 <div className="text-center">
                   <p className="text-white/60 mb-6">
                     Pick a room. Bring a song. Don’t bring a TED Talk.
                   </p>
+
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    {/* Neon outline buttons */}
                     <button
                       onClick={() => setMode("create")}
-                      className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 active:scale-[0.99] transition shadow-[0_0_0_1px_rgba(255,255,255,0.10),0_18px_60px_rgba(255,0,153,0.20)]"
+                      className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold
+                        border border-fuchsia-400/50 bg-transparent
+                        hover:border-fuchsia-300 hover:shadow-[0_0_0_1px_rgba(255,0,153,0.25),0_0_30px_rgba(255,0,153,0.18)]
+                        active:scale-[0.99] transition"
                     >
-                      Start a Room
+                      <span className="inline-flex items-center gap-2">
+                        <Plus className="w-5 h-5" />
+                        Start a Room
+                      </span>
                     </button>
+
                     <button
                       onClick={() => setMode("join")}
-                      className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/15 active:scale-[0.99] transition border border-white/10"
+                      className="w-full sm:w-auto px-6 py-3 rounded-xl font-semibold
+                        border border-white/15 bg-white/5
+                        hover:bg-white/8 hover:border-white/25
+                        active:scale-[0.99] transition"
                     >
-                      Join Room
+                      <span className="inline-flex items-center gap-2">
+                        <LogIn className="w-5 h-5" />
+                        Join Room
+                      </span>
                     </button>
                   </div>
                 </div>
               )}
 
+              {/* DEVICE SETUP */}
               {showDeviceSetup && (
                 <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
                   <button
@@ -197,6 +198,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               )}
 
+              {/* CREATE */}
               {mode === "create" && !showDeviceSetup && (
                 <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
                   <button
@@ -207,91 +209,53 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                   </button>
 
                   <h2 className="text-2xl font-bold mb-2">Choose your chaos</h2>
-                  <p className="text-white/60 mb-6">
-                    Select what kind of room you’re running today.
-                  </p>
+                  <p className="text-white/60 mb-6">Select what kind of room you’re running today.</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     {/* JAM */}
-                    <button
+                    <ModeCard
+                      active={roomMode === "dj"}
                       onClick={() => setRoomMode("dj")}
-                      className={`p-6 rounded-2xl border-2 transition text-left ${
-                        roomMode === "dj"
-                          ? "border-fuchsia-500 bg-fuchsia-500/10"
-                          : "border-white/10 bg-black/25 hover:border-white/20"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                          <Headphones className="w-6 h-6 text-white/90" />
-                        </div>
-                        <SelectCheck on={roomMode === "dj"} />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2">Jam Mode</h3>
-                      <p className="text-sm text-white/70 mb-3">
-                        Listening party. Feelings allowed. Sermons not.
-                      </p>
-                      <ul className="text-xs text-white/60 space-y-1">
-                        <li>✓ Queue and play</li>
-                        <li>✓ Video-only (clean audio)</li>
-                        <li>✓ Perfect for “I’m fine” playlists</li>
-                        <li>✓ Zero mic chaos</li>
-                      </ul>
-                    </button>
+                      title="Jam Mode"
+                      subtitle="Listening party. Feelings allowed. Sermons not."
+                      bullets={[
+                        "Queue and play",
+                        "Video-only (clean audio)",
+                        "Perfect for “I’m fine” playlists",
+                        "Zero mic chaos",
+                      ]}
+                      Icon={Headphones}
+                    />
 
                     {/* KARAOKE */}
-                    <button
+                    <ModeCard
+                      active={roomMode === "karaoke"}
                       onClick={() => setRoomMode("karaoke")}
-                      className={`p-6 rounded-2xl border-2 transition text-left ${
-                        roomMode === "karaoke"
-                          ? "border-fuchsia-500 bg-fuchsia-500/10"
-                          : "border-white/10 bg-black/25 hover:border-white/20"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                          <Mic2 className="w-6 h-6 text-white/90" />
-                        </div>
-                        <SelectCheck on={roomMode === "karaoke"} />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2">Karaoke Mode</h3>
-                      <p className="text-sm text-white/70 mb-3">
-                        Full chaos, live singing, spotlight — consent-based.
-                      </p>
-                      <ul className="text-xs text-white/60 space-y-1">
-                        <li>✓ Live mic for singers</li>
-                        <li>✓ Singer spotlight view</li>
-                        <li>✓ Auto mic policy</li>
-                        <li>✓ “Respectful but unhinged” ready</li>
-                      </ul>
-                    </button>
+                      title="Karaoke Mode"
+                      subtitle="Full chaos, live singing, spotlight — consent-based."
+                      bullets={[
+                        "Live mic for singers",
+                        "Singer spotlight view",
+                        "Auto mic policy",
+                        "“Respectful but unhinged” ready",
+                      ]}
+                      Icon={Mic}
+                    />
 
                     {/* STREAMING */}
-                    <button
+                    <ModeCard
+                      active={roomMode === "streaming"}
                       onClick={() => setRoomMode("streaming")}
-                      className={`p-6 rounded-2xl border-2 transition text-left ${
-                        roomMode === "streaming"
-                          ? "border-fuchsia-500 bg-fuchsia-500/10"
-                          : "border-white/10 bg-black/25 hover:border-white/20"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                          <MonitorPlay className="w-6 h-6 text-white/90" />
-                        </div>
-                        <SelectCheck on={roomMode === "streaming"} />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2">Streaming Mode</h3>
-                      <p className="text-sm text-white/70 mb-3">
-                        Watch together, synced. Pause like an adult.
-                      </p>
-                      <ul className="text-xs text-white/60 space-y-1">
-                        <li>✓ Synced video playback</li>
-                        <li>✓ Shared time controls</li>
-                        <li>✓ Movie nights, clip nights, chaos nights</li>
-                        <li>✓ Your vibe, your rules</li>
-                      </ul>
-                    </button>
+                      title="Streaming Mode"
+                      subtitle="Watch together, synced. Pause like an adult."
+                      bullets={[
+                        "Synced video playback",
+                        "Shared time controls",
+                        "Movie nights, clip nights, chaos nights",
+                        "Your vibe, your rules",
+                      ]}
+                      Icon={MonitorPlay}
+                    />
                   </div>
 
                   <div className="mb-6 p-5 rounded-2xl border border-white/10 bg-black/25">
@@ -303,9 +267,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 checked:bg-fuchsia-500"
                       />
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 font-bold text-white group-hover:text-fuchsia-200 transition">
+                        <div className="font-semibold text-white group-hover:text-fuchsia-200 transition">
                           Use external video chat (Zoom, Meet, etc.)
-                          <ExternalLink className="w-4 h-4 text-white/60 group-hover:text-white/80 transition" />
                         </div>
                         <div className="text-sm text-white/60 mt-1">
                           Your app handles the synced experience. Video chat lives elsewhere.
@@ -334,13 +297,20 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
                   <button
                     onClick={handleCreateSubmit}
-                    className="w-full px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 transition"
+                    className="w-full px-6 py-3 rounded-xl font-semibold
+                      border border-fuchsia-400/55 bg-transparent
+                      hover:border-fuchsia-300 hover:shadow-[0_0_0_1px_rgba(255,0,153,0.25),0_0_34px_rgba(255,0,153,0.20)]
+                      transition"
                   >
-                    Create {getModeLabel()} Room
+                    <span className="inline-flex items-center justify-center gap-2">
+                      Create {getModeLabel()} Room
+                      <ArrowRight className="w-5 h-5" />
+                    </span>
                   </button>
                 </div>
               )}
 
+              {/* JOIN */}
               {mode === "join" && !showDeviceSetup && (
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
                   <div className="md:col-span-2">
@@ -388,7 +358,10 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       <button
                         type="submit"
                         disabled={roomCode.length !== 6 || !userName.trim()}
-                        className="w-full px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-95 transition shadow-[0_18px_60px_rgba(124,58,237,0.18)]"
+                        className="w-full px-6 py-3 rounded-xl font-semibold
+                          border border-white/15 bg-white/5
+                          disabled:opacity-40 disabled:cursor-not-allowed
+                          hover:bg-white/8 hover:border-white/25 transition"
                       >
                         Join Room
                       </button>
@@ -397,29 +370,29 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               )}
 
+              {/* HOME CARDS */}
               {mode !== "join" && mode !== "create" && (
                 <div className="mt-10 grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {landingCards.map((x) => (
+                  {cards.map(({ t, d, chip, Icon, soon }) => (
                     <div
-                      key={x.t}
-                      className={`rounded-2xl border border-white/10 bg-black/25 p-5 backdrop-blur-xl ${
-                        x.soon ? "opacity-70" : ""
+                      key={t}
+                      className={`rounded-2xl border border-white/10 bg-black/20 p-5 backdrop-blur-xl ${
+                        soon ? "opacity-65" : ""
                       }`}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-                          <x.Icon className="w-5 h-5 text-white/85" />
+                      {/* Icon NEXT to title */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center">
+                          <Icon className="w-5 h-5 text-white/85" />
                         </div>
-                        <div className="text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                          {x.chip}
-                        </div>
+                        <div className="text-sm font-semibold text-white/90">{t}</div>
                       </div>
 
-                      <div className="mt-3 text-sm font-bold text-white/90">{x.t}</div>
-                      <div className="mt-2 text-white/60 text-sm">{x.d}</div>
+                      <div className="mt-3 text-xs text-white/50">{chip}</div>
+                      <div className="mt-3 text-white/70 text-sm leading-relaxed">{d}</div>
 
-                      {x.soon && (
-                        <div className="mt-3 text-xs text-white/50">
+                      {soon && (
+                        <div className="mt-3 text-xs text-white/45">
                           Coming soon. Don’t panic. Panic later.
                         </div>
                       )}
@@ -430,12 +403,51 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
             </div>
           </div>
 
-          <div className="mt-6 text-center text-xs text-white/40">
-            NA-friendly • chaos-controlled • no inspirational speeches (we're busy)
+          <div className="mt-6 text-center text-xs text-white/35">
+            NA-friendly • chaos-controlled • no inspirational speeches (we’re busy)
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function ModeCard({ active, onClick, title, subtitle, bullets, Icon }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`p-6 rounded-2xl border transition text-left ${
+        active
+          ? "border-fuchsia-400/60 bg-white/5 shadow-[0_0_0_1px_rgba(255,0,153,0.18),0_0_30px_rgba(255,0,153,0.10)]"
+          : "border-white/10 bg-black/20 hover:border-white/20"
+      }`}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-10 h-10 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center">
+          <Icon className="w-5 h-5 text-white/85" />
+        </div>
+        {active && (
+          <div className="w-6 h-6 rounded-full bg-fuchsia-500 flex items-center justify-center">
+            <svg className="w-4 h-4" fill="white" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+        )}
+      </div>
+
+      <h3 className="text-xl font-bold mb-2">{title}</h3>
+      <p className="text-sm text-white/70 mb-3">{subtitle}</p>
+
+      <ul className="text-xs text-white/55 space-y-1">
+        {bullets.map((b) => (
+          <li key={b}>✓ {b}</li>
+        ))}
+      </ul>
+    </button>
   );
 }
 
