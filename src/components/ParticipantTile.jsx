@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Track } from "livekit-client";
 import { useTracks } from "@livekit/components-react";
-import { Mic, MicOff, Video, VideoOff, Settings } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Settings, Lock } from "lucide-react";
 
 export default function ParticipantTile({
   participant,
@@ -11,6 +11,7 @@ export default function ParticipantTile({
   onMuteToggle,
   canControlMics = true,
   isCurrentUser = false,
+  micsLocked = false,
 }) {
   if (!participant) return null;
 
@@ -43,13 +44,14 @@ export default function ParticipantTile({
     }
   }, [cameraPublication?.track]);
 
-  // If host muted you (firebase), enforce mute locally (only for current user)
+  // If host muted you or mics are locked (firebase), enforce mute locally
   useEffect(() => {
     if (!isCurrentUser || !participant?.setMicrophoneEnabled) return;
-    if (isMuted && participant.isMicrophoneEnabled) {
+    const shouldBeMuted = isMuted || (micsLocked && !isSinging);
+    if (shouldBeMuted && participant.isMicrophoneEnabled) {
       participant.setMicrophoneEnabled(false).catch(console.error);
     }
-  }, [isMuted, isCurrentUser, participant]);
+  }, [isMuted, micsLocked, isSinging, isCurrentUser, participant]);
 
   const handleToggleCamera = async () => {
     if (cameraBusy || !participant.setCameraEnabled) return;
@@ -63,8 +65,12 @@ export default function ParticipantTile({
     }
   };
 
+  const micLockedForUser = micsLocked && !isSinging;
+
   const handleToggleMic = async () => {
     if (micBusy || !participant.setMicrophoneEnabled) return;
+    // Prevent unmuting when mics are locked (unless singing)
+    if (micLockedForUser && !participant.isMicrophoneEnabled) return;
     setMicBusy(true);
     try {
       const next = !participant.isMicrophoneEnabled;
@@ -144,16 +150,18 @@ export default function ParticipantTile({
 
           <button
             onClick={handleToggleMic}
-            disabled={micBusy}
+            disabled={micBusy || micLockedForUser}
             className={[
               "w-10 h-10 rounded-2xl border bg-white/[0.03] backdrop-blur-md",
               "text-white/80 transition active:scale-[0.98]",
-              outlineBtn("fuchsia"),
+              micLockedForUser ? "border-red-500/30 opacity-60 cursor-not-allowed" : outlineBtn("fuchsia"),
               micBusy ? "opacity-60 cursor-not-allowed" : "",
             ].join(" ")}
-            title={isMicOn ? "Mute mic" : "Unmute mic"}
+            title={micLockedForUser ? "Mics locked by host" : isMicOn ? "Mute mic" : "Unmute mic"}
           >
-            {isMicOn ? (
+            {micLockedForUser ? (
+              <Lock className="w-4 h-4 mx-auto text-red-400/70" />
+            ) : isMicOn ? (
               <MicOff className="w-4 h-4 mx-auto" />
             ) : (
               <Mic className="w-4 h-4 mx-auto" />

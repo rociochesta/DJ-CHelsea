@@ -18,6 +18,7 @@ export default function SingerSpotlight({
   queue,
   canControlMics = true,
   currentUser,
+  micsLocked = false,
 }) {
   const [isMinimized, setIsMinimized] = useState(false);
   const liveKitParticipants = useParticipants();
@@ -187,6 +188,7 @@ export default function SingerSpotlight({
               onMuteToggle={onMuteToggle}
               canControlMics={canControlMics}
               isCurrentUser={!!p?.isLocal}
+              micsLocked={micsLocked}
             />
           );
         })}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import "@livekit/components-styles";
 
-import { database, ref, onValue, set, isConfigured } from "./utils/firebase";
+import { database, ref, onValue, set, get, isConfigured } from "./utils/firebase";
 import { generateRoomCode, generateUserId } from "./utils/helpers";
 import { useDevicePreferences } from "./hooks/useDevicePreferences";
 
@@ -190,6 +190,11 @@ function App() {
     useExternalVideo: !!externalVideoLink,
 
     micPolicy: roomMode === "karaoke" ? "auto" : "open",
+    hostControls: {
+      micsLocked: false,
+      autoMuteOnJoin: roomMode === "karaoke",
+      onlySingerMic: roomMode === "karaoke",
+    },
     activeSingerId: null,
     activeSingerName: null,
     queue: [],
@@ -211,7 +216,7 @@ function App() {
 
   setScreen("room");
 };
-  const handleJoinRoom = (code, userName) => {
+  const handleJoinRoom = async (code, userName) => {
     const upper = code.toUpperCase();
     setRoomCode(upper);
 
@@ -225,12 +230,24 @@ function App() {
       `karaoke-rooms/${upper}/participants/${updatedUser.id}`
     );
 
-    set(participantRef, {
+    await set(participantRef, {
       id: updatedUser.id,
       name: userName,
       role: "participant",
       joinedAt: Date.now(),
     });
+
+    // Auto-mute on join if host has it enabled
+    try {
+      const controlsSnap = await get(ref(database, `karaoke-rooms/${upper}/hostControls`));
+      const controls = controlsSnap.val();
+      if (controls?.autoMuteOnJoin) {
+        const muteRef = ref(database, `karaoke-rooms/${upper}/participantMutes/${userName}`);
+        await set(muteRef, true);
+      }
+    } catch (e) {
+      console.error("Failed to check auto-mute setting:", e);
+    }
 
     setScreen("room");
     setIsHost(false);

@@ -148,6 +148,7 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
             queue={isKaraoke ? queue : []}
             canControlMics={false}
             currentUser={currentUser}
+            micsLocked={roomState?.hostControls?.micsLocked || false}
           />
 
           {/* Content */}

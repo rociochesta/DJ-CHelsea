@@ -13,13 +13,16 @@ import EmojiReactions from "./EmojiReactions";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
 
-import { Mic, Radio, MonitorPlay, Headphones } from "lucide-react";
+import HostControlPanel from "./HostControlPanel";
+
+import { Mic, Radio, MonitorPlay, Headphones, Sliders } from "lucide-react";
 
 function HostView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [hostPanelOpen, setHostPanelOpen] = useState(false);
 
   // Determine room mode
   const roomMode = roomState?.roomMode || "karaoke";
@@ -167,6 +170,25 @@ function HostView({ roomCode, currentUser, roomState }) {
     }
   };
 
+  const handlePlayPause = async () => {
+    const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
+    const isPlaying = roomState?.playbackState?.isPlaying || false;
+    await update(playbackRef, { isPlaying: !isPlaying });
+  };
+
+  const handleKickParticipant = async (participantId, participantName) => {
+    const participantRef = ref(database, `karaoke-rooms/${roomCode}/participants/${participantId}`);
+    await set(participantRef, null);
+    // Also remove their mute state
+    const muteRef = ref(database, `karaoke-rooms/${roomCode}/participantMutes/${participantName}`);
+    await set(muteRef, null);
+  };
+
+  const handleUpdateHostControls = async (updates) => {
+    const controlsRef = ref(database, `karaoke-rooms/${roomCode}/hostControls`);
+    await update(controlsRef, updates);
+  };
+
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
   const participants = roomState?.participants ? Object.values(roomState.participants) : [];
   const currentSong = roomState?.currentSong;
@@ -229,6 +251,13 @@ function HostView({ roomCode, currentUser, roomState }) {
                 <div className="text-right flex-shrink-0">
                   <div className="text-xs text-white/45">Host</div>
                   <div className="mt-1 inline-flex items-center gap-2 justify-end">
+                    <button
+                      onClick={() => setHostPanelOpen(true)}
+                      className="w-9 h-9 rounded-2xl border border-fuchsia-500/30 bg-white/[0.02] flex items-center justify-center hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)] transition active:scale-[0.98]"
+                      title="Host Controls"
+                    >
+                      <Sliders className="w-4 h-4 text-fuchsia-400/80" />
+                    </button>
                     <div className="w-9 h-9 rounded-2xl border border-white/10 bg-white/[0.02] flex items-center justify-center">
                       <Radio className="w-4 h-4 text-white/70" />
                     </div>
@@ -281,6 +310,7 @@ function HostView({ roomCode, currentUser, roomState }) {
                 queue={isKaraoke ? queue : []}
                 canControlMics={true}
                 currentUser={currentUser}
+                micsLocked={roomState?.hostControls?.micsLocked || false}
               />
 
               {isStreaming ? (
@@ -336,7 +366,21 @@ function HostView({ roomCode, currentUser, roomState }) {
         </div>
       </div>
 
-      {/* Reactions and Settings (these still need 3PM restyle) */}
+      {/* Host Control Panel */}
+      <HostControlPanel
+        isOpen={hostPanelOpen}
+        onClose={() => setHostPanelOpen(false)}
+        roomState={roomState}
+        roomCode={roomCode}
+        onSkip={handleSkipSong}
+        onMuteAll={handleMuteAll}
+        onMuteToggle={setParticipantMute}
+        onPlayPause={handlePlayPause}
+        onKick={handleKickParticipant}
+        onUpdateHostControls={handleUpdateHostControls}
+      />
+
+      {/* Reactions and Settings */}
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
     </div>
