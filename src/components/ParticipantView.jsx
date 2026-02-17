@@ -125,68 +125,70 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
             />
           )}
 
-          {/* Singer Spotlight - Show in Karaoke and Streaming modes */}
-          {(isKaraoke || isStreaming) && (
-            <div className="mt-6">
-              <SingerSpotlight
-                roomCode={roomCode}
-                currentSong={isKaraoke ? currentSong : null}
-                participantMutes={participantMutes}
-                onMuteToggle={() => {}}
-                onMuteAll={() => {}}
-                queue={isKaraoke ? queue : []}
-                canControlMics={false}
-                currentUser={currentUser}
-              />
-            </div>
-          )}
-
-          {/* Content based on mode */}
-          {isStreaming ? (
-            // Streaming Mode - Show queue (read-only for participants)
-            <StreamingQueue
+          {/* Singer Spotlight - Show in all modes */}
+          <div className="mt-6">
+            <SingerSpotlight
               roomCode={roomCode}
-              queue={queue}
-              currentSong={currentSong}
-              isHost={false}
+              currentSong={isKaraoke ? currentSong : null}
+              participantMutes={participantMutes}
+              onMuteToggle={() => {}}
+              onMuteAll={() => {}}
+              queue={isKaraoke ? queue : []}
+              canControlMics={false}
               currentUser={currentUser}
             />
-          ) : (
-            // DJ/Karaoke Mode - Show search and queue
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Song Search */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
-                <SongSearch
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  onSearch={handleSearch}
-                  isSearching={isSearching}
-                  searchResults={searchResults}
-                  onAddToQueue={handleAddToQueue}
-                  hasSearched={hasSearched}
-                  currentUser={currentUser}
-                  participants={participants}
-                  roomCode={roomCode}
-                  isParticipant={true}
-                />
-              </div>
+          </div>
 
-              {/* Queue */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
-                <SongQueue 
-                  queue={queue} 
-                  onPlaySong={null} 
-                  onDeleteSong={null}
-                  isHost={false} 
+          {/* Content based on mode */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              {isStreaming ? (
+                <StreamingQueue
+                  roomCode={roomCode}
+                  queue={queue}
+                  currentSong={currentSong}
+                  isHost={false}
+                  currentUser={currentUser}
                 />
-              </div>
+              ) : (
+                <div className="space-y-6">
+                  <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
+                    <SongSearch
+                      searchQuery={searchQuery}
+                      setSearchQuery={setSearchQuery}
+                      onSearch={handleSearch}
+                      isSearching={isSearching}
+                      searchResults={searchResults}
+                      onAddToQueue={handleAddToQueue}
+                      hasSearched={hasSearched}
+                      currentUser={currentUser}
+                      participants={participants}
+                      roomCode={roomCode}
+                      isParticipant={true}
+                    />
+                  </div>
+
+                  <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
+                    <SongQueue
+                      queue={queue}
+                      onPlaySong={null}
+                      onDeleteSong={null}
+                      isHost={false}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Right Column - Chat */}
+            <div>
+              <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Chat, Reactions, and Settings */}
-      <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
+      {/* Reactions and Settings */}
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
     </div>

@@ -237,20 +237,18 @@ function HostView({ roomCode, currentUser, roomState }) {
                 />
               )}
 
-              {/* Singer Spotlight - Show in Karaoke and Streaming modes */}
-              {(isKaraoke || isStreaming) && (
-                <SingerSpotlight
-                  roomCode={roomCode}
-                  currentSong={isKaraoke ? currentSong : null}
-                  participants={participants}
-                  participantMutes={participantMutes}
-                  onMuteToggle={setParticipantMute}
-                  onMuteAll={handleMuteAll}
-                  queue={isKaraoke ? queue : []}
-                  canControlMics={true}
-                  currentUser={currentUser}
-                />
-              )}
+              {/* Singer Spotlight - Show in all modes */}
+              <SingerSpotlight
+                roomCode={roomCode}
+                currentSong={isKaraoke ? currentSong : null}
+                participants={participants}
+                participantMutes={participantMutes}
+                onMuteToggle={setParticipantMute}
+                onMuteAll={handleMuteAll}
+                queue={isKaraoke ? queue : []}
+                canControlMics={true}
+                currentUser={currentUser}
+              />
 
               {/* Search/Upload Section - Switch between YouTube and Google Drive */}
               {isStreaming ? (
@@ -280,27 +278,28 @@ function HostView({ roomCode, currentUser, roomState }) {
               )}
             </div>
 
-            {/* Right Column - Queue (only for non-streaming modes) */}
-            {!isStreaming && (
-              <div className="space-y-6">
+            {/* Right Column - Chat + Queue */}
+            <div className="space-y-6">
+              <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
+
+              {!isStreaming && (
                 <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
-                  <SongQueue 
-                    queue={queue} 
-                    onPlaySong={handlePlaySong} 
+                  <SongQueue
+                    queue={queue}
+                    onPlaySong={handlePlaySong}
                     onDeleteSong={handleDeleteSong}
                     onMoveSongUp={handleMoveSongUp}
                     onMoveSongDown={handleMoveSongDown}
-                    isHost={true} 
+                    isHost={true}
                   />
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Chat, Reactions, and Settings */}
-      <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} />
+      {/* Reactions and Settings */}
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
     </div>

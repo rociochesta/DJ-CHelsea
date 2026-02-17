@@ -140,6 +140,14 @@ export default function ParticipantTile({
           >
             {isMicOn ? "🎙️" : "🔇"}
           </button>
+
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("open-device-settings"))}
+            className="p-1.5 rounded-lg backdrop-blur-xl bg-white/20 hover:bg-white/30 transition text-sm"
+            title="Device settings"
+          >
+            ⚙️
+          </button>
         </div>
       )}
 

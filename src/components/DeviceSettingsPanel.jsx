@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocalParticipant } from "@livekit/components-react";
 import { useDevicePreferences } from "../hooks/useDevicePreferences";
+import { Settings, X, Camera, Mic, Loader2 } from "lucide-react";
 
 export default function DeviceSettingsPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +21,13 @@ export default function DeviceSettingsPanel() {
   const { localParticipant } = useLocalParticipant();
   const { cameraId, micId, saveCamera, saveMic } = useDevicePreferences();
 
+  // Listen for open event from participant tile gear button
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener("open-device-settings", handleOpen);
+    return () => window.removeEventListener("open-device-settings", handleOpen);
+  }, []);
+
   // Enumerate devices when panel opens
   useEffect(() => {
     if (!isOpen) return;
@@ -33,7 +41,6 @@ export default function DeviceSettingsPanel() {
         setAudioDevices(audio);
         setVideoDevices(video);
 
-        // Set initial selections
         if (video.length > 0 && !selectedCamera) {
           setSelectedCamera(cameraId || video[0].deviceId);
         }
@@ -82,12 +89,16 @@ export default function DeviceSettingsPanel() {
   useEffect(() => {
     if (!isOpen || !selectedMic) return;
 
+    let stopStream = null;
+
     async function startMicMonitoring() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: { deviceId: selectedMic ? { exact: selectedMic } : undefined },
           video: false,
         });
+
+        stopStream = () => stream.getTracks().forEach((track) => track.stop());
 
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         const audioContext = new AudioContext();
@@ -106,39 +117,27 @@ export default function DeviceSettingsPanel() {
           if (!analyserRef.current || !isOpen) return;
 
           analyserRef.current.getByteFrequencyData(dataArray);
-          const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+          const average = dataArray.reduce((a, b) => a + b, 0) / dataArray.length;
           setMicLevel(Math.min(100, (average / 255) * 100 * 2));
 
           animationRef.current = requestAnimationFrame(updateLevel);
         }
 
         updateLevel();
-
-        // Clean up mic monitoring stream
-        return () => {
-          stream.getTracks().forEach((track) => track.stop());
-        };
       } catch (error) {
         console.error("Failed to monitor microphone:", error);
       }
     }
 
-    const cleanup = startMicMonitoring();
+    startMicMonitoring();
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-      if (cleanup) {
-        cleanup.then((fn) => fn && fn());
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      if (audioContextRef.current) audioContextRef.current.close();
+      if (stopStream) stopStream();
     };
   }, [isOpen, selectedMic]);
 
-  // Handle camera change
   const handleCameraChange = async (deviceId) => {
     if (isSwitching) return;
 
@@ -158,7 +157,6 @@ export default function DeviceSettingsPanel() {
     }
   };
 
-  // Handle microphone change
   const handleMicChange = async (deviceId) => {
     if (isSwitching) return;
 
@@ -178,46 +176,49 @@ export default function DeviceSettingsPanel() {
     }
   };
 
+  // When closed, render nothing - opened via gear icon in participant tile
   if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-40 px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 backdrop-blur-xl transition-all hover:scale-105 active:scale-95"
-        title="Audio & Video Settings"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-xl">⚙️</span>
-          <span className="font-semibold">Settings</span>
-        </div>
-      </button>
-    );
+    return null;
   }
 
+  // ====== OPEN (outlined, minimal overlays, icons) ======
   return (
-    <div className="fixed bottom-4 right-4 z-40 w-96 max-h-[90vh] rounded-3xl border border-white/20 bg-black/95 backdrop-blur-2xl shadow-2xl flex flex-col overflow-hidden animate-scale-in">
+    <div className="fixed bottom-4 right-4 z-40 w-96 max-h-[90vh] rounded-3xl border border-white/12 bg-black/60 backdrop-blur-2xl shadow-2xl flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-white/10 bg-gradient-to-r from-fuchsia-900/40 to-indigo-900/40 flex items-center justify-between">
-        <h3 className="font-bold text-lg">Audio & Video Settings</h3>
+      <div className="p-4 border-b border-white/10 bg-white/5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Settings className="w-5 h-5 text-white/80" />
+          <h3 className="font-semibold text-white/90">Device Settings</h3>
+        </div>
+
         <button
           onClick={() => setIsOpen(false)}
-          className="text-white/60 hover:text-white text-2xl leading-none transition"
+          className="w-9 h-9 rounded-xl border border-white/12 bg-white/5
+            hover:bg-white/8 hover:border-white/20 transition flex items-center justify-center"
+          aria-label="Close"
         >
-          ✕
+          <X className="w-5 h-5 text-white/80" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Camera Section */}
-        <div>
-          <label className="block text-sm font-semibold text-white/70 mb-2">
-            Camera
-          </label>
+      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+        {/* Camera */}
+        <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center">
+              <Camera className="w-5 h-5 text-white/80" />
+            </div>
+            <div className="font-semibold text-white/90">Camera</div>
+          </div>
+
           <select
             value={selectedCamera}
             onChange={(e) => handleCameraChange(e.target.value)}
             disabled={isSwitching}
-            className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/10 text-white text-sm focus:outline-none focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-400/20 disabled:opacity-50"
+            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm
+              focus:outline-none focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-400/15
+              disabled:opacity-50"
           >
             {videoDevices.map((device) => (
               <option key={device.deviceId} value={device.deviceId}>
@@ -226,8 +227,7 @@ export default function DeviceSettingsPanel() {
             ))}
           </select>
 
-          {/* Camera Preview */}
-          <div className="mt-3 rounded-xl overflow-hidden bg-black aspect-video">
+          <div className="mt-3 rounded-xl overflow-hidden bg-black/60 aspect-video border border-white/10">
             <video
               ref={videoRef}
               autoPlay
@@ -238,16 +238,22 @@ export default function DeviceSettingsPanel() {
           </div>
         </div>
 
-        {/* Microphone Section */}
-        <div>
-          <label className="block text-sm font-semibold text-white/70 mb-2">
-            Microphone
-          </label>
+        {/* Microphone */}
+        <div className="rounded-2xl border border-white/10 bg-black/25 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center">
+              <Mic className="w-5 h-5 text-white/80" />
+            </div>
+            <div className="font-semibold text-white/90">Microphone</div>
+          </div>
+
           <select
             value={selectedMic}
             onChange={(e) => handleMicChange(e.target.value)}
             disabled={isSwitching}
-            className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/10 text-white text-sm focus:outline-none focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-400/20 disabled:opacity-50"
+            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm
+              focus:outline-none focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-400/15
+              disabled:opacity-50"
           >
             {audioDevices.map((device) => (
               <option key={device.deviceId} value={device.deviceId}>
@@ -256,21 +262,22 @@ export default function DeviceSettingsPanel() {
             ))}
           </select>
 
-          {/* Mic Level Meter */}
-          <div className="mt-3">
-            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+          {/* Mic Meter (no gradient, subtle neon) */}
+          <div className="mt-4">
+            <div className="h-2 rounded-full bg-white/10 overflow-hidden border border-white/10">
               <div
-                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-100"
+                className="h-full bg-fuchsia-400/70 transition-all duration-100"
                 style={{ width: `${micLevel}%` }}
               />
             </div>
-            <p className="text-xs text-white/40 mt-1">Speak to test microphone</p>
+            <p className="text-xs text-white/45 mt-2">Speak to test microphone</p>
           </div>
         </div>
 
         {isSwitching && (
-          <div className="text-center py-2">
-            <p className="text-sm text-fuchsia-400 animate-pulse">Switching devices...</p>
+          <div className="flex items-center justify-center gap-2 text-sm text-white/70 py-1">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Switching devices…
           </div>
         )}
       </div>
