@@ -26,6 +26,7 @@ export default function HostControlPanel({
   onSkip,
   onMuteAll,
   onMuteToggle,
+  onRequestUnmute,
   onPlayPause,
   onKick,
   onUpdateHostControls,
@@ -335,14 +336,21 @@ export default function HostControlPanel({
                       {!isLocal && (
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           <button
-                            onClick={() => onMuteToggle(muteKey, !isMuted)}
+                            onClick={() => {
+                              if (isMuted) {
+                                // Can't force-unmute remotely — send a request
+                                onRequestUnmute(muteKey);
+                              } else {
+                                onMuteToggle(muteKey, true);
+                              }
+                            }}
                             className={[
                               "w-8 h-8 rounded-xl border bg-transparent transition active:scale-[0.95]",
                               isMuted
                                 ? outlineBtn("emerald")
                                 : outlineBtn("indigo"),
                             ].join(" ")}
-                            title={isMuted ? "Unmute" : "Mute"}
+                            title={isMuted ? "Request unmute" : "Mute"}
                           >
                             {isMuted ? (
                               <Mic className="w-3.5 h-3.5 mx-auto text-emerald-400/70" />

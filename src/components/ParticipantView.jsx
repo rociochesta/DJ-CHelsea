@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useLocalParticipant } from "@livekit/components-react";
 import { database, ref, set, push } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 
@@ -13,6 +14,7 @@ import EmojiReactions from "./EmojiReactions";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import MeetingDisplay from "./MeetingDisplay";
+import UnmuteRequestPrompt from "./UnmuteRequestPrompt";
 
 import { Mic, MonitorPlay, Headphones, User, BookOpen } from "lucide-react";
 
@@ -22,6 +24,7 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
+  const { localParticipant } = useLocalParticipant();
   const roomMode = roomState?.roomMode || "karaoke";
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
@@ -188,13 +191,9 @@ const ONE_SONG_MESSAGES = [
             roomMode={roomMode}
             currentSong={isKaraoke ? currentSong : null}
             participantMutes={participantMutes}
-            onMuteToggle={() => {}}
-            onMuteAll={() => {}}
             queue={isKaraoke ? queue : []}
-            canControlMics={false}
             currentUser={currentUser}
             micsLocked={roomState?.hostControls?.micsLocked || false}
-            // ✅ helps DJ mode choose “host first” when idle
             preferHostWhenIdle={isDJ}
           />
 
@@ -255,6 +254,11 @@ const ONE_SONG_MESSAGES = [
 
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
+      <UnmuteRequestPrompt
+        roomCode={roomCode}
+        currentUser={currentUser}
+        localParticipant={localParticipant}
+      />
     </div>
   );
 }

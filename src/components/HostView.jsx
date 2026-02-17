@@ -61,7 +61,28 @@ function HostView({ roomCode, currentUser, roomState }) {
       addedAt: Date.now(),
     });
   };
+const handleStopSong = async () => {
+  // karaoke-only: mute current singer when stopping
+  if (isKaraoke) {
+    const currentSinger =
+      roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+    if (currentSinger) {
+      await setParticipantMute(currentSinger, true);
+    }
+  }
 
+  // Clear current song
+  const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
+  await set(currentSongRef, null);
+
+  // Stop playback globally
+  const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
+  await update(playbackRef, {
+    isPlaying: false,
+    videoId: null,
+    pausedAtSeconds: 0,
+  });
+};
   const setParticipantMute = async (participantName, muted) => {
     const muteRef = ref(
       database,
@@ -93,30 +114,37 @@ function HostView({ roomCode, currentUser, roomState }) {
     }
   };
 
-  const handleSkipSong = async () => {
-    // Mute current singer (only in karaoke mode)
-    if (isKaraoke) {
-      const currentSinger =
-        roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-      if (currentSinger) {
-        await setParticipantMute(currentSinger, true);
-      }
+const handleSkipSong = async () => {
+  // Mute current singer (only in karaoke mode)
+  if (isKaraoke) {
+    const currentSinger =
+      roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+    if (currentSinger) {
+      await setParticipantMute(currentSinger, true);
     }
+  }
 
-    const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
-    await set(currentSongRef, null);
+  // Clear current song → everyone returns to camera
+  const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
+  await set(currentSongRef, null);
 
-    const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
-    await update(playbackRef, {
-      isPlaying: false,
-      videoId: null,
-    });
+  // Stop playback globally
+  const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
+  await update(playbackRef, {
+    isPlaying: false,
+    videoId: null,
+    pausedAtSeconds: 0,
+  });
 
-    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
-    if (queue.length > 0) {
-      await handlePlaySong(queue[0]);
-    }
-  };
+  // ✅ DJ MODE: do NOT autoplay next song
+  if (isDJ) return;
+
+  // Other modes (karaoke / streaming) → autoplay next
+  const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+  if (queue.length > 0) {
+    await handlePlaySong(queue[0]);
+  }
+};
 
   const handleDeleteSong = async (songId) => {
     const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${songId}`);
@@ -190,6 +218,11 @@ function HostView({ roomCode, currentUser, roomState }) {
   const handleUpdateHostControls = async (updates) => {
     const controlsRef = ref(database, `karaoke-rooms/${roomCode}/hostControls`);
     await update(controlsRef, updates);
+  };
+
+  const handleRequestUnmute = async (participantName) => {
+    const requestRef = ref(database, `karaoke-rooms/${roomCode}/unmuteRequests/${participantName}`);
+    await set(requestRef, Date.now());
   };
 
   const handleSelectReading = async (readingId) => {
@@ -322,12 +355,8 @@ function HostView({ roomCode, currentUser, roomState }) {
               <SingerSpotlight
                 roomCode={roomCode}
                 currentSong={isKaraoke ? currentSong : null}
-                participants={participants}
                 participantMutes={participantMutes}
-                onMuteToggle={setParticipantMute}
-                onMuteAll={handleMuteAll}
                 queue={isKaraoke ? queue : []}
-                canControlMics={true}
                 currentUser={currentUser}
                 micsLocked={roomState?.hostControls?.micsLocked || false}
               />
@@ -403,6 +432,7 @@ function HostView({ roomCode, currentUser, roomState }) {
         onSkip={handleSkipSong}
         onMuteAll={handleMuteAll}
         onMuteToggle={setParticipantMute}
+        onRequestUnmute={handleRequestUnmute}
         onPlayPause={handlePlayPause}
         onKick={handleKickParticipant}
         onUpdateHostControls={handleUpdateHostControls}

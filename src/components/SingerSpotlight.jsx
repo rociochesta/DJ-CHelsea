@@ -1,17 +1,14 @@
 import { useMemo, useState } from "react";
 import { useParticipants } from "@livekit/components-react";
 import ParticipantTile from "./ParticipantTile";
-import { Users, ChevronDown, ChevronUp, MicOff, Sparkles } from "lucide-react";
+import { Users, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 
 export default function SingerSpotlight({
   roomCode,
   roomMode,
   currentSong,
   participantMutes,
-  onMuteToggle,
-  onMuteAll,
   queue,
-  canControlMics = true,
   currentUser,
   micsLocked = false,
   preferHostWhenIdle = false,
@@ -63,13 +60,6 @@ export default function SingerSpotlight({
     });
     return arr;
   }, [liveKitParticipants, preferHostWhenIdle, isDJ, currentSingerRaw, hostCandidate]);
-
-  const outlineBtn = (tone = "fuchsia") =>
-    tone === "indigo"
-      ? "border-indigo-500/30 hover:border-indigo-400/45 hover:shadow-[0_0_14px_rgba(99,102,241,0.14)]"
-      : tone === "neutral"
-      ? "border-white/10 hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.10)]"
-      : "border-fuchsia-500/35 hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)]";
 
   if (isMinimized) {
     return (
@@ -154,24 +144,6 @@ export default function SingerSpotlight({
         </div>
 
         <div className="flex items-center gap-2">
-          {canControlMics && (
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={onMuteAll}
-              className={[
-                "inline-flex items-center gap-2 rounded-2xl px-4 py-2",
-                "border bg-transparent text-white/85 backdrop-blur-md",
-                outlineBtn("indigo"),
-                "transition active:scale-[0.98]",
-              ].join(" ")}
-              title="Mute everyone except current singer"
-            >
-              <MicOff className="w-4 h-4" />
-              <span className="text-sm font-semibold">Mute all</span>
-            </button>
-          )}
-
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
@@ -206,8 +178,6 @@ export default function SingerSpotlight({
               isSinging={isSingingNow}
               isNext={isNextUp}
               isMuted={isMuted}
-              onMuteToggle={onMuteToggle}
-              canControlMics={canControlMics}
               isCurrentUser={!!p?.isLocal}
               micsLocked={micsLocked}
             />

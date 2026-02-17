@@ -8,8 +8,6 @@ export default function ParticipantTile({
   isSinging,
   isNext,
   isMuted,
-  onMuteToggle,
-  canControlMics = true,
   isCurrentUser = false,
   micsLocked = false,
 }) {
@@ -20,7 +18,6 @@ export default function ParticipantTile({
   const [micBusy, setMicBusy] = useState(false);
 
   const participantName = participant.name || participant.identity || "Unknown";
-  const muteKey = participant.identity || participantName; // ✅ use identity when possible
 
   const tracks = useTracks([Track.Source.Camera]);
 
@@ -206,23 +203,6 @@ export default function ParticipantTile({
               </div>
             </div>
 
-            {canControlMics && (
-              <button
-                onClick={() => onMuteToggle(muteKey, !isMuted)}
-                className={[
-                  "w-10 h-10 rounded-2xl border bg-transparent",
-                  "text-white/80 transition active:scale-[0.98]",
-                  isMuted ? outlineBtn("indigo") : outlineBtn("fuchsia"),
-                ].join(" ")}
-                title={isMuted ? "Unmute" : "Mute"}
-              >
-                {isMuted ? (
-                  <Mic className="w-4 h-4 mx-auto" />
-                ) : (
-                  <MicOff className="w-4 h-4 mx-auto" />
-                )}
-              </button>
-            )}
           </div>
         </div>
       </div>
