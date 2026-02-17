@@ -41,7 +41,27 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
       setIsSearching(false);
     }
   };
+const ONE_SONG_MESSAGES = [
+  "🕒 Queue’s doing group conscience.\nYou’ve already got a song pending — let someone else share. 😈",
 
+  "🕒 Easy tiger.\nYou already shared — pass the mic before ego takes the chair. 🎤",
+
+  "🕒 One song at a time, legend.\nWe’re here for recovery, not a full album drop. 😌",
+
+  "🕒 The queue believes in equality.\nYou’re already in — let the next miracle happen. ✨",
+
+  "🕒 Breathe.\nYou have a request pending — this is a meeting, not a takeover. 😇",
+
+  "🕒 Patience, rockstar.\nYour song is coming — don’t relapse into control. 😏",
+
+  "🕒 Higher Power says: one share each.\nTrust the process… and the playlist. 🎶",
+
+  "🕒 You’re already in the queue.\nLet someone else feel important for 3 minutes. 😈",
+
+  "🕒 Slow down, DJ-in-training.\nRecovery is about surrender… including the aux cord. 🎧",
+
+  "🕒 The spiritual principle here is patience.\nAlso… you already picked a song. Sit pretty. 😌"
+];
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
   const participants = roomState?.participants ? Object.values(roomState.participants) : [];
   const currentSong = roomState?.currentSong;
@@ -57,7 +77,9 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
   const handleAddToQueue = async (video, requestedBy) => {
     // ✅ block >1 request per participant (for now)
     if (userAlreadyQueued) {
-      alert("You already have a song in the queue 🎧\nWait until it plays (or the host clears it).");
+     alert(
+  ONE_SONG_MESSAGES[Math.floor(Math.random() * ONE_SONG_MESSAGES.length)]
+);
       return;
     }
 
@@ -150,13 +172,13 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
               requestedBy={currentSong?.requestedBy}
             />
           ) : (
-            <VideoPlayer
-              currentSong={currentSong}
-              playbackState={roomState?.playbackState}
-              isHost={false}
-              // ✅ we’ll use this in VideoPlayer to make “Performance Mode” opt-in
-              performanceModeOptIn={true}
-            />
+ <VideoPlayer
+  currentSong={currentSong}
+  playbackState={roomState?.playbackState}
+  isHost={false}
+  roomMode={roomMode}
+  showHostWhenIdle={roomMode === "dj"}
+/>
           )}
 
           {/* Spotlight */}

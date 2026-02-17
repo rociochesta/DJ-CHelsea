@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
 import HostCameraPreview from "./HostCameraPreview";
-import { useLocalParticipant } from "@livekit/components-react";
+import {
+  useLocalParticipant,
+  useParticipants,
+  ParticipantTile as LKParticipantTile,
+} from "@livekit/components-react";
 
 const VideoPlayer = React.memo(
   function VideoPlayer({
@@ -10,7 +14,7 @@ const VideoPlayer = React.memo(
     onSkip,
     isHost,
 
-    // ✅ NEW (optional): for DJ participant view
+    // ✅ optional
     showHostWhenIdle = false,
     roomMode = "karaoke",
   }) {
@@ -19,10 +23,17 @@ const VideoPlayer = React.memo(
     const [embedError, setEmbedError] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
 
-    // ✅ NEW: Performance Mode toggle (opt-in)
+    // ✅ opt-in performance mode
     const [performanceMode, setPerformanceMode] = useState(false);
 
     const { localParticipant } = useLocalParticipant();
+    const liveKitParticipants = useParticipants();
+
+    // ✅ heuristic host (first non-local)
+    const hostCandidate = React.useMemo(() => {
+      if (!liveKitParticipants?.length) return null;
+      return liveKitParticipants.find((p) => !p?.isLocal) || null;
+    }, [liveKitParticipants]);
 
     // ✅ prevents double-firing (YouTube sometimes fires onEnd weirdly)
     const lastEndRef = useRef(0);
@@ -31,14 +42,13 @@ const VideoPlayer = React.memo(
     const cameraWasOnRef = useRef(false);
 
     // ✅ PERFORMANCE MODE (OPT-IN): only disable camera if user enables it
-    // This ONLY runs for non-host participants
     useEffect(() => {
       if (isHost || !localParticipant) return;
 
       const isPlaying = !!(playbackState?.isPlaying && currentSong?.videoId);
 
       // If perf mode is OFF, do not auto-toggle camera.
-      // Also, if we previously disabled camera due to perf mode and user turned it off,
+      // If we previously disabled camera due to perf mode and user turned it off,
       // restore camera to prior state.
       if (!performanceMode) {
         if (wasPlayingRef.current) {
@@ -53,11 +63,8 @@ const VideoPlayer = React.memo(
       // Video just started playing (and perfMode ON)
       if (isPlaying && !wasPlayingRef.current) {
         wasPlayingRef.current = true;
-
-        // Save current camera state
         cameraWasOnRef.current = localParticipant.isCameraEnabled;
 
-        // Disable camera to save bandwidth
         if (cameraWasOnRef.current) {
           console.log("📹 Performance Mode ON — disabling camera during playback");
           localParticipant.setCameraEnabled(false).catch(console.error);
@@ -68,7 +75,6 @@ const VideoPlayer = React.memo(
       if (!isPlaying && wasPlayingRef.current) {
         wasPlayingRef.current = false;
 
-        // Re-enable camera if it was on before
         if (cameraWasOnRef.current) {
           console.log("📹 Video ended — restoring camera");
           localParticipant.setCameraEnabled(true).catch(console.error);
@@ -82,11 +88,10 @@ const VideoPlayer = React.memo(
       performanceMode,
     ]);
 
-    // ✅ CONTINUOUS SYNC for participants - prevents lag and handles resume
+    // ✅ CONTINUOUS SYNC for participants
     useEffect(() => {
       if (!player || !playerReady || !playbackState) return;
 
-      // Clear any existing interval
       if (syncIntervalRef.current) {
         clearInterval(syncIntervalRef.current);
         syncIntervalRef.current = null;
@@ -94,16 +99,13 @@ const VideoPlayer = React.memo(
 
       try {
         if (playbackState.isPlaying && playbackState.videoId) {
-          // Immediate sync
           const elapsedSeconds = Math.floor(
             (Date.now() - playbackState.startTime) / 1000
           );
           player.seekTo(elapsedSeconds, true);
           player.playVideo();
 
-          // ✅ ONLY sync continuously for participants (DJ controls their own playback)
           if (!isHost) {
-            // Sync every 3 seconds (less aggressive for mobile battery/bandwidth)
             syncIntervalRef.current = setInterval(() => {
               try {
                 const currentElapsed = Math.floor(
@@ -111,7 +113,6 @@ const VideoPlayer = React.memo(
                 );
                 const playerTime = Math.floor(player.getCurrentTime());
 
-                // If player is more than 3 seconds off, resync
                 if (Math.abs(currentElapsed - playerTime) > 3) {
                   console.log(
                     `🔄 Resyncing: DJ at ${currentElapsed}s, participant at ${playerTime}s`
@@ -122,16 +123,16 @@ const VideoPlayer = React.memo(
               } catch (error) {
                 console.error("Sync interval error:", error);
               }
-            }, 3000); // 3 seconds for better mobile performance
+            }, 3000);
           }
         } else {
+          // ✅ host paused/stopped -> pause everyone
           player.pauseVideo();
         }
       } catch (error) {
         console.error("Error syncing playback:", error);
       }
 
-      // Cleanup interval on unmount or when dependencies change
       return () => {
         if (syncIntervalRef.current) {
           clearInterval(syncIntervalRef.current);
@@ -156,22 +157,29 @@ const VideoPlayer = React.memo(
       if (event.data === 101 || event.data === 150) setEmbedError(true);
     };
 
-    // ✅ Handle participant state changes (pause/play)
+    // ✅ Enforce host pause globally:
+    // If host paused (playbackState.isPlaying === false), participants cannot keep playing.
     const onStateChange = (event) => {
-      // event.data values:
-      // -1 (unstarted), 0 (ended), 1 (playing), 2 (paused), 3 (buffering), 5 (video cued)
+      if (isHost) return;
+      if (!player) return;
 
+      // participant tried to play while host paused
+      if (playbackState && playbackState.isPlaying === false && event.data === 1) {
+        try {
+          player.pauseVideo();
+        } catch (e) {
+          console.error("Failed to enforce host pause:", e);
+        }
+        return;
+      }
+
+      // existing anti-pause rule (only when host is playing)
       if (!isHost && playbackState?.isPlaying && player) {
         const elapsedSeconds = Math.floor(
           (Date.now() - playbackState.startTime) / 1000
         );
 
-        // 🔒 Streaming rule: nobody can be behind.
-        // If participant pauses, immediately snap back to global time and resume.
         if (event.data === 2) {
-          console.log(
-            `⛔ Participant pause blocked — snapping to ${elapsedSeconds}s`
-          );
           try {
             player.seekTo(elapsedSeconds, true);
             player.playVideo();
@@ -181,14 +189,10 @@ const VideoPlayer = React.memo(
           return;
         }
 
-        // Participant manually played — force resync to host time
         if (event.data === 1) {
           try {
             const playerTime = Math.floor(player.getCurrentTime());
             if (Math.abs(elapsedSeconds - playerTime) > 1) {
-              console.log(
-                `🔄 Manual play detected — syncing to host time: ${elapsedSeconds}s`
-              );
               player.seekTo(elapsedSeconds, true);
             }
             player.playVideo();
@@ -199,33 +203,24 @@ const VideoPlayer = React.memo(
       }
     };
 
-    // ✅ AUTO-PLAY NEXT
     const onEnd = () => {
-      if (!isHost) return; // only host advances queue
+      if (!isHost) return;
       const now = Date.now();
-      if (now - lastEndRef.current < 1500) return; // debounce
+      if (now - lastEndRef.current < 1500) return;
       lastEndRef.current = now;
-
       onSkip?.();
     };
 
-    // ✅ FULLSCREEN BUTTON for participants
     const handleFullscreen = () => {
       const iframe = document.querySelector('iframe[src*="youtube.com"]');
       if (iframe) {
-        if (iframe.requestFullscreen) {
-          iframe.requestFullscreen();
-        } else if (iframe.webkitRequestFullscreen) {
-          iframe.webkitRequestFullscreen();
-        } else if (iframe.mozRequestFullScreen) {
-          iframe.mozRequestFullScreen();
-        } else if (iframe.msRequestFullscreen) {
-          iframe.msRequestFullscreen();
-        }
+        if (iframe.requestFullscreen) iframe.requestFullscreen();
+        else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+        else if (iframe.mozRequestFullScreen) iframe.mozRequestFullScreen();
+        else if (iframe.msRequestFullscreen) iframe.msRequestFullscreen();
       }
     };
 
-    // Track fullscreen changes
     useEffect(() => {
       const handleFullscreenChange = () => {
         setIsFullscreen(
@@ -245,10 +240,7 @@ const VideoPlayer = React.memo(
 
       return () => {
         document.removeEventListener("fullscreenchange", handleFullscreenChange);
-        document.removeEventListener(
-          "webkitfullscreenchange",
-          handleFullscreenChange
-        );
+        document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
         document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
         document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
       };
@@ -259,8 +251,8 @@ const VideoPlayer = React.memo(
       width: "100%",
       playerVars: {
         autoplay: 1,
-        controls: isHost ? 1 : 0, // ✅ DJ gets full controls, participants get none
-        disablekb: isHost ? 0 : 1, // ✅ DJ can use keyboard, participants cannot
+        controls: isHost ? 1 : 0,
+        disablekb: isHost ? 0 : 1,
         modestbranding: 1,
         rel: 0,
         fs: 1,
@@ -269,26 +261,30 @@ const VideoPlayer = React.memo(
       },
     };
 
-    // ✅ DJ idle: don’t show participant’s own camera by default
+    // ✅ IDLE (no song)
     if (!currentSong) {
       const isDJ = roomMode === "dj";
+      const shouldShowHostTile =
+        !isHost && showHostWhenIdle && isDJ && hostCandidate;
 
       return (
         <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5 md:p-7">
           <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
-            <div className="aspect-video relative bg-gradient-to-br from-fuchsia-900/20 to-indigo-900/20 flex items-center justify-center">
-              {!isHost && showHostWhenIdle && isDJ ? (
-                <div className="text-center px-6">
-                  <div className="text-4xl mb-3">🎧</div>
-                  <div className="text-xl font-extrabold text-white/90">
-                    DJ is getting ready
-                  </div>
-                  <div className="mt-1 text-sm text-white/55">
-                    No song playing yet. Hang tight.
+            <div className="aspect-video relative bg-gradient-to-br from-fuchsia-900/20 to-indigo-900/20">
+              {shouldShowHostTile ? (
+                <div className="absolute inset-0">
+                  <LKParticipantTile participant={hostCandidate} className="w-full h-full" />
+                  <div className="absolute inset-0 bg-black/35" />
+                  <div className="absolute left-4 top-4 rounded-2xl px-4 py-3 border border-white/10 bg-white/10 backdrop-blur-md">
+                    <div className="text-lg font-extrabold text-fuchsia-200">DJ is live</div>
+                    <div className="text-xs text-white/60">Waiting for the host to press play…</div>
                   </div>
                 </div>
               ) : (
-                <HostCameraPreview isHost={isHost} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {/* fallback: keep old behavior for host / non-DJ */}
+                  <HostCameraPreview isHost={isHost} />
+                </div>
               )}
             </div>
           </div>
@@ -298,7 +294,6 @@ const VideoPlayer = React.memo(
 
     return (
       <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-5 md:p-7">
-        {/* Title */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
           <div>
             <div className="text-xs tracking-widest uppercase text-white/50">
@@ -316,7 +311,6 @@ const VideoPlayer = React.memo(
           </div>
 
           <div className="flex gap-2">
-            {/* ✅ FULLSCREEN button for participants */}
             {!isHost && !embedError && (
               <button
                 onClick={handleFullscreen}
@@ -338,7 +332,6 @@ const VideoPlayer = React.memo(
           </div>
         </div>
 
-        {/* ✅ Performance mode (opt-in) */}
         {!isHost && (
           <button
             type="button"
@@ -347,29 +340,23 @@ const VideoPlayer = React.memo(
               "mb-3 w-full text-left px-3 py-2 rounded-lg border text-xs transition",
               performanceMode
                 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/14"
-                : "bg-blue-500/10 border-blue-500/30 text-blue-200 hover:bg-blue-500/14",
+                : "bg-blue-500/10 border border-blue-500/30 text-blue-200 hover:bg-blue-500/14",
             ].join(" ")}
             title="Toggle Performance Mode"
           >
             💡 <strong>Performance Mode:</strong>{" "}
             {performanceMode
-              ? "ON — camera will turn off during playback (tap to turn OFF)"
-              : "OFF — keep camera on (tap to reduce lag)"}{" "}
-            {playbackState?.isPlaying ? (
-              <span className="opacity-80">· playing now</span>
-            ) : null}
+              ? "ON — camera turns off during playback (tap to turn OFF)"
+              : "OFF — camera stays on (tap to reduce lag)"}
           </button>
         )}
 
-        {/* Player Frame */}
         {embedError ? (
           <div className="rounded-2xl border border-white/10 bg-black/30 overflow-hidden">
             <div className="aspect-video flex items-center justify-center">
               <div className="text-center p-8">
                 <div className="text-5xl mb-4">🚫</div>
-                <div className="text-xl font-extrabold mb-2">
-                  Can't embed this one
-                </div>
+                <div className="text-xl font-extrabold mb-2">Can't embed this one</div>
                 <div className="text-white/60 mb-4">
                   Publisher blocked external playback. (Love that for us.)
                 </div>
@@ -406,7 +393,6 @@ const VideoPlayer = React.memo(
     );
   },
   (prevProps, nextProps) => {
-    // Only re-render if these values actually change
     return (
       prevProps.currentSong?.videoId === nextProps.currentSong?.videoId &&
       prevProps.playbackState?.isPlaying === nextProps.playbackState?.isPlaying &&
