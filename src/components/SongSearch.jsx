@@ -1,47 +1,47 @@
 import React, { useState } from "react";
-import { Search, Plus, Music } from "lucide-react";
+import { searchKaraokeVideos } from "../utils/youtube";
 
-function SongSearch({
-  searchQuery,
-  setSearchQuery,
-  onSearch,
-  isSearching,
-  searchResults,
-  onAddToQueue,
+function SongSearch({ 
+  searchQuery, 
+  setSearchQuery, 
+  onSearch, 
+  isSearching, 
+  searchResults, 
+  onAddToQueue, 
   hasSearched,
   currentUser,
   participants,
   roomCode,
-  isParticipant,
+  isParticipant 
 }) {
   const [error, setError] = useState("");
 
-  const outlineBtn =
-    "border-fuchsia-500/35 hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)]";
-
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    onSearch?.(e);
+    if (onSearch) {
+      onSearch(e);
+    }
   };
 
   const handleAdd = (video) => {
+    // For DJ/Host: show options with their name first
     if (!isParticipant && currentUser?.name) {
       const options = [
-        currentUser.name,
-        ...((participants || []).map((p) => p.name).filter((n) => n !== currentUser.name)),
-        "Other (type name)",
+        currentUser.name, // DJ's name first
+        ...((participants || []).map(p => p.name).filter(n => n !== currentUser.name)),
+        "Other (type name)"
       ];
-
+      
       const choice = window.prompt(
-        `Who's singing this song?\n\n${options.map((opt, i) => `${i + 1}. ${opt}`).join("\n")}`,
+        `Who's singing this song?\n\nOptions:\n${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}`,
         "1"
       );
-
-      if (!choice) return;
-
+      
+      if (!choice) return; // Cancelled
+      
       const choiceNum = parseInt(choice);
       let requestedBy;
-
+      
       if (choiceNum >= 1 && choiceNum <= options.length) {
         const selected = options[choiceNum - 1];
         if (selected === "Other (type name)") {
@@ -50,116 +50,70 @@ function SongSearch({
           requestedBy = selected;
         }
       } else {
+        // They typed a name directly
         requestedBy = choice.trim() || currentUser.name;
       }
-
+      
       onAddToQueue?.(video, requestedBy);
     } else {
+      // For participants: just use their name
       onAddToQueue?.(video, currentUser?.name || "Someone");
     }
   };
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <Music className="w-5 h-5 text-white/60" />
-        <h3 className="text-xl font-bold">Find a track</h3>
-      </div>
+      <h3 className="text-xl font-bold mb-4">Find a track</h3>
 
-      {/* Search bar */}
       <form onSubmit={handleSearch} className="mb-4 flex gap-3">
         <input
           type="text"
           value={searchQuery || ""}
           onChange={(e) => setSearchQuery?.(e.target.value)}
-          placeholder='Search YouTube… (e.g. "Mr Brightside karaoke")'
-          className="
-            flex-1 px-4 py-3 rounded-2xl
-            bg-white/[0.03] border border-white/10
-            text-white placeholder-white/35
-            focus:outline-none focus:border-fuchsia-400/50 focus:ring-2 focus:ring-fuchsia-400/10
-          "
+          placeholder='Search YouTube... (e.g. "Mr Brightside karaoke")'
+          className="flex-1 p-3 rounded-xl bg-white/5 border border-white/10 text-white focus:border-fuchsia-400/70 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/20"
         />
-
-        <button
-          type="submit"
-          disabled={isSearching}
-          onMouseDown={(e) => e.preventDefault()}
-          className={`
-            inline-flex items-center gap-2 px-4 py-3 rounded-2xl border
-            bg-transparent text-white/85 font-semibold
-            transition active:scale-[0.98]
-            ${outlineBtn}
-            disabled:opacity-40 disabled:cursor-not-allowed
-          `}
+        <button 
+          type="submit" 
+          disabled={isSearching} 
+          className="px-6 py-3 rounded-xl font-bold bg-[linear-gradient(90deg,#ff2aa1,#7c3aed)] hover:opacity-95 active:scale-[0.99] transition disabled:opacity-50"
         >
-          <Search className="w-4 h-4" />
-          {isSearching ? "Searching…" : "Search"}
+          {isSearching ? "Searching..." : "Search"}
         </button>
       </form>
 
-      {/* Tip */}
-      <div className="text-xs text-white/50 mb-4">
-        Some videos cannot be embedded. If playback fails, it will auto-skip.
+      <div className="text-sm text-white/60 mb-4">
+        💡 Some videos can't be embedded (official uploads often block playback). If a video fails, it'll auto-skip.
       </div>
 
-      {/* Error */}
       {error && (
-        <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-yellow-300 text-sm mb-4">
+        <div className="bg-yellow-900/20 border border-yellow-600/30 p-3 rounded-lg mb-4 text-yellow-400 text-sm">
           {error}
         </div>
       )}
 
-      {/* Results */}
       <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
-        {searchResults?.map((video) => (
-          <div
-            key={video.id}
-            className="
-              flex gap-3 items-center p-3 rounded-3xl
-              border border-white/10 bg-white/[0.02]
-              hover:bg-white/[0.03] transition backdrop-blur-md
-            "
-          >
-            <img
-              src={video.thumbnail}
-              alt={video.title}
-              className="w-20 h-14 rounded-2xl object-cover border border-white/10 shrink-0"
-            />
-
+        {searchResults && searchResults.map((video) => (
+          <div key={video.id} className="flex gap-3 items-center p-3 rounded-xl bg-black/25 border border-white/10 hover:bg-black/35 transition">
+            <img src={video.thumbnail} alt={video.title} className="w-20 h-14 rounded object-cover shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="font-semibold text-white/90 truncate">
-                {video.title}
-              </div>
-              <div className="text-xs text-white/55 truncate">
-                {video.channelTitle}
-              </div>
+              <div className="font-semibold text-white truncate">{video.title}</div>
+              <div className="text-sm text-white/60 truncate">{video.channelTitle}</div>
             </div>
-
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => handleAdd(video)}
-              className={`
-                inline-flex items-center gap-2 px-3 py-2 rounded-2xl border
-                bg-transparent text-white/85 text-sm font-semibold
-                transition active:scale-[0.98]
-                ${outlineBtn}
-              `}
+            <button 
+              onClick={() => handleAdd(video)} 
+              className="px-4 py-2 rounded-xl font-bold bg-white/10 hover:bg-white/20 transition whitespace-nowrap"
             >
-              <Plus className="w-4 h-4" />
-              Add
+              Add to Queue
             </button>
           </div>
         ))}
       </div>
-
-      {/* Empty */}
-      {hasSearched && searchResults?.length === 0 && (
-        <div className="text-center py-10 text-white/45">
-          <Search className="w-8 h-8 mx-auto mb-2 text-white/35" />
-          <div>No results found</div>
+      
+      {hasSearched && searchResults && searchResults.length === 0 && (
+        <div className="text-center py-8 text-white/50">
+          <div className="text-4xl mb-2">🔍</div>
+          <div>No results found. Try a different search.</div>
         </div>
       )}
     </div>
