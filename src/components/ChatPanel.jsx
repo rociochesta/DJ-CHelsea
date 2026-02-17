@@ -12,6 +12,8 @@ import {
   Star,
   Mic,
   Sparkles,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 const QUICK_REACTIONS = [
@@ -72,13 +74,14 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     return () => unsubscribe();
   }, [roomCode, updateMessages]);
 
-  // 👇 track if user scrolls up
+  // Track if user scrolls up
   useEffect(() => {
     const el = chatContainerRef.current;
     if (!el) return;
 
     const onScroll = () => {
-      const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      const distanceFromBottom =
+        el.scrollHeight - el.scrollTop - el.clientHeight;
       stickToBottomRef.current = distanceFromBottom < 120;
     };
 
@@ -88,7 +91,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     return () => el.removeEventListener("scroll", onScroll);
   }, [isOpen]);
 
-  // ✅ scroll only the chat container (not the page), and only if user is near bottom
+  // Scroll only the chat container, only if user is near bottom
   useEffect(() => {
     const el = chatContainerRef.current;
     if (!isOpen || !el) return;
@@ -117,7 +120,6 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
       timestamp: Date.now(),
     })
       .then(() => {
-        // keep typing flow
         requestAnimationFrame(() => inputRef.current?.focus());
       })
       .catch((err) => {
@@ -133,12 +135,11 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     set(newMessageRef, {
       userId: currentUser.id,
       userName: currentUser.name,
-      message: reaction.label, // keeping existing DB format
+      message: reaction.label, // keep existing wire format
       isEmoji: true,
       timestamp: Date.now(),
     })
       .then(() => {
-        // keep focus in input (don’t kick them out of typing)
         requestAnimationFrame(() => inputRef.current?.focus());
       })
       .catch((err) => {
@@ -175,14 +176,15 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
         ) : null}
       </div>
 
+      {/* minimize */}
       <button
         type="button"
-        onMouseDown={(e) => e.preventDefault()}
+        onMouseDown={(e) => e.preventDefault()} // ok here
         onClick={() => setIsOpen(false)}
-        className="px-3 py-1.5 rounded-xl border border-white/10 bg-transparent text-white/70 hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)] transition active:scale-[0.98]"
+        className="p-2 rounded-xl border border-white/10 bg-transparent text-white/70 hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)] transition active:scale-[0.98]"
         title="Minimize"
       >
-        <Minus className="w-4 h-4" />
+        <ChevronDown className="w-4 h-4" />
       </button>
     </div>
   );
@@ -196,19 +198,18 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
             <button
               key={r.key}
               type="button"
-              onMouseDown={(e) => e.preventDefault()} // ✅ don't steal focus
+              onMouseDown={(e) => e.preventDefault()} // ✅ keep focus in input
               onClick={() => handleSendReaction(r)}
               className={[
-                "shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl",
+                "group shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl",
                 "border border-fuchsia-500/25 text-white/80 bg-transparent",
                 "hover:border-fuchsia-400/45 hover:text-white",
                 "hover:shadow-[0_0_14px_rgba(232,121,249,0.18)]",
-                "active:scale-[0.98] transition",
+                "transition active:scale-[0.98]",
               ].join(" ")}
               title={r.key}
             >
-              {/* subtle neon icon behavior */}
-              <Icon className="w-4 h-4 text-white/75 group-hover:text-white" />
+              <Icon className="w-4 h-4 text-white/70 group-hover:text-white" />
               <span className="text-xs font-medium">{r.key}</span>
             </button>
           );
@@ -244,7 +245,9 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
           const isMe = msg.userId === currentUser.id;
           const isEmojiOnly =
             msg.isEmoji ||
-            (msg.message && msg.message.length <= 2 && /^\p{Emoji}+$/u.test(msg.message));
+            (msg.message &&
+              msg.message.length <= 2 &&
+              /^\p{Emoji}+$/u.test(msg.message));
 
           const bubbleClass = isEmojiOnly
             ? "bg-transparent border-transparent text-3xl px-2 py-1"
@@ -256,7 +259,9 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
             <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[80%] ${isMe ? "items-end" : "items-start"} flex flex-col`}>
                 {!isMe && (
-                  <div className="text-[10px] text-white/45 mb-1 px-2">{msg.userName}</div>
+                  <div className="text-[10px] text-white/45 mb-1 px-2">
+                    {msg.userName}
+                  </div>
                 )}
 
                 <div className={["rounded-2xl border px-3 py-2 text-sm shadow-sm", bubbleClass].join(" ")}>
@@ -288,10 +293,10 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
           maxLength={200}
         />
 
+        {/* ✅ DO NOT preventDefault on mousedown here */}
         <button
           type="submit"
           disabled={!message.trim()}
-          onMouseDown={(e) => e.preventDefault()} // ✅ keep focus behavior consistent
           className={[
             "inline-flex items-center gap-2 px-3 py-2 rounded-xl",
             "bg-transparent border border-fuchsia-500/35 text-white/85",
@@ -314,17 +319,19 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
       return (
         <button
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => setIsOpen(true)}
           className={[
             "w-full px-4 py-3 rounded-2xl text-left",
             "border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg",
             "hover:border-white/20 hover:bg-white/[0.04] transition",
           ].join(" ")}
+          title="Open chat"
         >
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-white/70" />
             <span className="font-semibold">Chat</span>
-            <span className="text-xs text-white/45 ml-auto">Open</span>
+            <ChevronUp className="w-4 h-4 text-white/60 ml-auto" />
           </div>
         </button>
       );
@@ -345,6 +352,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     return (
       <button
         type="button"
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => setIsOpen(true)}
         className={[
           "fixed bottom-4 left-4 z-40",
@@ -358,6 +366,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
         <div className="flex items-center gap-2">
           <MessageSquare className="w-5 h-5 text-white/70" />
           <span className="font-semibold">Chat</span>
+          <ChevronUp className="w-4 h-4 text-white/60" />
         </div>
       </button>
     );
@@ -371,11 +380,12 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
             <MessageSquare className="w-5 h-5 text-white/70" />
             <h3 className="font-semibold">Chat</h3>
           </div>
+
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setIsOpen(false)}
-            className="px-3 py-1.5 rounded-xl bg-transparent border border-white/10 text-white/70 hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)] transition active:scale-[0.98]"
+            className="p-2 rounded-xl bg-transparent border border-white/10 text-white/70 hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)] transition active:scale-[0.98]"
             title="Close"
           >
             <X className="w-4 h-4" />

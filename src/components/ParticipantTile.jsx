@@ -1,227 +1,121 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
-import { Track } from "livekit-client";
-import { useTracks } from "@livekit/components-react";
-import { Mic, MicOff, Video, VideoOff, Settings } from "lucide-react";
+import { useState } from "react";
+import { useParticipants } from "@livekit/components-react";
+import ParticipantTile from "./ParticipantTile";
 
-export default function ParticipantTile({
-  participant,
-  isSinging,
-  isNext,
-  isMuted,
+export default function SingerSpotlight({
+  roomCode,
+  currentSong,
+  participantMutes,
   onMuteToggle,
+  onMuteAll,
+  queue,
   canControlMics = true,
-  isCurrentUser = false,
+  currentUser,
 }) {
-  if (!participant) return null;
+  const [isMinimized, setIsMinimized] = useState(false);
+  const liveKitParticipants = useParticipants();
 
-  const videoRef = useRef(null);
-  const [cameraBusy, setCameraBusy] = useState(false);
-  const [micBusy, setMicBusy] = useState(false);
+  const currentSinger = currentSong?.requestedBy || currentSong?.singerName || "";
+  const nextSong =
+    queue && queue.length > 0
+      ? [...queue].sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0))[0]
+      : null;
+  const nextSinger = nextSong?.requestedBy || nextSong?.singerName || "";
 
-  const participantName = participant.name || participant.identity || "Unknown";
-  const muteKey = participant.identity || participantName; // ✅ use identity when possible
-
-  const tracks = useTracks([Track.Source.Camera]);
-
-  const cameraPublication = useMemo(() => {
-    const trackRef = tracks.find(
-      (t) => t.participant?.identity === participant?.identity
+  if (isMinimized) {
+    return (
+      <button
+        onClick={() => setIsMinimized(false)}
+        className="w-full rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-4 text-left hover:bg-white/8 transition"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-lg">📹</span>
+            <span className="font-semibold">Participants</span>
+            <span className="text-xs text-white/50">({liveKitParticipants.length})</span>
+          </div>
+          <span className="text-xs text-white/50">Click to expand</span>
+        </div>
+      </button>
     );
-    return trackRef?.publication || null;
-  }, [tracks, participant?.identity]);
-
-  const isMicOn = !!participant.isMicrophoneEnabled;
-  const isCameraEnabled = !!cameraPublication && !cameraPublication.isMuted;
-
-  useEffect(() => {
-    const el = videoRef.current;
-    const track = cameraPublication?.track;
-
-    if (el && track) {
-      track.attach(el);
-      return () => track.detach(el);
-    }
-  }, [cameraPublication?.track]);
-
-  // If host muted you (firebase), enforce mute locally (only for current user)
-  useEffect(() => {
-    if (!isCurrentUser || !participant?.setMicrophoneEnabled) return;
-    if (isMuted && participant.isMicrophoneEnabled) {
-      participant.setMicrophoneEnabled(false).catch(console.error);
-    }
-  }, [isMuted, isCurrentUser, participant]);
-
-  const handleToggleCamera = async () => {
-    if (cameraBusy || !participant.setCameraEnabled) return;
-    setCameraBusy(true);
-    try {
-      await participant.setCameraEnabled(!isCameraEnabled);
-    } catch (e) {
-      console.error("Failed to toggle camera:", e);
-    } finally {
-      setCameraBusy(false);
-    }
-  };
-
-  const handleToggleMic = async () => {
-    if (micBusy || !participant.setMicrophoneEnabled) return;
-    setMicBusy(true);
-    try {
-      const next = !participant.isMicrophoneEnabled;
-      await participant.setMicrophoneEnabled(next);
-    } catch (e) {
-      console.error("Failed to toggle mic:", e);
-    } finally {
-      setMicBusy(false);
-    }
-  };
-
-  const frameClass = isSinging
-    ? "border-fuchsia-500/50"
-    : isNext
-    ? "border-indigo-400/30"
-    : "border-white/10";
-
-  const outlineBtn = (tone = "fuchsia") =>
-    tone === "indigo"
-      ? "border-indigo-500/30 hover:border-indigo-400/45 hover:shadow-[0_0_14px_rgba(99,102,241,0.14)]"
-      : tone === "neutral"
-      ? "border-white/10 hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.10)]"
-      : "border-fuchsia-500/35 hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)]";
+  }
 
   return (
-    <div
-      className={[
-        "relative rounded-3xl overflow-hidden border bg-black/40 aspect-[4/3] sm:aspect-video",
-        "backdrop-blur-md shadow-lg",
-        frameClass,
-      ].join(" ")}
-    >
-      {isCameraEnabled ? (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className={`w-full h-full object-cover ${
-            participant.isLocal ? "scale-x-[-1]" : ""
-          }`}
-        />
-      ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-          <div className="text-center px-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md flex items-center justify-center text-xl sm:text-2xl font-semibold mx-auto text-white/85">
-              {participantName?.charAt(0)?.toUpperCase() || "?"}
-            </div>
-            <p className="text-xs sm:text-sm text-white/70 truncate max-w-[10rem] mx-auto mt-2">
-              {participantName}
-            </p>
-            <p className="text-xs text-white/40 mt-1">Camera off</p>
-          </div>
-        </div>
-      )}
+    <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div>
+          <div className="text-xs tracking-widest uppercase text-white/50">Live Video</div>
 
-      {/* Controls overlay (current user) */}
-      {isCurrentUser && (
-        <div className="absolute top-3 right-3 flex gap-2">
-          <button
-            onClick={handleToggleCamera}
-            disabled={cameraBusy}
-            className={[
-              "w-10 h-10 rounded-2xl border bg-white/[0.03] backdrop-blur-md",
-              "text-white/80 transition active:scale-[0.98]",
-              outlineBtn("neutral"),
-              cameraBusy ? "opacity-60 cursor-not-allowed" : "",
-            ].join(" ")}
-            title={isCameraEnabled ? "Turn camera off" : "Turn camera on"}
-          >
-            {isCameraEnabled ? (
-              <VideoOff className="w-4 h-4 mx-auto" />
-            ) : (
-              <Video className="w-4 h-4 mx-auto" />
-            )}
-          </button>
-
-          <button
-            onClick={handleToggleMic}
-            disabled={micBusy}
-            className={[
-              "w-10 h-10 rounded-2xl border bg-white/[0.03] backdrop-blur-md",
-              "text-white/80 transition active:scale-[0.98]",
-              outlineBtn("fuchsia"),
-              micBusy ? "opacity-60 cursor-not-allowed" : "",
-            ].join(" ")}
-            title={isMicOn ? "Mute mic" : "Unmute mic"}
-          >
-            {isMicOn ? (
-              <MicOff className="w-4 h-4 mx-auto" />
-            ) : (
-              <Mic className="w-4 h-4 mx-auto" />
-            )}
-          </button>
-
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent("open-device-settings"))}
-            className={[
-              "w-10 h-10 rounded-2xl border bg-white/[0.03] backdrop-blur-md",
-              "text-white/80 transition active:scale-[0.98]",
-              outlineBtn("indigo"),
-            ].join(" ")}
-            title="Device settings"
-          >
-            <Settings className="w-4 h-4 mx-auto" />
-          </button>
-        </div>
-      )}
-
-      {/* Bottom bar (structured glass, no gradient) */}
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg px-3 py-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-xs font-semibold text-white/85 truncate">
-                  {participantName}
+          <h3 className="text-xl sm:text-2xl font-extrabold leading-tight">
+            {currentSinger ? (
+              <>
+                <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff)]">
+                  {currentSinger}
                 </span>
-
-                {isSinging && (
-                  <span className="text-[10px] px-2 py-1 rounded-2xl border border-fuchsia-500/25 text-white/80">
-                    Singing
-                  </span>
-                )}
-
-                {isNext && !isSinging && (
-                  <span className="text-[10px] px-2 py-1 rounded-2xl border border-indigo-500/25 text-white/70">
-                    Next
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {canControlMics && (
-              <button
-                onClick={() => onMuteToggle(muteKey, !isMuted)}
-                className={[
-                  "w-10 h-10 rounded-2xl border bg-transparent",
-                  "text-white/80 transition active:scale-[0.98]",
-                  isMuted ? outlineBtn("indigo") : outlineBtn("fuchsia"),
-                ].join(" ")}
-                title={isMuted ? "Unmute" : "Mute"}
-              >
-                {isMuted ? (
-                  <Mic className="w-4 h-4 mx-auto" />
-                ) : (
-                  <MicOff className="w-4 h-4 mx-auto" />
-                )}
-              </button>
+                <span className="text-white/60 text-base sm:text-lg ml-2">is singing</span>
+              </>
+            ) : (
+              <span className="text-white/60">Participants ({liveKitParticipants.length})</span>
             )}
-          </div>
+          </h3>
+
+          {!!nextSinger && (
+            <div className="mt-1 text-sm text-white/50">
+              Up next: <span className="text-fuchsia-400 font-semibold">{nextSinger}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {canControlMics && (
+            <button
+              onClick={onMuteAll}
+              className="sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 border border-white/10 bg-white/6 hover:bg-rose-500/10 hover:border-rose-400/30 text-white/85 backdrop-blur-xl transition"
+            >
+              <span className="text-sm font-semibold">Mute All</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setIsMinimized(true)}
+            className="inline-flex items-center justify-center rounded-2xl px-3 py-2 border border-white/10 bg-white/6 hover:bg-white/10 text-white/70 backdrop-blur-xl transition text-sm"
+            title="Minimize"
+          >
+            Minimize
+          </button>
         </div>
       </div>
 
-      {/* Subtle singer frame (no pulsing neon border) */}
-      {isSinging && (
-        <div className="absolute inset-0 pointer-events-none border border-fuchsia-500/20 rounded-3xl" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+        {liveKitParticipants.map((p) => {
+          const name = p.name || p.identity;
+          const isSinging = !!currentSinger && name === currentSinger;
+          const isNext = !!nextSinger && name === nextSinger;
+          const isMuted = participantMutes?.[name] === true;
+
+          const isCurrentUser = p.isLocal;
+
+          return (
+            <ParticipantTile
+              key={p.identity}
+              participant={p}
+              isSinging={isSinging}
+              isNext={isNext}
+              isMuted={isMuted}
+              onMuteToggle={onMuteToggle}
+              canControlMics={canControlMics}
+              isCurrentUser={isCurrentUser}
+            />
+          );
+        })}
+      </div>
+
+      {liveKitParticipants.length === 0 && (
+        <div className="rounded-2xl border border-white/10 bg-black/25 p-8 text-center mt-4">
+          <div className="text-5xl mb-3">👻</div>
+          <div className="text-lg font-bold">No participants yet</div>
+          <div className="mt-1 text-white/60 text-sm">Share the room code for people to join</div>
+        </div>
       )}
     </div>
   );
