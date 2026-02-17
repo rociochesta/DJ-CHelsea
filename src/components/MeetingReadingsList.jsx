@@ -30,7 +30,7 @@ export default function MeetingReadingsList({ activeReadingId, onSelectReading }
           return (
             <button
               key={reading.id}
-              onClick={() => onSelectReading(reading.id)}
+              onClick={() => onSelectReading(isActive ? null : reading.id)}
               className={[
                 "w-full text-left px-5 py-4 transition",
                 "hover:bg-white/[0.03] active:scale-[0.995]",
