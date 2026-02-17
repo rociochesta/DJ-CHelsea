@@ -248,23 +248,26 @@ function HostView({ roomCode, currentUser, roomState }) {
                   </div>
                 </div>
 
-                <div className="text-right flex-shrink-0">
-                  <div className="text-xs text-white/45">Host</div>
-                  <div className="mt-1 inline-flex items-center gap-2 justify-end">
-                    <button
-                      onClick={() => setHostPanelOpen(true)}
-                      className="w-9 h-9 rounded-2xl border border-fuchsia-500/30 bg-white/[0.02] flex items-center justify-center hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)] transition active:scale-[0.98]"
-                      title="Host Controls"
-                    >
-                      <Sliders className="w-4 h-4 text-fuchsia-400/80" />
-                    </button>
-                    <div className="w-9 h-9 rounded-2xl border border-white/10 bg-white/[0.02] flex items-center justify-center">
-                      <Radio className="w-4 h-4 text-white/70" />
-                    </div>
-                    <div className="font-semibold text-base sm:text-lg text-white/90">
-                      {currentUser?.name}
+                <div className="text-right flex-shrink-0 space-y-3">
+                  <div>
+                    <div className="text-xs text-white/45">Host</div>
+                    <div className="mt-1 inline-flex items-center gap-2 justify-end">
+                      <div className="w-9 h-9 rounded-2xl border border-white/10 bg-white/[0.02] flex items-center justify-center">
+                        <Radio className="w-4 h-4 text-white/70" />
+                      </div>
+                      <div className="font-semibold text-base sm:text-lg text-white/90">
+                        {currentUser?.name}
+                      </div>
                     </div>
                   </div>
+
+                  <button
+                    onClick={() => setHostPanelOpen(true)}
+                    className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 border border-fuchsia-500/35 bg-fuchsia-500/[0.08] hover:bg-fuchsia-500/[0.14] hover:border-fuchsia-400/50 hover:shadow-[0_0_20px_rgba(232,121,249,0.18)] transition active:scale-[0.98]"
+                  >
+                    <Sliders className="w-4 h-4 text-fuchsia-400" />
+                    <span className="text-sm font-semibold text-fuchsia-300">Host Controls</span>
+                  </button>
 
                   {isDJ && (
                     <div className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-emerald-500/20 bg-white/[0.02]">

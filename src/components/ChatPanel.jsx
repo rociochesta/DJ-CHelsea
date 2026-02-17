@@ -135,7 +135,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     set(newMessageRef, {
       userId: currentUser.id,
       userName: currentUser.name,
-      message: reaction.label, // keep existing wire format
+      message: reaction.label,
       isEmoji: true,
       timestamp: Date.now(),
     })
@@ -147,20 +147,9 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
       });
   };
 
-  const CardShell = ({ children, className = "", style }) => (
-    <div
-      className={[
-        "rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg",
-        "flex flex-col overflow-hidden",
-        className,
-      ].join(" ")}
-      style={style}
-    >
-      {children}
-    </div>
-  );
+  // ── Reusable JSX fragments (inlined, NOT components) ──
 
-  const Header = ({ compact = false }) => (
+  const headerJsx = (compact = false) => (
     <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/20">
       <div className="flex items-center gap-2">
         <MessageSquare className="w-4 h-4 text-white/70" />
@@ -176,10 +165,9 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
         ) : null}
       </div>
 
-      {/* minimize */}
       <button
         type="button"
-        onMouseDown={(e) => e.preventDefault()} // ok here
+        onMouseDown={(e) => e.preventDefault()}
         onClick={() => setIsOpen(false)}
         className="p-2 rounded-xl border border-white/10 bg-transparent text-white/70 hover:text-white hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.12)] transition active:scale-[0.98]"
         title="Minimize"
@@ -189,36 +177,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     </div>
   );
 
-  const ReactionsRow = () => (
-    <div className="px-3 py-2 border-t border-white/10 bg-black/20">
-      <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-        {QUICK_REACTIONS.map((r) => {
-          const Icon = r.icon;
-          return (
-            <button
-              key={r.key}
-              type="button"
-              onMouseDown={(e) => e.preventDefault()} // ✅ keep focus in input
-              onClick={() => handleSendReaction(r)}
-              className={[
-                "group shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl",
-                "border border-fuchsia-500/25 text-white/80 bg-transparent",
-                "hover:border-fuchsia-400/45 hover:text-white",
-                "hover:shadow-[0_0_14px_rgba(232,121,249,0.18)]",
-                "transition active:scale-[0.98]",
-              ].join(" ")}
-              title={r.key}
-            >
-              <Icon className="w-4 h-4 text-white/70 group-hover:text-white" />
-              <span className="text-xs font-medium">{r.key}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  const Messages = ({ compact = false }) => (
+  const messagesJsx = (compact = false) => (
     <div
       ref={chatContainerRef}
       className={[
@@ -275,7 +234,36 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     </div>
   );
 
-  const Input = () => (
+  const reactionsRowJsx = (
+    <div className="px-3 py-2 border-t border-white/10 bg-black/20">
+      <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+        {QUICK_REACTIONS.map((r) => {
+          const Icon = r.icon;
+          return (
+            <button
+              key={r.key}
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => handleSendReaction(r)}
+              className={[
+                "group shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-2xl",
+                "border border-fuchsia-500/25 text-white/80 bg-transparent",
+                "hover:border-fuchsia-400/45 hover:text-white",
+                "hover:shadow-[0_0_14px_rgba(232,121,249,0.18)]",
+                "transition active:scale-[0.98]",
+              ].join(" ")}
+              title={r.key}
+            >
+              <Icon className="w-4 h-4 text-white/70 group-hover:text-white" />
+              <span className="text-xs font-medium">{r.key}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const inputJsx = (
     <form onSubmit={handleSendMessage} className="p-3 border-t border-white/10 bg-black/20">
       <div className="flex gap-2">
         <input
@@ -293,7 +281,6 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
           maxLength={200}
         />
 
-        {/* ✅ DO NOT preventDefault on mousedown here */}
         <button
           type="submit"
           disabled={!message.trim()}
@@ -313,68 +300,53 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     </form>
   );
 
-  // INLINE
+  // ── CLOSED STATE (shared between inline and floating) ──
+
+  const closedButton = (extraClass = "") => (
+    <button
+      type="button"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={() => setIsOpen(true)}
+      className={[
+        "px-4 py-3 rounded-2xl text-left",
+        "border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg",
+        "hover:border-white/20 hover:bg-white/[0.04] transition",
+        "active:scale-[0.98]",
+        extraClass,
+      ].join(" ")}
+      title="Open chat"
+    >
+      <div className="flex items-center gap-2">
+        <MessageSquare className="w-5 h-5 text-white/70" />
+        <span className="font-semibold">Chat</span>
+        <ChevronUp className="w-4 h-4 text-white/60 ml-auto" />
+      </div>
+    </button>
+  );
+
+  // ── INLINE ──
   if (inline) {
-    if (!isOpen) {
-      return (
-        <button
-          type="button"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => setIsOpen(true)}
-          className={[
-            "w-full px-4 py-3 rounded-2xl text-left",
-            "border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg",
-            "hover:border-white/20 hover:bg-white/[0.04] transition",
-          ].join(" ")}
-          title="Open chat"
-        >
-          <div className="flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-white/70" />
-            <span className="font-semibold">Chat</span>
-            <ChevronUp className="w-4 h-4 text-white/60 ml-auto" />
-          </div>
-        </button>
-      );
-    }
+    if (!isOpen) return closedButton("w-full");
 
     return (
-      <CardShell style={{ height: "28rem" }}>
-        <Header compact />
-        <Messages compact />
-        <ReactionsRow />
-        <Input />
-      </CardShell>
-    );
-  }
-
-  // FLOATING
-  if (!isOpen) {
-    return (
-      <button
-        type="button"
-        onMouseDown={(e) => e.preventDefault()}
-        onClick={() => setIsOpen(true)}
-        className={[
-          "fixed bottom-4 left-4 z-40",
-          "px-4 py-3 rounded-2xl",
-          "border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg",
-          "hover:border-white/20 hover:bg-white/[0.04] transition",
-          "active:scale-[0.98]",
-        ].join(" ")}
-        title="Open chat"
+      <div
+        className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg flex flex-col overflow-hidden"
+        style={{ height: "28rem" }}
       >
-        <div className="flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-white/70" />
-          <span className="font-semibold">Chat</span>
-          <ChevronUp className="w-4 h-4 text-white/60" />
-        </div>
-      </button>
+        {headerJsx(true)}
+        {messagesJsx(true)}
+        {reactionsRowJsx}
+        {inputJsx}
+      </div>
     );
   }
+
+  // ── FLOATING ──
+  if (!isOpen) return closedButton("fixed bottom-4 left-4 z-40");
 
   return (
     <div className="fixed bottom-4 left-4 z-40 w-80 sm:w-96 h-[32rem]">
-      <CardShell className="h-full">
+      <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg flex flex-col overflow-hidden h-full">
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/20">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-white/70" />
@@ -392,10 +364,10 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
           </button>
         </div>
 
-        <Messages />
-        <ReactionsRow />
-        <Input />
-      </CardShell>
+        {messagesJsx()}
+        {reactionsRowJsx}
+        {inputJsx}
+      </div>
     </div>
   );
 }
