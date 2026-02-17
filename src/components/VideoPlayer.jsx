@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import YouTube from "react-youtube";
 import HostCameraPreview from "./HostCameraPreview";
 import {
+  useLocalParticipant,
   useParticipants,
   TrackLoop,
   VideoTrack,
