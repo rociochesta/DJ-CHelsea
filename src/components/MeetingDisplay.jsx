@@ -1,99 +1,133 @@
-import React, { useMemo } from "react";
-import meetingReadings from "../utils/meetingReadings";
+import { BookOpen, ChevronLeft, ChevronRight, Video } from "lucide-react";
+import HostCameraPreview from "./HostCameraPreview";
+import MEETING_READINGS from "../utils/meetingReadings.jsx";
 
-/**
- * Props:
- * - activeReadingId: string | null   // "topicId|slideIndex" or "topicId" or null
- * - setActiveReadingId: (val: string | null) => void
- * - isHost?: boolean                 // only host can change slides (optional)
- */
+const parseReadingKey = (key) => {
+  if (!key) return { topicId: null, slideIndex: 0 };
+  const [topicId, rawIndex] = String(key).split("|");
+  const idx = Number.isFinite(Number(rawIndex)) ? parseInt(rawIndex, 10) : 0;
+  return { topicId, slideIndex: Math.max(0, idx) };
+};
+
 export default function MeetingDisplay({
   activeReadingId,
-  setActiveReadingId,
-  isHost = true,
+  isHost,
+  onSelectReading,     // new name
+  setActiveReadingId,  // old name (fallback)
 }) {
-  const { topic, slideIndex } = useMemo(() => {
-    if (!activeReadingId) return { topic: null, slideIndex: 0 };
+  const selectReading =
+    typeof onSelectReading === "function"
+      ? onSelectReading
+      : typeof setActiveReadingId === "function"
+      ? setActiveReadingId
+      : null;
 
-    const [topicId, rawIndex] = String(activeReadingId).split("|");
-    const idx = Number.isFinite(Number(rawIndex)) ? Math.max(0, parseInt(rawIndex, 10)) : 0;
+  const { topicId, slideIndex } = parseReadingKey(activeReadingId);
+  const activeReading = MEETING_READINGS.find((r) => r.id === topicId) || null;
 
-    const found = meetingReadings.find((r) => r.id === topicId) || null;
-    return { topic: found, slideIndex: idx };
-  }, [activeReadingId]);
+  const slides = activeReading
+    ? Array.isArray(activeReading.slides) && activeReading.slides.length > 0
+      ? activeReading.slides
+      : activeReading.slide
+      ? [activeReading.slide]
+      : []
+    : [];
 
-  const slides = topic?.slides || [];
-  const safeIndex = Math.min(slideIndex, Math.max(0, slides.length - 1));
-  const slideSrc = slides[safeIndex] || null;
+  const safeSlideIndex = Math.min(Math.max(0, slideIndex), Math.max(0, slides.length - 1));
+  const currentSlide = slides[safeSlideIndex] || null;
 
-  const canGoPrev = isHost && topic && safeIndex > 0;
-  const canGoNext = isHost && topic && safeIndex < slides.length - 1;
+  const hasPrevSlide = safeSlideIndex > 0;
+  const hasNextSlide = safeSlideIndex < slides.length - 1;
 
   const goPrev = () => {
-    if (!topic) return;
-    const next = `${topic.id}|${Math.max(0, safeIndex - 1)}`;
-    setActiveReadingId(next);
+    if (!selectReading || !activeReading || !hasPrevSlide) return;
+    selectReading(`${activeReading.id}|${safeSlideIndex - 1}`);
   };
 
   const goNext = () => {
-    if (!topic) return;
-    const next = `${topic.id}|${Math.min(slides.length - 1, safeIndex + 1)}`;
-    setActiveReadingId(next);
+    if (!selectReading || !activeReading || !hasNextSlide) return;
+    selectReading(`${activeReading.id}|${safeSlideIndex + 1}`);
   };
 
-  if (!topic) {
+  // No reading selected → show camera card
+  if (!activeReading) {
     return (
-      <div className="w-full h-full flex items-center justify-center rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-10">
-        <div className="text-white/70 text-center">
-          <div className="text-xl font-semibold text-white/80">No reading selected</div>
-          <div className="mt-2">Pick a topic to display the slide.</div>
+      <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg overflow-hidden">
+        <div className="aspect-video bg-black/40 relative">
+          <HostCameraPreview isHost={isHost} />
+        </div>
+
+        <div className="px-6 py-4 border-t border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-white/55">
+              <Video className="w-4 h-4 text-white/50" />
+              <span>Host Camera</span>
+            </div>
+            <div className="text-xs text-white/35">
+              {isHost ? "Select a reading from the list to display it." : "Waiting for the host to select a reading."}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
+  // Reading selected → slide view
   return (
-    <div className="w-full h-full rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 flex flex-col">
-      {/* Title row */}
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div className="text-white/90 font-semibold text-lg">{topic.title}</div>
+    <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg overflow-hidden">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        <div className="flex items-center gap-3 min-w-0">
+          <BookOpen className="w-5 h-5 text-fuchsia-400/80 flex-shrink-0" />
+          <h2 className="text-lg font-bold text-white/90 truncate">{activeReading.title}</h2>
+        </div>
 
-        {/* Host-only controls (no slide number shown) */}
-        {isHost && slides.length > 1 && (
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {isHost && (
             <button
-              onClick={goPrev}
-              disabled={!canGoPrev}
-              className={`px-3 py-2 rounded-xl border transition
-                ${canGoPrev ? "border-white/20 bg-white/10 hover:bg-white/15" : "border-white/10 bg-white/5 opacity-40 cursor-not-allowed"}`}
+              onClick={() => selectReading && selectReading(null)}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-2 border border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20 hover:text-white/90 transition active:scale-[0.98] text-xs font-medium"
+              title="Back to camera"
             >
-              Prev
+              <Video className="w-3.5 h-3.5" />
+              Camera
             </button>
-            <button
-              onClick={goNext}
-              disabled={!canGoNext}
-              className={`px-3 py-2 rounded-xl border transition
-                ${canGoNext ? "border-white/20 bg-white/10 hover:bg-white/15" : "border-white/10 bg-white/5 opacity-40 cursor-not-allowed"}`}
-            >
-              Next
-            </button>
-          </div>
-        )}
+          )}
+
+          {isHost && slides.length > 1 && (
+            <>
+              <button
+                onClick={goPrev}
+                disabled={!hasPrevSlide}
+                className="w-9 h-9 rounded-xl border border-white/10 bg-white/[0.03] text-white/70 disabled:opacity-30 disabled:cursor-not-allowed hover:border-white/20 transition active:scale-[0.98] flex items-center justify-center"
+                title="Previous slide"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={goNext}
+                disabled={!hasNextSlide}
+                className="w-9 h-9 rounded-xl border border-white/10 bg-white/[0.03] text-white/70 disabled:opacity-30 disabled:cursor-not-allowed hover:border-white/20 transition active:scale-[0.98] flex items-center justify-center"
+                title="Next slide"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Slide */}
-      <div className="flex-1 flex items-center justify-center">
-        {slideSrc ? (
+      <div className="bg-black/30">
+        {currentSlide ? (
           <img
-            src={slideSrc}
-            alt={topic.title}
-            className="max-h-full max-w-full object-contain rounded-2xl"
+            src={currentSlide}
+            alt={activeReading.title}
+            className="w-full h-auto max-h-[70vh] object-contain mx-auto"
             draggable={false}
           />
         ) : (
-          <div className="text-white/70 text-center">
-            <div className="text-lg font-semibold text-white/80">No slide found</div>
-            <div className="mt-2">Add PNG paths to <code className="text-white/90">slides: []</code> for this topic.</div>
+          <div className="aspect-video flex items-center justify-center text-white/45 text-sm">
+            No slide found for this reading.
           </div>
         )}
       </div>
