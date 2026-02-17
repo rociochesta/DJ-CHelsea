@@ -282,7 +282,7 @@ function App() {
           resolution: { width: 1280, height: 720 },
         },
       }}
-      style={{ minHeight: "100vh" }}
+      style={{ minHeight: "100vh", overflow: "auto" }}
       data-lk-theme="default"
     >
       <RoomAudioRenderer />

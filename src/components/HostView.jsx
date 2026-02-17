@@ -30,9 +30,12 @@ function HostView({ roomCode, currentUser, roomState }) {
 
     setIsSearching(true);
     setHasSearched(true);
-    const results = await searchKaraokeVideos(searchQuery);
-    setSearchResults(results);
-    setIsSearching(false);
+    try {
+      const results = await searchKaraokeVideos(searchQuery);
+      setSearchResults(results);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleAddToQueue = async (video, requestedBy) => {
@@ -48,6 +51,14 @@ function HostView({ roomCode, currentUser, roomState }) {
       requestedBy: requestedBy || "Someone",
       addedAt: Date.now(),
     });
+  };
+
+  const setParticipantMute = async (participantName, muted) => {
+    const muteRef = ref(
+      database,
+      `karaoke-rooms/${roomCode}/participantMutes/${participantName}`
+    );
+    await set(muteRef, muted);
   };
 
   const handlePlaySong = async (song) => {
@@ -76,7 +87,8 @@ function HostView({ roomCode, currentUser, roomState }) {
   const handleSkipSong = async () => {
     // Mute current singer (only in karaoke mode)
     if (isKaraoke) {
-      const currentSinger = roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+      const currentSinger =
+        roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
       if (currentSinger) {
         await setParticipantMute(currentSinger, true);
       }
@@ -90,7 +102,7 @@ function HostView({ roomCode, currentUser, roomState }) {
       isPlaying: false,
       videoId: null,
     });
-    
+
     const queue = roomState?.queue ? Object.values(roomState.queue) : [];
     if (queue.length > 0) {
       await handlePlaySong(queue[0]);
@@ -103,8 +115,10 @@ function HostView({ roomCode, currentUser, roomState }) {
   };
 
   const handleMoveSongUp = async (songId) => {
-    const queue = roomState?.queue ? Object.values(roomState.queue).sort((a, b) => a.addedAt - b.addedAt) : [];
-    const index = queue.findIndex(s => s.id === songId);
+    const queue = roomState?.queue
+      ? Object.values(roomState.queue).sort((a, b) => a.addedAt - b.addedAt)
+      : [];
+    const index = queue.findIndex((s) => s.id === songId);
     if (index > 0) {
       const temp = queue[index - 1].addedAt;
       queue[index - 1].addedAt = queue[index].addedAt;
@@ -112,7 +126,7 @@ function HostView({ roomCode, currentUser, roomState }) {
 
       const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
       const updates = {};
-      queue.forEach(song => {
+      queue.forEach((song) => {
         updates[song.id] = song;
       });
       await update(queueRef, updates);
@@ -120,8 +134,10 @@ function HostView({ roomCode, currentUser, roomState }) {
   };
 
   const handleMoveSongDown = async (songId) => {
-    const queue = roomState?.queue ? Object.values(roomState.queue).sort((a, b) => a.addedAt - b.addedAt) : [];
-    const index = queue.findIndex(s => s.id === songId);
+    const queue = roomState?.queue
+      ? Object.values(roomState.queue).sort((a, b) => a.addedAt - b.addedAt)
+      : [];
+    const index = queue.findIndex((s) => s.id === songId);
     if (index < queue.length - 1 && index >= 0) {
       const temp = queue[index + 1].addedAt;
       queue[index + 1].addedAt = queue[index].addedAt;
@@ -129,22 +145,18 @@ function HostView({ roomCode, currentUser, roomState }) {
 
       const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
       const updates = {};
-      queue.forEach(song => {
+      queue.forEach((song) => {
         updates[song.id] = song;
       });
       await update(queueRef, updates);
     }
   };
 
-  const setParticipantMute = async (participantName, muted) => {
-    const muteRef = ref(database, `karaoke-rooms/${roomCode}/participantMutes/${participantName}`);
-    await set(muteRef, muted);
-  };
-
   const handleMuteAll = async () => {
     const participants = roomState?.participants ? Object.values(roomState.participants) : [];
-    const currentSinger = roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-    
+    const currentSinger =
+      roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+
     for (const participant of participants) {
       if (participant.name !== currentSinger) {
         await setParticipantMute(participant.name, true);
@@ -158,10 +170,13 @@ function HostView({ roomCode, currentUser, roomState }) {
   const participantMutes = roomState?.participantMutes || {};
 
   // Memoize user object to prevent Chat/Reactions re-renders
-  const memoizedUser = useMemo(() => ({
-    id: currentUser?.id,
-    name: currentUser?.name
-  }), [currentUser?.id, currentUser?.name]);
+  const memoizedUser = useMemo(
+    () => ({
+      id: currentUser?.id,
+      name: currentUser?.name,
+    }),
+    [currentUser?.id, currentUser?.name]
+  );
 
   // Get mode label for display
   const getModeLabel = () => {
@@ -171,14 +186,19 @@ function HostView({ roomCode, currentUser, roomState }) {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden text-white">
+    <div className="min-h-screen relative overflow-x-hidden text-white">
+      {/* Background */}
       <div className="absolute inset-0 bg-[#070712]" />
       <div className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full blur-3xl opacity-50 bg-fuchsia-600" />
       <div className="absolute -bottom-56 -right-56 w-[640px] h-[640px] rounded-full blur-3xl opacity-50 bg-indigo-600" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.18),transparent_55%)]" />
-<ExternalVideoPrompt videoLink={roomState?.externalVideoLink} />
-      <div className="relative p-4">
+
+      {/* Content */}
+      <div className="relative p-4 pb-28">
         <div className="max-w-[1800px] mx-auto">
+          {/* ✅ Sticky external video banner (now in-flow, won't cover top) */}
+          <ExternalVideoPrompt videoLink={roomState?.externalVideoLink} />
+
           {/* Static Banner */}
           <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl mb-6">
             <div className="relative h-28 bg-gradient-to-r from-fuchsia-900/40 via-indigo-900/40 to-purple-900/40">
@@ -196,17 +216,22 @@ function HostView({ roomCode, currentUser, roomState }) {
                   </h1>
 
                   <div className="mt-1 text-sm text-white/70">
-                    Room: <span className="font-mono text-white tracking-[0.2em] bg-black/35 px-2 py-1 rounded-lg">{roomCode}</span>
+                    Room:{" "}
+                    <span className="font-mono text-white tracking-[0.2em] bg-black/35 px-2 py-1 rounded-lg">
+                      {roomCode}
+                    </span>
                   </div>
                 </div>
 
                 <div className="text-right">
                   <div className="text-xs text-white/50">Host</div>
                   <div className="font-bold text-lg">{currentUser.name} 🎤</div>
-                  
+
                   {isDJ && (
                     <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10">
-                      <span className="text-xs font-semibold text-emerald-400">Mic: FREE (everyone can talk)</span>
+                      <span className="text-xs font-semibold text-emerald-400">
+                        Mic: FREE (everyone can talk)
+                      </span>
                     </div>
                   )}
                 </div>
@@ -280,7 +305,12 @@ function HostView({ roomCode, currentUser, roomState }) {
 
             {/* Right Column - Chat + Queue */}
             <div className="space-y-6">
-              <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
+              <ChatPanel
+                roomCode={roomCode}
+                currentUser={memoizedUser}
+                currentSong={currentSong}
+                inline={true}
+              />
 
               {!isStreaming && (
                 <div className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-xl p-6">
