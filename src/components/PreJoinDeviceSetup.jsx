@@ -1,13 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useDevicePreferences } from "../hooks/useDevicePreferences";
-import {
-  Camera,
-  Mic,
-  AlertTriangle,
-  RefreshCcw,
-  ChevronRight,
-  SkipForward,
-} from "lucide-react";
 
 export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
   const [audioDevices, setAudioDevices] = useState([]);
@@ -26,43 +18,6 @@ export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
 
   const { saveCamera, saveMic } = useDevicePreferences();
 
-  const Card = ({ children, className = "" }) => (
-    <div
-      className={[
-        "rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg",
-        className,
-      ].join(" ")}
-    >
-      {children}
-    </div>
-  );
-
-  const OutlineBtn = ({ children, onClick, tone = "fuchsia", className = "", disabled }) => {
-    const toneClass =
-      tone === "indigo"
-        ? "border-indigo-500/30 hover:border-indigo-400/45 hover:shadow-[0_0_14px_rgba(99,102,241,0.14)]"
-        : tone === "neutral"
-        ? "border-white/10 hover:border-white/20 hover:shadow-[0_0_12px_rgba(232,121,249,0.10)]"
-        : "border-fuchsia-500/35 hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)]";
-
-    return (
-      <button
-        onClick={onClick}
-        disabled={disabled}
-        className={[
-          "inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl",
-          "bg-transparent border text-white/85",
-          "transition active:scale-[0.98]",
-          toneClass,
-          disabled ? "opacity-50 cursor-not-allowed" : "",
-          className,
-        ].join(" ")}
-      >
-        {children}
-      </button>
-    );
-  };
-
   // Request permissions and enumerate devices
   useEffect(() => {
     async function initialize() {
@@ -70,13 +25,16 @@ export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
         setIsLoading(true);
         setPermissionError(null);
 
+        // Request permissions
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true,
         });
 
+        // Stop the permission stream
         stream.getTracks().forEach((track) => track.stop());
 
+        // Enumerate devices after permissions granted
         const devices = await navigator.mediaDevices.enumerateDevices();
         const audio = devices.filter((d) => d.kind === "audioinput");
         const video = devices.filter((d) => d.kind === "videoinput");
@@ -84,6 +42,7 @@ export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
         setAudioDevices(audio);
         setVideoDevices(video);
 
+        // Set default selections
         if (video.length > 0) setSelectedCamera(video[0].deviceId);
         if (audio.length > 0) setSelectedMic(audio[0].deviceId);
 
@@ -166,6 +125,7 @@ export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
 
         updateLevel();
 
+        // Return cleanup function
         return () => {
           stream.getTracks().forEach((track) => track.stop());
         };
@@ -177,16 +137,24 @@ export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
     const cleanupPromise = startMicMonitoring();
 
     return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-      if (audioContextRef.current) audioContextRef.current.close();
-      if (cleanupPromise) cleanupPromise.then((cleanup) => cleanup && cleanup());
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (cleanupPromise) {
+        cleanupPromise.then((cleanup) => cleanup && cleanup());
+      }
     };
   }, [selectedMic, permissionError]);
 
   const handleContinue = () => {
+    // Save preferences
     saveCamera(selectedCamera);
     saveMic(selectedMic);
 
+    // Clean up streams
     if (previewStreamRef.current) {
       previewStreamRef.current.getTracks().forEach((track) => track.stop());
     }
@@ -198,6 +166,7 @@ export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
   };
 
   const handleSkip = () => {
+    // Clean up streams
     if (previewStreamRef.current) {
       previewStreamRef.current.getTracks().forEach((track) => track.stop());
     }
@@ -210,76 +179,72 @@ export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
 
   if (isLoading) {
     return (
-      <Card className="p-8 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl border border-white/10 bg-white/[0.02] mb-4">
-          <Camera className="w-5 h-5 text-white/70" />
+      <div className="text-center py-12">
+        <div className="animate-pulse text-fuchsia-400 text-lg font-bold">
+          Requesting permissions...
         </div>
-        <div className="text-white/85 font-semibold">Requesting permissions…</div>
-        <p className="text-white/50 text-sm mt-2">
-          Allow camera and microphone access to continue
+        <p className="text-white/60 text-sm mt-2">
+          Please allow camera and microphone access
         </p>
-      </Card>
+      </div>
     );
   }
 
   if (permissionError) {
     return (
-      <Card className="p-8 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl border border-white/10 bg-white/[0.02] mb-4">
-          <AlertTriangle className="w-5 h-5 text-white/70" />
-        </div>
-        <div className="text-white/85 font-semibold mb-2">Permissions blocked</div>
-        <p className="text-white/55 text-sm mb-6">{permissionError}</p>
-
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <OutlineBtn onClick={() => window.location.reload()} tone="fuchsia">
-            <RefreshCcw className="w-4 h-4" />
+      <div className="text-center py-8">
+        <div className="text-red-400 text-lg font-bold mb-4">⚠️ Permission Denied</div>
+        <p className="text-white/70 text-sm mb-6">{permissionError}</p>
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 rounded-xl font-bold bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:opacity-95 transition"
+          >
             Retry
-          </OutlineBtn>
-
-          <OutlineBtn onClick={handleSkip} tone="neutral">
-            <SkipForward className="w-4 h-4" />
-            Skip setup
-          </OutlineBtn>
+          </button>
+          <button
+            onClick={handleSkip}
+            className="px-6 py-3 rounded-xl font-bold bg-white/10 hover:bg-white/20 border border-white/10 transition"
+          >
+            Skip Setup
+          </button>
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Title */}
-      <div className="text-center">
-        <h2 className="text-2xl font-extrabold">
-          <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
-            Setup your devices
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold mb-2">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-400 to-indigo-400">
+            Setup Your Devices
           </span>
         </h2>
-        <p className="text-white/50 text-sm mt-2">
-          Pick your camera and mic before joining
+        <p className="text-white/60 text-sm">
+          Select your camera and microphone before joining
         </p>
       </div>
 
-      {/* Camera */}
-      <Card className="p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Camera className="w-4 h-4 text-white/70" />
-          <div className="text-sm font-semibold text-white/80">Camera</div>
-        </div>
-
+      {/* Camera Section */}
+      <div>
+        <label className="block text-sm font-semibold text-white/70 mb-2">
+          Camera
+        </label>
         <select
           value={selectedCamera}
           onChange={(e) => setSelectedCamera(e.target.value)}
-          className="w-full px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/10 text-white/85 focus:outline-none focus:border-fuchsia-400/50 focus:ring-2 focus:ring-fuchsia-400/10 mb-4"
+          className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/10 text-white focus:outline-none focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-400/20 mb-3"
         >
           {videoDevices.map((device) => (
-            <option key={device.deviceId} value={device.deviceId} className="bg-[#070712]">
+            <option key={device.deviceId} value={device.deviceId}>
               {device.label || `Camera ${device.deviceId.slice(0, 8)}`}
             </option>
           ))}
         </select>
 
-        <div className="rounded-3xl overflow-hidden border border-white/10 bg-black/40 aspect-video">
+        {/* Camera Preview */}
+        <div className="rounded-2xl overflow-hidden bg-black aspect-video">
           <video
             ref={videoRef}
             autoPlay
@@ -288,49 +253,51 @@ export default function PreJoinDeviceSetup({ onContinue, onSkip }) {
             className="w-full h-full object-cover scale-x-[-1]"
           />
         </div>
-      </Card>
+      </div>
 
-      {/* Microphone */}
-      <Card className="p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Mic className="w-4 h-4 text-white/70" />
-          <div className="text-sm font-semibold text-white/80">Microphone</div>
-        </div>
-
+      {/* Microphone Section */}
+      <div>
+        <label className="block text-sm font-semibold text-white/70 mb-2">
+          Microphone
+        </label>
         <select
           value={selectedMic}
           onChange={(e) => setSelectedMic(e.target.value)}
-          className="w-full px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/10 text-white/85 focus:outline-none focus:border-indigo-400/45 focus:ring-2 focus:ring-indigo-400/10 mb-4"
+          className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/10 text-white focus:outline-none focus:border-fuchsia-400/60 focus:ring-2 focus:ring-fuchsia-400/20 mb-3"
         >
           {audioDevices.map((device) => (
-            <option key={device.deviceId} value={device.deviceId} className="bg-[#070712]">
+            <option key={device.deviceId} value={device.deviceId}>
               {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
             </option>
           ))}
         </select>
 
-        {/* Mic meter (subtle, no gradient) */}
+        {/* Mic Level Meter */}
         <div>
           <div className="h-2 rounded-full bg-white/10 overflow-hidden">
             <div
-              className="h-full bg-white/35 transition-all duration-100"
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-100"
               style={{ width: `${micLevel}%` }}
             />
           </div>
-          <p className="text-xs text-white/45 mt-2">Speak to test your microphone</p>
+          <p className="text-xs text-white/40 mt-1">Speak to test your microphone</p>
         </div>
-      </Card>
+      </div>
 
-      {/* Actions (outline only) */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <OutlineBtn onClick={handleContinue} tone="fuchsia" className="flex-1 py-4">
-          Continue
-          <ChevronRight className="w-4 h-4" />
-        </OutlineBtn>
-
-        <OutlineBtn onClick={handleSkip} tone="neutral" className="sm:w-40 py-4">
+      {/* Action Buttons */}
+      <div className="flex gap-3 pt-4">
+        <button
+          onClick={handleContinue}
+          className="flex-1 px-6 py-4 rounded-xl font-bold bg-gradient-to-r from-fuchsia-600 to-indigo-600 hover:opacity-95 active:scale-[0.99] transition text-lg"
+        >
+          Continue to Room
+        </button>
+        <button
+          onClick={handleSkip}
+          className="px-6 py-4 rounded-xl font-semibold text-white/60 hover:text-white/80 transition"
+        >
           Skip
-        </OutlineBtn>
+        </button>
       </div>
     </div>
   );
