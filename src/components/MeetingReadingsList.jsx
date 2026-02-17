@@ -1,5 +1,5 @@
 import React from "react";
-import meetingReadings from "./meetingReadings";
+import meetingReadings from "../utils/meetingReadings";
 
 /**
  * Props:
