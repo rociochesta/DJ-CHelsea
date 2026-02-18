@@ -17,7 +17,7 @@ import HostControlPanel from "./HostControlPanel";
 import MeetingDisplay from "./MeetingDisplay";
 import MeetingReadingsList from "./MeetingReadingsList";
 
-import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen } from "lucide-react";
+import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen, ListMusic } from "lucide-react";
 
 function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,6 +25,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [hostPanelOpen, setHostPanelOpen] = useState(false);
+  const [djAutoplay, setDjAutoplay] = useState(false);
 
   // Determine room mode
   const roomMode = roomState?.roomMode || "karaoke";
@@ -82,6 +83,15 @@ const handleStopSong = async () => {
     videoId: null,
     pausedAtSeconds: 0,
   });
+
+  // DJ autoplay: play next song if enabled
+  if (isDJ && djAutoplay) {
+    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+    if (queue.length > 0) {
+      const sorted = [...queue].sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+      await handlePlaySong(sorted[0]);
+    }
+  }
 };
   const setParticipantMute = async (participantName, muted) => {
     const muteRef = ref(
@@ -136,13 +146,14 @@ const handleSkipSong = async () => {
     pausedAtSeconds: 0,
   });
 
-  // ✅ DJ MODE: do NOT autoplay next song
-  if (isDJ) return;
+  // DJ MODE: only autoplay if toggle is on
+  if (isDJ && !djAutoplay) return;
 
-  // Other modes (karaoke / streaming) → autoplay next
+  // Autoplay next song
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
   if (queue.length > 0) {
-    await handlePlaySong(queue[0]);
+    const sorted = [...queue].sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+    await handlePlaySong(sorted[0]);
   }
 };
 
@@ -327,10 +338,28 @@ const handleSkipSong = async () => {
                   </div>
 
                   {isDJ && (
-                    <div className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-emerald-500/20 bg-white/[0.02]">
-                      <span className="text-xs font-semibold text-emerald-300/90">
-                        Mic: open (everyone can talk)
-                      </span>
+                    <div className="mt-3 flex items-center gap-2 flex-wrap justify-end">
+                      <div className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-emerald-500/20 bg-white/[0.02]">
+                        <span className="text-xs font-semibold text-emerald-300/90">
+                          Mic: open
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => setDjAutoplay((v) => !v)}
+                        className={[
+                          "inline-flex items-center gap-2 px-3 py-2 rounded-2xl border transition active:scale-[0.98]",
+                          djAutoplay
+                            ? "border-amber-400/40 bg-amber-500/[0.10] text-amber-300"
+                            : "border-white/10 bg-white/[0.02] text-white/50 hover:text-white/70",
+                        ].join(" ")}
+                        title={djAutoplay ? "Autoplay ON" : "Autoplay OFF"}
+                      >
+                        <ListMusic className="w-3.5 h-3.5" />
+                        <span className="text-xs font-semibold">
+                          Autoplay {djAutoplay ? "ON" : "OFF"}
+                        </span>
+                      </button>
                     </div>
                   )}
                 </div>
