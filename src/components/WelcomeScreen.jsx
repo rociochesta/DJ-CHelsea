@@ -49,6 +49,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
             : 0,
           createdAt: room.createdAt || 0,
         }))
+        .filter((room) => room.participantCount > 0)
         .sort((a, b) => b.createdAt - a.createdAt);
 
       setActiveRooms(rooms);

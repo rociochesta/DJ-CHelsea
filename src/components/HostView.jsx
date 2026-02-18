@@ -17,9 +17,9 @@ import HostControlPanel from "./HostControlPanel";
 import MeetingDisplay from "./MeetingDisplay";
 import MeetingReadingsList from "./MeetingReadingsList";
 
-import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen } from "lucide-react";
+import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen } from "lucide-react";
 
-function HostView({ roomCode, currentUser, roomState }) {
+function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -303,13 +303,28 @@ const handleSkipSong = async () => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => setHostPanelOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 border border-fuchsia-500/35 bg-fuchsia-500/[0.08] hover:bg-fuchsia-500/[0.14] hover:border-fuchsia-400/50 hover:shadow-[0_0_20px_rgba(232,121,249,0.18)] transition active:scale-[0.98]"
-                  >
-                    <Sliders className="w-4 h-4 text-fuchsia-400" />
-                    <span className="text-sm font-semibold text-fuchsia-300">Host Controls</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setHostPanelOpen(true)}
+                      className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 border border-fuchsia-500/35 bg-fuchsia-500/[0.08] hover:bg-fuchsia-500/[0.14] hover:border-fuchsia-400/50 hover:shadow-[0_0_20px_rgba(232,121,249,0.18)] transition active:scale-[0.98]"
+                    >
+                      <Sliders className="w-4 h-4 text-fuchsia-400" />
+                      <span className="text-sm font-semibold text-fuchsia-300">Host Controls</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (window.confirm("Close this room? Everyone will be disconnected.")) {
+                          onCloseRoom?.();
+                        }
+                      }}
+                      className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 border border-red-500/30 bg-red-500/[0.06] hover:bg-red-500/[0.12] hover:border-red-400/50 transition active:scale-[0.98]"
+                      title="Close Room"
+                    >
+                      <DoorOpen className="w-4 h-4 text-red-400" />
+                      <span className="text-sm font-semibold text-red-300">Close</span>
+                    </button>
+                  </div>
 
                   {isDJ && (
                     <div className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-emerald-500/20 bg-white/[0.02]">

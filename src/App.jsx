@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
 import "@livekit/components-styles";
 
-import { database, ref, onValue, set, get, isConfigured } from "./utils/firebase";
+import { database, ref, onValue, set, get, remove, onDisconnect, isConfigured } from "./utils/firebase";
 import { generateRoomCode, generateUserId } from "./utils/helpers";
 import { useDevicePreferences } from "./hooks/useDevicePreferences";
 
@@ -184,11 +184,8 @@ function App() {
     hostName: chosenDj,
     createdAt: Date.now(),
     roomMode: roomMode,
-    
-    // ADD THESE TWO LINES:
     externalVideoLink: externalVideoLink || null,
     useExternalVideo: !!externalVideoLink,
-
     micPolicy: roomMode === "karaoke" ? "auto" : "open",
     hostControls: {
       micsLocked: false,
@@ -215,6 +212,13 @@ function App() {
     },
   });
 
+  // Auto-remove host participant on disconnect (browser close/refresh)
+  const hostParticipantRef = ref(database, `karaoke-rooms/${code}/participants/${updatedUser.id}`);
+  onDisconnect(hostParticipantRef).remove();
+
+  // If host disconnects, delete the entire room
+  onDisconnect(roomRef).remove();
+
   setScreen("room");
 };
   const handleJoinRoom = async (code, userName) => {
@@ -238,6 +242,12 @@ function App() {
       joinedAt: Date.now(),
     });
 
+    // Auto-remove participant on disconnect (browser close/refresh)
+    onDisconnect(participantRef).remove();
+    // Also clean up their mute state on disconnect
+    const muteCleanupRef = ref(database, `karaoke-rooms/${upper}/participantMutes/${userName}`);
+    onDisconnect(muteCleanupRef).remove();
+
     // Auto-mute on join if host has it enabled
     try {
       const controlsSnap = await get(ref(database, `karaoke-rooms/${upper}/hostControls`));
@@ -252,6 +262,20 @@ function App() {
 
     setScreen("room");
     setIsHost(false);
+  };
+
+  const handleCloseRoom = async () => {
+    if (!roomCode) return;
+    const roomRef = ref(database, `karaoke-rooms/${roomCode}`);
+    // Cancel the onDisconnect so it doesn't fire after manual close
+    onDisconnect(roomRef).cancel();
+    await remove(roomRef);
+    setScreen("welcome");
+    setRoomCode("");
+    setIsHost(false);
+    setRoomState(null);
+    setLkToken(null);
+    setLkError("");
   };
 
   // Loading state
@@ -311,6 +335,7 @@ function App() {
           roomCode={roomCode}
           currentUser={currentUser}
           roomState={roomState}
+          onCloseRoom={handleCloseRoom}
         />
       ) : (
         <ParticipantView

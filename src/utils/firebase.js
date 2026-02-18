@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, set, get, onValue, update, push, remove } from 'firebase/database';
+import { getDatabase, ref, set, get, onValue, update, push, remove, onDisconnect } from 'firebase/database';
 
 // Firebase configuration
 // TODO: Replace with your actual Firebase config
@@ -25,4 +25,4 @@ if (!isConfigured) {
 const app = initializeApp(firebaseConfig);
 const database = isConfigured ? getDatabase(app) : null;
 
-export { database, ref, set, get, onValue, update, push, remove, isConfigured };
+export { database, ref, set, get, onValue, update, push, remove, onDisconnect, isConfigured };
