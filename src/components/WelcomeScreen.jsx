@@ -7,7 +7,9 @@ import {
   ArrowRight,
   Plus,
   LogIn,
+  Radio,
 } from "lucide-react";
+import { database, ref, onValue } from "../utils/firebase";
 import PreJoinDeviceSetup from "./PreJoinDeviceSetup";
 
 function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
@@ -25,6 +27,35 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [externalVideoLink, setExternalVideoLink] = useState("");
   const [showDeviceSetup, setShowDeviceSetup] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
+  const [activeRooms, setActiveRooms] = useState([]);
+
+  // Listen for active rooms
+  useEffect(() => {
+    const roomsRef = ref(database, "karaoke-rooms");
+    const unsub = onValue(roomsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        setActiveRooms([]);
+        return;
+      }
+
+      const rooms = Object.entries(data)
+        .map(([code, room]) => ({
+          code,
+          hostName: room.hostName || "Unknown",
+          roomMode: room.roomMode || "karaoke",
+          participantCount: room.participants
+            ? Object.keys(room.participants).length
+            : 0,
+          createdAt: room.createdAt || 0,
+        }))
+        .sort((a, b) => b.createdAt - a.createdAt);
+
+      setActiveRooms(rooms);
+    });
+
+    return () => unsub();
+  }, []);
 
   // ✅ Rotating banners only (text static)
   const heroBanners = useMemo(
@@ -166,6 +197,62 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       </span>
                     </button>
                   </div>
+
+                  {/* ACTIVE ROOMS */}
+                  {activeRooms.length > 0 && (
+                    <div className="mt-8">
+                      <div className="flex items-center justify-center gap-2 mb-4">
+                        <Radio className="w-4 h-4 text-emerald-400" />
+                        <span className="text-sm font-semibold text-white/70">Live Rooms</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-3xl mx-auto">
+                        {activeRooms.map((room) => {
+                          const ModeIcon =
+                            room.roomMode === "dj" ? Headphones
+                            : room.roomMode === "karaoke" ? Mic
+                            : room.roomMode === "streaming" ? MonitorPlay
+                            : Users;
+                          const modeLabel =
+                            room.roomMode === "dj" ? "Jam"
+                            : room.roomMode === "karaoke" ? "Karaoke"
+                            : room.roomMode === "streaming" ? "Streaming"
+                            : "Meeting";
+
+                          return (
+                            <button
+                              key={room.code}
+                              onClick={() => {
+                                setRoomCode(room.code);
+                                setMode("join");
+                              }}
+                              className="flex items-center gap-3 p-4 rounded-2xl border border-white/10 bg-black/20 hover:border-emerald-500/30 hover:bg-white/[0.04] transition active:scale-[0.98] text-left"
+                            >
+                              <div className="w-10 h-10 rounded-xl border border-white/10 bg-white/[0.03] flex items-center justify-center flex-shrink-0">
+                                <ModeIcon className="w-5 h-5 text-white/70" />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-bold text-white/90 truncate">
+                                    {room.hostName}
+                                  </span>
+                                  <span className="flex-shrink-0 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+                                </div>
+                                <div className="text-xs text-white/45 mt-0.5">
+                                  {modeLabel} · {room.participantCount} {room.participantCount === 1 ? "person" : "people"}
+                                </div>
+                              </div>
+
+                              <div className="text-xs font-mono text-white/30 flex-shrink-0">
+                                {room.code}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

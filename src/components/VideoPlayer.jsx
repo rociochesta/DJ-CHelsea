@@ -20,12 +20,12 @@ function VideoPlayer({
   isHost,
   showHostWhenIdle = false,
   roomMode = "karaoke",
+  performanceMode = false,
 }) {
   const [player, setPlayer] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [embedError, setEmbedError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [performanceMode, setPerformanceMode] = useState(false);
 
   const { localParticipant } = useLocalParticipant();
   const liveKitParticipants = useParticipants();
@@ -258,14 +258,6 @@ function VideoPlayer({
         )}
       </div>
 
-      {!isHost && (
-        <button
-          onClick={() => setPerformanceMode((v) => !v)}
-          className="mt-3 text-xs w-full p-2 rounded-lg bg-white/10"
-        >
-          Performance Mode: {performanceMode ? "ON" : "OFF"}
-        </button>
-      )}
     </div>
   );
 }

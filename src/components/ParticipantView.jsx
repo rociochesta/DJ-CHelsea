@@ -16,15 +16,17 @@ import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import MeetingDisplay from "./MeetingDisplay";
 import UnmuteRequestPrompt from "./UnmuteRequestPrompt";
 
-import { Mic, MonitorPlay, Headphones, User, BookOpen } from "lucide-react";
+import { Mic, MonitorPlay, Headphones, User, BookOpen, Maximize, Zap } from "lucide-react";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [performanceMode, setPerformanceMode] = useState(false);
 
   const { localParticipant } = useLocalParticipant();
+  const videoContainerRef = React.useRef(null);
   const roomMode = roomState?.roomMode || "karaoke";
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
@@ -70,16 +72,17 @@ const ONE_SONG_MESSAGES = [
   const currentSong = roomState?.currentSong;
   const participantMutes = roomState?.participantMutes || {};
 
-  // ✅ TEMP RULE: participant can only have one queued song (until host override exists)
+  // Queue limit: DJ mode allows 3 songs, other modes allow 1
   const userName = currentUser?.name || "";
-  const userAlreadyQueued = useMemo(() => {
-    if (!userName) return false;
-    return queue.some((s) => (s?.requestedBy || "") === userName);
+  const maxQueued = isDJ ? 3 : 1;
+  const userQueuedCount = useMemo(() => {
+    if (!userName) return 0;
+    return queue.filter((s) => (s?.requestedBy || "") === userName).length;
   }, [queue, userName]);
+  const userAtLimit = userQueuedCount >= maxQueued;
 
   const handleAddToQueue = async (video, requestedBy) => {
-    // ✅ block >1 request per participant (for now)
-    if (userAlreadyQueued) {
+    if (userAtLimit) {
      alert(
   ONE_SONG_MESSAGES[Math.floor(Math.random() * ONE_SONG_MESSAGES.length)]
 );
@@ -113,6 +116,16 @@ const ONE_SONG_MESSAGES = [
   }, [isDJ, isStreaming, isMeeting]);
 
   const ModeIcon = modeMeta.Icon;
+
+  const handleFullscreen = () => {
+    const el = videoContainerRef.current;
+    if (!el) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      el.requestFullscreen().catch(() => {});
+    }
+  };
 
   return (
     <div className="min-h-screen relative overflow-x-hidden text-white">
@@ -160,42 +173,71 @@ const ONE_SONG_MESSAGES = [
           </div>
 
           {/* Video / Meeting Display */}
-          {isMeeting ? (
-            <MeetingDisplay
-              activeReadingId={roomState?.activeReadingId || null}
-              isHost={false}
-              onSelectReading={() => {}}
-            />
-          ) : isStreaming ? (
-            <GoogleDrivePlayer
-              videoUrl={currentSong?.videoUrl}
-              title={currentSong?.title}
-              playbackState={roomState?.playbackState}
-              isHost={false}
-              requestedBy={currentSong?.requestedBy}
-            />
-          ) : (
-<VideoPlayer
-  roomCode={roomCode}
-  currentSong={currentSong}
-  playbackState={roomState?.playbackState}
-  isHost={false}
-  roomMode={roomMode}
-  showHostWhenIdle={roomMode === "dj"}
-/>
-          )}
+          <div ref={videoContainerRef} className="relative">
+            {isMeeting ? (
+              <MeetingDisplay
+                activeReadingId={roomState?.activeReadingId || null}
+                isHost={false}
+                onSelectReading={() => {}}
+              />
+            ) : isStreaming ? (
+              <GoogleDrivePlayer
+                videoUrl={currentSong?.videoUrl}
+                title={currentSong?.title}
+                playbackState={roomState?.playbackState}
+                isHost={false}
+                requestedBy={currentSong?.requestedBy}
+              />
+            ) : (
+              <VideoPlayer
+                roomCode={roomCode}
+                currentSong={currentSong}
+                playbackState={roomState?.playbackState}
+                isHost={false}
+                roomMode={roomMode}
+                showHostWhenIdle={roomMode === "dj"}
+                performanceMode={performanceMode}
+              />
+            )}
 
-          {/* Spotlight */}
-          <SingerSpotlight
-            roomCode={roomCode}
-            roomMode={roomMode}
-            currentSong={isKaraoke ? currentSong : null}
-            participantMutes={participantMutes}
-            queue={isKaraoke ? queue : []}
-            currentUser={currentUser}
-            micsLocked={roomState?.hostControls?.micsLocked || false}
-            preferHostWhenIdle={isDJ}
-          />
+            {/* Fullscreen + Performance Mode buttons */}
+            <div className="absolute top-3 right-3 flex gap-2 z-10">
+              <button
+                onClick={() => setPerformanceMode((v) => !v)}
+                className={[
+                  "w-9 h-9 rounded-xl border backdrop-blur-md transition active:scale-[0.95] flex items-center justify-center",
+                  performanceMode
+                    ? "border-fuchsia-500/40 bg-fuchsia-500/[0.15] text-fuchsia-300"
+                    : "border-white/10 bg-black/40 text-white/60 hover:text-white/90",
+                ].join(" ")}
+                title={performanceMode ? "Performance mode ON" : "Performance mode OFF"}
+              >
+                <Zap className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={handleFullscreen}
+                className="w-9 h-9 rounded-xl border border-white/10 bg-black/40 backdrop-blur-md text-white/60 hover:text-white/90 transition active:scale-[0.95] flex items-center justify-center"
+                title="Fullscreen"
+              >
+                <Maximize className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Spotlight — hidden in performance mode */}
+          {!performanceMode && (
+            <SingerSpotlight
+              roomCode={roomCode}
+              roomMode={roomMode}
+              currentSong={isKaraoke ? currentSong : null}
+              participantMutes={participantMutes}
+              queue={isKaraoke ? queue : []}
+              currentUser={currentUser}
+              micsLocked={roomState?.hostControls?.micsLocked || false}
+              preferHostWhenIdle={isDJ}
+            />
+          )}
 
           {!isMeeting && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -224,9 +266,9 @@ const ONE_SONG_MESSAGES = [
                         roomCode={roomCode}
                         isParticipant={true}
                         // Optional: if SongSearch supports disabling UI, you can use this:
-                        // disabled={userAlreadyQueued}
+                        // disabled={userAtLimit}
                       />
-                      {userAlreadyQueued && (
+                      {userAtLimit && (
                         <div className="mt-3 text-xs text-white/45">
                           You already have a song queued. (Host override coming later.)
                         </div>
