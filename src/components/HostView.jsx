@@ -16,6 +16,7 @@ import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import HostControlPanel from "./HostControlPanel";
 import MeetingDisplay from "./MeetingDisplay";
 import MeetingReadingsList from "./MeetingReadingsList";
+import NAProfiles from "./NAProfiles";
 
 import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen, ListMusic } from "lucide-react";
 
@@ -436,6 +437,8 @@ const handleSkipSong = async () => {
 
             {/* Right */}
             <div className="space-y-6">
+              <NAProfiles roomCode={roomCode} />
+
               {isMeeting && (
                 <MeetingReadingsList
                   activeReadingId={roomState?.activeReadingId || null}

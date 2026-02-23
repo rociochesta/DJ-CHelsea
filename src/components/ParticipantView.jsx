@@ -15,6 +15,7 @@ import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import MeetingDisplay from "./MeetingDisplay";
 import UnmuteRequestPrompt from "./UnmuteRequestPrompt";
+import NAProfiles from "./NAProfiles";
 
 import { Mic, MonitorPlay, Headphones, User, BookOpen, Maximize, Zap } from "lucide-react";
 
@@ -282,7 +283,8 @@ const ONE_SONG_MESSAGES = [
                 )}
               </div>
 
-              <div>
+              <div className="space-y-6">
+                <NAProfiles roomCode={roomCode} />
                 <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
               </div>
             </div>

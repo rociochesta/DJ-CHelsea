@@ -220,11 +220,11 @@ function App() {
     setScreen("room");
   };
 
-  const handleJoinRoom = async (code, userName) => {
+  const handleJoinRoom = async (code, userName, groupName, avatar) => {
     const upper = code.toUpperCase();
     setRoomCode(upper);
 
-    const updatedUser = { ...currentUser, name: userName };
+    const updatedUser = { ...currentUser, name: userName, group: groupName || "", avatar: avatar || "🎤" };
     setCurrentUser(updatedUser);
     localStorage.setItem("karaoke-username", userName);
 
@@ -237,6 +237,8 @@ function App() {
     await set(participantRef, {
       id: updatedUser.id,
       name: userName,
+      group: groupName || "",
+      avatar: avatar || "🎤",
       role: "participant",
       joinedAt: Date.now(),
     });

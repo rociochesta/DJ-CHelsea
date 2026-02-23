@@ -12,6 +12,8 @@ import {
 import { database, ref, onValue } from "../utils/firebase";
 import PreJoinDeviceSetup from "./PreJoinDeviceSetup";
 
+const AVATAR_OPTIONS = ["🎤","🎵","🎶","🎸","🥁","🎹","🎧","🌟","🔥","💫","✨","🌈","💎","👑","🏆","❤️","🙏","💪","🌊","🌺","😊","🎯","🦋","🌙","🃏"];
+
 function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [mode, setMode] = useState(null); // null | "create" | "join"
   const [roomCode, setRoomCode] = useState("");
@@ -19,6 +21,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   // ✅ separate names (future-proof for host transfer)
   const [hostName, setHostName] = useState("");
   const [participantName, setParticipantName] = useState("");
+  const [participantGroup, setParticipantGroup] = useState("");
+  const [participantAvatar, setParticipantAvatar] = useState("🎤");
 
   // backend modes: dj, karaoke, streaming
   const [roomMode, setRoomMode] = useState("dj");
@@ -89,7 +93,9 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const handleJoinSubmit = (e) => {
     e.preventDefault();
     if (roomCode.length === 6 && participantName.trim()) {
-      setPendingAction(() => () => onJoinRoom(roomCode, participantName.trim()));
+      setPendingAction(() => () =>
+        onJoinRoom(roomCode, participantName.trim(), participantGroup.trim(), participantAvatar)
+      );
       setShowDeviceSetup(true);
     }
   };
@@ -404,6 +410,29 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
                   <div className="md:col-span-3 rounded-2xl border border-white/10 bg-black/30 p-5 md:p-6 backdrop-blur-xl">
                     <form onSubmit={handleJoinSubmit} className="space-y-4">
+                      {/* Avatar picker */}
+                      <div>
+                        <label className="block text-sm font-semibold text-white/80 mb-2">
+                          Pick your vibe
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {AVATAR_OPTIONS.map((emoji) => (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => setParticipantAvatar(emoji)}
+                              className={`w-10 h-10 rounded-xl text-xl transition border ${
+                                participantAvatar === emoji
+                                  ? "border-fuchsia-400/70 bg-fuchsia-500/20 shadow-[0_0_12px_rgba(232,121,249,0.4)]"
+                                  : "border-white/10 bg-white/5 hover:border-white/25"
+                              }`}
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-sm font-semibold text-white/80 mb-2">
                           Your name
@@ -415,6 +444,19 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           placeholder="Someone emotionally responsible"
                           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                           required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-white/80 mb-2">
+                          Group name <span className="text-white/40 font-normal">(optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={participantGroup}
+                          onChange={(e) => setParticipantGroup(e.target.value)}
+                          placeholder="e.g. 3PM Early Birds"
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                         />
                       </div>
 
