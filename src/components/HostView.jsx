@@ -16,7 +16,6 @@ import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import HostControlPanel from "./HostControlPanel";
 import MeetingDisplay from "./MeetingDisplay";
 import MeetingReadingsList from "./MeetingReadingsList";
-
 import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen, ListMusic } from "lucide-react";
 
 function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
@@ -26,7 +25,6 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const [hasSearched, setHasSearched] = useState(false);
   const [hostPanelOpen, setHostPanelOpen] = useState(false);
   const [djAutoplay, setDjAutoplay] = useState(false);
-
   // Determine room mode
   const roomMode = roomState?.roomMode || "karaoke";
   const isStreaming = roomMode === "streaming";
@@ -483,7 +481,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { key: "safety",  label: "🔒 Safety",   pool: ["🔒 Share Mode disabled.\nIf you are struggling with a burning desire to use, hurt yourself, or hurt someone, please reach out to the Host immediately. You matter and support is available.", "🔒 Share Mode is currently disabled.\nIf you are experiencing a burning desire to use, hurt yourself, or hurt someone else, please contact the Host immediately. You are not alone.", "🔒 Share Mode OFF.\nIf you feel a burning desire to use or harm yourself/others, message the Host now."], border: "border-red-500/30 hover:border-red-400/50 text-red-300/90" },
-                    { key: "spanjft", label: "📘 SPAN/JFT",  pool: ["📘 If you're here and mysteriously have nothing to do… go check Today's SPAN or JFT. Growth occasionally happens when we least want it.", "📘 Today's SPAN / JFT might accidentally become your meeting topic later. Spiritual foreshadowing is real.", "📘 Could be boring. Could be life-altering. We won't know until you click."], border: "border-blue-500/30 hover:border-blue-400/50 text-blue-300/90" },
+                    { key: "spanjft", label: "📘 SPAN/JFT",  pool: ["📘 If you're here and mysteriously have nothing to do… go check Today's SPAN or JFT. Growth occasionally happens when we least want it.", "📘 Today's SPAN / JFT might accidentally become your meeting topic later. Spiritual foreshadowing is real.", "📘 Could be boring. Could be life-altering. We won't know until you click.", "📘 Go check Today's SPAN or JFT. It may contain information about you that you weren't emotionally prepared for."], border: "border-blue-500/30 hover:border-blue-400/50 text-blue-300/90" },
                     { key: "playful", label: "😈 Playful",   pool: ["😈 This music ain't it. Pick something smoother… warmer… a little dangerous. Impress the Host.", "😈 Current vibe: questionable. Choose something with more chemistry.", "😈 Respectfully… this ain't the one. Redeem yourself."], border: "border-fuchsia-500/30 hover:border-fuchsia-400/50 text-fuchsia-300/90" },
                     { key: "sad",     label: "🖤 Sad",        pool: ["🖤 This one feels a little empty. Choose something that understands you better tonight.", "🖤 Not every song finds us. Pick one that feels like your story.", "🖤 Some nights need softer music."], border: "border-white/10 hover:border-white/20 text-white/70" },
                     { key: "dark",    label: "🌑 Dark",       pool: ["🌑 Choose something that sounds like the inside of your mind at 2AM.", "🌑 Low light. Quiet room. Choose the song that feels like night.", "🌑 Bring the sound of slow thoughts and long nights."], border: "border-indigo-500/30 hover:border-indigo-400/50 text-indigo-300/90" },
@@ -543,6 +541,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
       {/* Reactions and Settings */}
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
+
     </div>
   );
 }

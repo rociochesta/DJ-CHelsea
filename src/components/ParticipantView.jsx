@@ -15,6 +15,7 @@ import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import MeetingDisplay from "./MeetingDisplay";
 import UnmuteRequestPrompt from "./UnmuteRequestPrompt";
+import JFTModal from "./JFTModal";
 
 import { Mic, MonitorPlay, Headphones, User, BookOpen, Maximize, Zap } from "lucide-react";
 
@@ -24,6 +25,7 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [performanceMode, setPerformanceMode] = useState(false);
+  const [jftOpen, setJftOpen] = useState(false);
 
   const { localParticipant } = useLocalParticipant();
   const videoContainerRef = React.useRef(null);
