@@ -201,6 +201,27 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
         </div>
       ) : (
         messages.map((msg) => {
+          // ── System / bot messages ──
+          if (msg.isSystem) {
+            const systemColors = {
+              safety:  "border-red-500/30 bg-red-500/[0.07] text-red-100/90",
+              spanjft: "border-blue-500/30 bg-blue-500/[0.07] text-blue-100/90",
+              playful: "border-fuchsia-500/30 bg-fuchsia-500/[0.07] text-fuchsia-100/90",
+              sad:     "border-white/15 bg-white/[0.04] text-white/80",
+              dark:    "border-indigo-500/30 bg-indigo-500/[0.07] text-indigo-100/90",
+              dance:   "border-amber-500/30 bg-amber-500/[0.07] text-amber-100/90",
+            };
+            const colorClass = systemColors[msg.systemType] || "border-white/15 bg-white/[0.04] text-white/80";
+            return (
+              <div key={msg.id} className="flex justify-center my-1">
+                <div className={["max-w-[92%] rounded-2xl border px-4 py-3 text-xs text-center shadow-sm", colorClass].join(" ")}>
+                  <div className="text-[9px] uppercase tracking-widest opacity-50 mb-1">3PM</div>
+                  <div className="whitespace-pre-line leading-relaxed">{msg.message}</div>
+                </div>
+              </div>
+            );
+          }
+
           const isMe = msg.userId === currentUser.id;
           const isEmojiOnly =
             msg.isEmoji ||
