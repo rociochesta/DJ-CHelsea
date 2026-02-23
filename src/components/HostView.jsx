@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 
@@ -16,7 +16,6 @@ import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import HostControlPanel from "./HostControlPanel";
 import MeetingDisplay from "./MeetingDisplay";
 import MeetingReadingsList from "./MeetingReadingsList";
-import NAProfiles from "./NAProfiles";
 
 import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen, ListMusic } from "lucide-react";
 
@@ -241,6 +240,31 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const currentSong = roomState?.currentSong;
   const participantMutes = roomState?.participantMutes || {};
 
+  // Stable playbackState — only changes when meaningful fields change,
+  // so React.memo(VideoPlayer) won't re-render on chat/queue/naMembers writes
+  const stablePlaybackState = useMemo(
+    () => roomState?.playbackState,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      roomState?.playbackState?.isPlaying,
+      roomState?.playbackState?.videoId,
+      roomState?.playbackState?.startTime,
+      roomState?.playbackState?.pausedAtSeconds,
+    ]
+  );
+
+  // Stable currentSong reference
+  const stableCurrentSong = useMemo(
+    () => roomState?.currentSong,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [roomState?.currentSong?.id, roomState?.currentSong?.videoId]
+  );
+
+  // Stable skip callback — always calls the latest closure via ref
+  const skipRef = useRef(handleSkipSong);
+  skipRef.current = handleSkipSong;
+  const stableOnSkip = useCallback(() => skipRef.current?.(), []);
+
   // Memoize user object to prevent Chat/Reactions re-renders
   const memoizedUser = useMemo(
     () => ({
@@ -384,20 +408,22 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
               ) : (
 <VideoPlayer
   roomCode={roomCode}
-  currentSong={currentSong}
-  playbackState={roomState?.playbackState}
-  onSkip={handleSkipSong}
+  currentSong={stableCurrentSong}
+  playbackState={stablePlaybackState}
+  onSkip={stableOnSkip}
   isHost={true}
 />
               )}
 
               <SingerSpotlight
                 roomCode={roomCode}
+                roomMode={roomMode}
                 currentSong={isKaraoke ? currentSong : null}
                 participantMutes={participantMutes}
                 queue={isKaraoke ? queue : []}
                 currentUser={currentUser}
                 micsLocked={roomState?.hostControls?.micsLocked || false}
+                naMembers={naMembers}
               />
 
               {!isMeeting && (
@@ -431,8 +457,6 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
 
             {/* Right */}
             <div className="space-y-6">
-              <NAProfiles roomCode={roomCode} />
-
               {isMeeting && (
                 <MeetingReadingsList
                   activeReadingId={roomState?.activeReadingId || null}
