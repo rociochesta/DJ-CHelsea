@@ -51,29 +51,69 @@ const ALL_MEMBERS = [
   { nickname: "Heavy",     group: "Mott Haven Hope",             avatar: "💪" },
 ];
 
-// ─── Song pool ────────────────────────────────────────────────────────────────
+// ─── Fallback song pool (used if CSV fails to load) ──────────────────────────
 const SONG_POOL = [
-  { videoId: "ylLTMQMt15A", title: "Mr. Brightside - The Killers (Karaoke)",          thumbnail: "https://img.youtube.com/vi/ylLTMQMt15A/default.jpg" },
-  { videoId: "lp-EO5I60KA", title: "Don't Stop Believin' - Journey (Karaoke)",        thumbnail: "https://img.youtube.com/vi/lp-EO5I60KA/default.jpg" },
-  { videoId: "OPf0YbXqDm0", title: "Uptown Funk - Bruno Mars (Karaoke)",              thumbnail: "https://img.youtube.com/vi/OPf0YbXqDm0/default.jpg" },
-  { videoId: "rYEDA3JcQqw", title: "Rolling in the Deep - Adele (Karaoke)",           thumbnail: "https://img.youtube.com/vi/rYEDA3JcQqw/default.jpg" },
-  { videoId: "09R8_2nJtjg", title: "Sweet Home Alabama - Lynyrd Skynyrd (Karaoke)",  thumbnail: "https://img.youtube.com/vi/09R8_2nJtjg/default.jpg" },
-  { videoId: "5NPBIwQyPWE", title: "Total Eclipse of the Heart (Karaoke)",            thumbnail: "https://img.youtube.com/vi/5NPBIwQyPWE/default.jpg" },
-  { videoId: "4m1EFMoRFvY", title: "I Will Survive - Gloria Gaynor (Karaoke)",        thumbnail: "https://img.youtube.com/vi/4m1EFMoRFvY/default.jpg" },
-  { videoId: "dQw4w9WgXcQ", title: "Never Gonna Give You Up - Rick Astley (Karaoke)", thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/default.jpg" },
-  { videoId: "nfWlot6h_JM", title: "Shake It Off - Taylor Swift (Karaoke)",           thumbnail: "https://img.youtube.com/vi/nfWlot6h_JM/default.jpg" },
-  { videoId: "60ItHLz5WEA", title: "Africa - Toto (Karaoke)",                         thumbnail: "https://img.youtube.com/vi/60ItHLz5WEA/default.jpg" },
-  { videoId: "YQHsXMglC9A", title: "Hello - Adele (Adele Karaoke)",                   thumbnail: "https://img.youtube.com/vi/YQHsXMglC9A/default.jpg" },
-  { videoId: "kffacxfA7G4", title: "Baby One More Time - Britney Spears (Karaoke)",  thumbnail: "https://img.youtube.com/vi/kffacxfA7G4/default.jpg" },
-  { videoId: "1k8craCGpgs", title: "Don't You Want Me - Human League (Karaoke)",     thumbnail: "https://img.youtube.com/vi/1k8craCGpgs/default.jpg" },
-  { videoId: "hTWKbfoikeg", title: "Bohemian Rhapsody - Queen (Karaoke)",             thumbnail: "https://img.youtube.com/vi/hTWKbfoikeg/default.jpg" },
-  { videoId: "9bZkp7q19f0", title: "GANGNAM STYLE - PSY (Karaoke)",                  thumbnail: "https://img.youtube.com/vi/9bZkp7q19f0/default.jpg" },
-  { videoId: "fRh_vgS2dFE", title: "Sorry - Justin Bieber (Karaoke)",                thumbnail: "https://img.youtube.com/vi/fRh_vgS2dFE/default.jpg" },
-  { videoId: "ktvTqknDobU", title: "Radioactive - Imagine Dragons (Karaoke)",        thumbnail: "https://img.youtube.com/vi/ktvTqknDobU/default.jpg" },
-  { videoId: "CevxZvSJLk8", title: "Kryptonite - 3 Doors Down (Karaoke)",            thumbnail: "https://img.youtube.com/vi/CevxZvSJLk8/default.jpg" },
-  { videoId: "tbNlMtqrYS0", title: "Wagon Wheel - Darius Rucker (Karaoke)",          thumbnail: "https://img.youtube.com/vi/tbNlMtqrYS0/default.jpg" },
-  { videoId: "8UVNT4wvIGY", title: "Summer of '69 - Bryan Adams (Karaoke)",          thumbnail: "https://img.youtube.com/vi/8UVNT4wvIGY/default.jpg" },
+  { videoId: "ylLTMQMt15A", title: "Mr. Brightside - The Killers",          thumbnail: "https://img.youtube.com/vi/ylLTMQMt15A/default.jpg" },
+  { videoId: "lp-EO5I60KA", title: "Don't Stop Believin' - Journey",        thumbnail: "https://img.youtube.com/vi/lp-EO5I60KA/default.jpg" },
+  { videoId: "hTWKbfoikeg", title: "Bohemian Rhapsody - Queen",             thumbnail: "https://img.youtube.com/vi/hTWKbfoikeg/default.jpg" },
+  { videoId: "rYEDA3JcQqw", title: "Rolling in the Deep - Adele",           thumbnail: "https://img.youtube.com/vi/rYEDA3JcQqw/default.jpg" },
+  { videoId: "4m1EFMoRFvY", title: "I Will Survive - Gloria Gaynor",        thumbnail: "https://img.youtube.com/vi/4m1EFMoRFvY/default.jpg" },
 ];
+
+// ─── CSV song pool ─────────────────────────────────────────────────────────────
+// Colors per category: [background hex, accent hex]
+const CATEGORY_COLORS = {
+  "Recovery (NA)":        ["0f3d2e", "34d399"],
+  "Millennial Nostalgia": ["2d1b69", "a78bfa"],
+  "Classics & Hits":      ["3d2000", "fbbf24"],
+  "Heartbreak":           ["1e1b4b", "818cf8"],
+  "Karaoke Bangers":      ["4a0030", "f472b6"],
+  "Soft / Comfort":       ["0c2a3d", "7dd3fc"],
+  "Chill / Indie":        ["14291a", "6ee7b7"],
+  "Party / Hype":         ["3d1200", "fb923c"],
+  "3AM / Existential":    ["0d0d1a", "c4b5fd"],
+  "Confidence / Glow-Up": ["3d2f00", "fde047"],
+};
+
+function makeThumbnail(category) {
+  const [bg, ac] = CATEGORY_COLORS[category] || ["1a1a2e", "9f7aea"];
+  return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='135'%3E%3Crect width='240' height='135' fill='%23${bg}'/%3E%3Cellipse cx='120' cy='67' rx='60' ry='34' fill='%23${ac}' opacity='.18'/%3E%3C/svg%3E`;
+}
+
+// Module-level cache so we only fetch once per page load
+let _csvSongs = null;
+
+async function loadCSVSongs() {
+  if (_csvSongs) return _csvSongs;
+  try {
+    const res = await fetch("/3pm_1000_songs.csv");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const lines = text.trim().split("\n").slice(1); // skip header row
+    const parsed = lines
+      .map((line) => {
+        const parts = line.split(",");
+        const category = (parts[0] || "").trim().replace(/^"|"$/g, "");
+        const artist   = (parts[1] || "").trim().replace(/^"|"$/g, "");
+        const title    = (parts[2] || "").trim().replace(/^"|"$/g, "");
+        if (!artist || !title) return null;
+        return {
+          title:     `${artist} — ${title}`,
+          videoId:   null,
+          thumbnail: makeThumbnail(category),
+          category,
+        };
+      })
+      .filter(Boolean);
+    _csvSongs = parsed.length > 0 ? parsed : SONG_POOL;
+    console.log(`[NASimulator] Loaded ${_csvSongs.length} songs from CSV`);
+    return _csvSongs;
+  } catch (e) {
+    console.warn("[NASimulator] CSV load failed, using fallback pool:", e);
+    _csvSongs = SONG_POOL;
+    return _csvSongs;
+  }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const rand   = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -112,7 +152,8 @@ async function removeMember(roomCode, nickname) {
 }
 
 async function addSongRequest(roomCode, member) {
-  const song    = pick(shuffle(SONG_POOL));
+  const pool   = (_csvSongs && _csvSongs.length > 0) ? _csvSongs : SONG_POOL;
+  const song   = pick(pool);
   const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
   const songRef  = push(queueRef);
   await set(songRef, {
@@ -221,6 +262,9 @@ export default function NASimulator({ roomCode, roomState }) {
     initialized.current = true;
 
     (async () => {
+      // Pre-load CSV song pool so addSongRequest has it ready
+      await loadCSVSongs();
+
       // One-shot read (avoids onValue synchronous-callback TDZ crash)
       const simRef = ref(database, `karaoke-rooms/${roomCode}/naSimStarted`);
       const snap   = await get(simRef);

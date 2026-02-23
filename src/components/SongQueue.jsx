@@ -96,7 +96,7 @@ function SongQueue({
                 <div className="flex gap-3">
                   <div className="relative shrink-0">
                     <img
-                      src={song.thumbnail}
+                      src={song.thumbnail || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='135'%3E%3Crect width='240' height='135' fill='%231a1a2e'/%3E%3C/svg%3E"}
                       alt={song.title}
                       className="w-24 h-16 object-cover rounded-2xl border border-white/10"
                     />
