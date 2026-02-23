@@ -55,7 +55,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
   useEffect(() => {
     if (!roomCode) return;
 
-    const messagesRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
+    const messagesRef = ref(database, `room-chat/${roomCode}`);
 
     const unsubscribe = onValue(messagesRef, (snapshot) => {
       const data = snapshot.val();
@@ -110,7 +110,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
     const messageToSend = message.trim();
     setMessage("");
 
-    const chatRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
+    const chatRef = ref(database, `room-chat/${roomCode}`);
     const newMessageRef = push(chatRef);
 
     set(newMessageRef, {
@@ -129,7 +129,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
   };
 
   const handleSendReaction = (reaction) => {
-    const chatRef = ref(database, `karaoke-rooms/${roomCode}/chat`);
+    const chatRef = ref(database, `room-chat/${roomCode}`);
     const newMessageRef = push(chatRef);
 
     set(newMessageRef, {

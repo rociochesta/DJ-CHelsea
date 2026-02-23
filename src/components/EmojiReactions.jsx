@@ -30,7 +30,7 @@ function EmojiReactions({ roomCode, currentUser }) {
   useEffect(() => {
     if (!roomCode) return;
 
-    const reactionsRef = ref(database, `karaoke-rooms/${roomCode}/reactions`);
+    const reactionsRef = ref(database, `room-reactions/${roomCode}`);
     
     const unsubscribe = onValue(reactionsRef, (snapshot) => {
       const data = snapshot.val();
@@ -60,7 +60,7 @@ function EmojiReactions({ roomCode, currentUser }) {
       
       // Fire all deletes without awaiting (non-blocking)
       toDelete.forEach((reaction) => {
-        const reactionRef = ref(database, `karaoke-rooms/${roomCode}/reactions/${reaction.id}`);
+        const reactionRef = ref(database, `room-reactions/${roomCode}/${reaction.id}`);
         set(reactionRef, null).catch(() => {}); // Fire and forget
       });
     }, 2000); // Check every 2 seconds instead of 1 to reduce overhead
@@ -73,7 +73,7 @@ function EmojiReactions({ roomCode, currentUser }) {
     setShowPicker(false);
 
     // Fire and forget - don't await, don't block UI
-    const reactionsRef = ref(database, `karaoke-rooms/${roomCode}/reactions`);
+    const reactionsRef = ref(database, `room-reactions/${roomCode}`);
     const newReactionRef = push(reactionsRef);
 
     set(newReactionRef, {

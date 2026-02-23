@@ -50,9 +50,12 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
           code,
           hostName: room.hostName || "Unknown",
           roomMode: room.roomMode || "karaoke",
-          participantCount: room.participants
-            ? Object.keys(room.participants).length
-            : 0,
+          participantCount:
+            (room.participants ? Object.keys(room.participants).length : 0) +
+            // TEST ONLY: include fake NA members in room count — remove for production
+            (room.naMembers
+              ? Object.values(room.naMembers).filter((m) => m.active).length
+              : 0),
           createdAt: room.createdAt || 0,
         }))
         .filter((room) => room.participantCount > 0)
