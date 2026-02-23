@@ -63,37 +63,6 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
       addedAt: Date.now(),
     });
   };
-const handleStopSong = async () => {
-  // karaoke-only: mute current singer when stopping
-  if (isKaraoke) {
-    const currentSinger =
-      roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-    if (currentSinger) {
-      await setParticipantMute(currentSinger, true);
-    }
-  }
-
-  // Clear current song
-  const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
-  await set(currentSongRef, null);
-
-  // Stop playback globally
-  const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
-  await update(playbackRef, {
-    isPlaying: false,
-    videoId: null,
-    pausedAtSeconds: 0,
-  });
-
-  // DJ autoplay: play next song if enabled
-  if (isDJ && djAutoplay) {
-    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
-    if (queue.length > 0) {
-      const sorted = [...queue].sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
-      await handlePlaySong(sorted[0]);
-    }
-  }
-};
   const setParticipantMute = async (participantName, muted) => {
     const muteRef = ref(
       database,
@@ -112,11 +81,10 @@ const handleStopSong = async () => {
     const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
     await update(playbackRef, {
       isPlaying: true,
-      videoId: song.videoId || song.fileId, // Support both YouTube and Google Drive
+      videoId: song.videoId || song.fileId,
       startTime: Date.now(),
     });
 
-    // Auto-unmute the singer (only in karaoke mode)
     if (isKaraoke) {
       const singerName = song.requestedBy || song.singerName;
       if (singerName) {
@@ -125,38 +93,61 @@ const handleStopSong = async () => {
     }
   };
 
-const handleSkipSong = async () => {
-  // Mute current singer (only in karaoke mode)
-  if (isKaraoke) {
-    const currentSinger =
-      roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-    if (currentSinger) {
-      await setParticipantMute(currentSinger, true);
+  const handleStopSong = async () => {
+    if (isKaraoke) {
+      const currentSinger =
+        roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+      if (currentSinger) {
+        await setParticipantMute(currentSinger, true);
+      }
     }
-  }
 
-  // Clear current song → everyone returns to camera
-  const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
-  await set(currentSongRef, null);
+    const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
+    await set(currentSongRef, null);
 
-  // Stop playback globally
-  const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
-  await update(playbackRef, {
-    isPlaying: false,
-    videoId: null,
-    pausedAtSeconds: 0,
-  });
+    const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
+    await update(playbackRef, {
+      isPlaying: false,
+      videoId: null,
+      pausedAtSeconds: 0,
+    });
 
-  // DJ MODE: only autoplay if toggle is on
-  if (isDJ && !djAutoplay) return;
+    if (isDJ && djAutoplay) {
+      const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+      if (queue.length > 0) {
+        const sorted = [...queue].sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+        await handlePlaySong(sorted[0]);
+      }
+    }
+  };
 
-  // Autoplay next song
-  const queue = roomState?.queue ? Object.values(roomState.queue) : [];
-  if (queue.length > 0) {
-    const sorted = [...queue].sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
-    await handlePlaySong(sorted[0]);
-  }
-};
+  const handleSkipSong = async () => {
+    if (isKaraoke) {
+      const currentSinger =
+        roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
+      if (currentSinger) {
+        await setParticipantMute(currentSinger, true);
+      }
+    }
+
+    const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
+    await set(currentSongRef, null);
+
+    const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
+    await update(playbackRef, {
+      isPlaying: false,
+      videoId: null,
+      pausedAtSeconds: 0,
+    });
+
+    if (isDJ && !djAutoplay) return;
+
+    const queue = roomState?.queue ? Object.values(roomState.queue) : [];
+    if (queue.length > 0) {
+      const sorted = [...queue].sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0));
+      await handlePlaySong(sorted[0]);
+    }
+  };
 
   const handleDeleteSong = async (songId) => {
     const songRef = ref(database, `karaoke-rooms/${roomCode}/queue/${songId}`);
