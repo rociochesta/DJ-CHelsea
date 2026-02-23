@@ -102,37 +102,40 @@ function App() {
     });
   }, []);
 
-  // Listen to room state from Firebase
+  // Listen to room state from Firebase (debounced to batch rapid writes)
   useEffect(() => {
     if (!roomCode) return;
 
     const roomRef = ref(database, `karaoke-rooms/${roomCode}`);
+    let timer;
 
     const unsubscribe = onValue(roomRef, (snapshot) => {
       const data = snapshot.val();
-      console.log("📊 Room update:", data);
-
-      if (data) {
-        setRoomState(data);
-
-        // compute isHost from DB truth
-        if (currentUser && data.hostId === currentUser.id) {
-          setIsHost(true);
-        } else {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        if (data) {
+          setRoomState(data);
+          if (currentUser && data.hostId === currentUser.id) {
+            setIsHost(true);
+          } else {
+            setIsHost(false);
+          }
+        } else if (screen !== "welcome") {
+          alert("Room no longer exists");
+          setScreen("welcome");
+          setRoomCode("");
           setIsHost(false);
+          setRoomState(null);
+          setLkToken(null);
+          setLkError("");
         }
-      } else if (screen !== "welcome") {
-        alert("Room no longer exists");
-        setScreen("welcome");
-        setRoomCode("");
-        setIsHost(false);
-        setRoomState(null);
-        setLkToken(null);
-        setLkError("");
-      }
+      }, 150);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
   }, [roomCode, currentUser, screen]);
 
   // Fetch LiveKit token when entering room

@@ -1,12 +1,17 @@
 // src/components/NASimulator.jsx
 //
 // Invisible engine: seeds NA-like members + song requests into Firebase.
-// Now: parses CSV safely + resolves real YouTube videoIds for CSV songs.
+// - Reads /3pm_1000_songs.csv
+// - Parses CSV safely (commas inside quotes ok)
+// - Resolves real YouTube videoIds (first embeddable result)
+// - Caches YouTube hits + serializes calls (quota-safe)
+// - Recycles members so it never stops
 //
-// Requires: src/utils/youtube.js has export searchKaraokeVideos (you already have it)
+// Usage (App.jsx):
+//   {roomCode && <NASimulator roomCode={roomCode} roomState={roomState} />}
 
 import { useEffect, useRef } from "react";
-import { database, ref, push, set, get } from "../utils/firebase";
+import { database, ref, push, set, get, onValue } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 
 // ─── Member pool ─────────────────────────────────────────────────────────────
@@ -43,7 +48,7 @@ const ALL_MEMBERS = [
   { nickname: "Heavy", group: "Mott Haven Hope", avatar: "💪" },
 ];
 
-// ─── Fallback song pool (used if CSV fails / YouTube fails) ──────────────────
+// ─── Fallback song pool (if CSV/YouTube fails) ───────────────────────────────
 const SONG_POOL = [
   {
     videoId: "ylLTMQMt15A",
@@ -72,7 +77,7 @@ const SONG_POOL = [
   },
 ];
 
-// ─── CSV song pool ───────────────────────────────────────────────────────────
+// ─── CSV category colors (placeholder thumbs if YouTube thumb missing) ────────
 const CATEGORY_COLORS = {
   "Recovery (NA)": ["0f3d2e", "34d399"],
   "Millennial Nostalgia": ["2d1b69", "a78bfa"],
@@ -91,7 +96,7 @@ function makeThumbnail(category) {
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='135'%3E%3Crect width='240' height='135' fill='%23${bg}'/%3E%3Cellipse cx='120' cy='67' rx='60' ry='34' fill='%23${ac}' opacity='.18'/%3E%3C/svg%3E`;
 }
 
-// ✅ CSV-safe split: handles commas inside quotes
+// ✅ CSV-safe splitter: handles commas inside quotes + escaped quotes ("")
 function splitCSVLine(line) {
   const out = [];
   let cur = "";
@@ -101,7 +106,6 @@ function splitCSVLine(line) {
     const ch = line[i];
 
     if (ch === '"') {
-      // handle escaped double quote inside quotes: ""
       const next = line[i + 1];
       if (inQuotes && next === '"') {
         cur += '"';
@@ -125,30 +129,27 @@ function splitCSVLine(line) {
   return out.map((s) => String(s ?? "").trim());
 }
 
-// Module-level cache so we only fetch once per page load
+// ─── Module-level caches ─────────────────────────────────────────────────────
 let _csvSongs = null;
 
-// YouTube resolver cache (avoid quota burn)
-let _ytCache = new Map(); // query -> { id, title, thumbnail } | null
+// query -> { id, title, thumbnail, channelTitle } OR null
+let _ytCache = new Map();
 
-// Serialize YouTube searches so multiple timers don't spam API
+// serialize YouTube lookups so timers don't spam the API
 let _ytChain = Promise.resolve();
 
-async function resolveFirstYouTube(query) {
+async function resolveFirstEmbeddable(query) {
   const q = (query || "").trim();
   if (!q) return null;
 
   if (_ytCache.has(q)) return _ytCache.get(q);
 
-  // serialize
   _ytChain = _ytChain.then(async () => {
-    // another request might have cached while we waited
     if (_ytCache.has(q)) return;
 
     try {
-      const results = await searchKaraokeVideos(q); // embeddable-filtered
-      const first = results?.[0] || null; // { id, title, thumbnail, channelTitle }
-      _ytCache.set(q, first);
+      const res = await searchKaraokeVideos(q); // already embeddable filtered
+      _ytCache.set(q, res?.[0] || null);
     } catch (e) {
       console.warn("[NASimulator] YouTube search failed:", e);
       _ytCache.set(q, null);
@@ -177,7 +178,6 @@ async function loadCSVSongs() {
     const parsed = lines
       .map((line) => {
         const parts = splitCSVLine(line);
-
         const category = (parts[0] || "").replace(/^"|"$/g, "");
         const artist = (parts[1] || "").replace(/^"|"$/g, "");
         const title = (parts[2] || "").replace(/^"|"$/g, "");
@@ -186,7 +186,7 @@ async function loadCSVSongs() {
 
         return {
           title: `${artist} — ${title}`,
-          videoId: null, // will be resolved via YouTube
+          videoId: null, // resolved later
           thumbnail: makeThumbnail(category),
           category,
         };
@@ -204,8 +204,7 @@ async function loadCSVSongs() {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const rand = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
+const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const msMin = (m) => m * 60 * 1000;
 const msHour = (h) => h * 60 * 60 * 1000;
@@ -243,30 +242,26 @@ async function removeMember(roomCode, nickname) {
 }
 
 async function addSongRequest(roomCode, member) {
-  const pool =
-    _csvSongs && _csvSongs.length > 0 ? _csvSongs : SONG_POOL;
-
+  const pool = _csvSongs && _csvSongs.length > 0 ? _csvSongs : SONG_POOL;
   const raw = pick(pool);
 
   let videoId = raw.videoId || null;
   let title = raw.title;
   let thumbnail = raw.thumbnail;
 
-  // ✅ Resolve real YouTube ID for CSV songs
+  // ✅ Resolve YouTube ID for CSV songs
   if (!videoId) {
-    const first = await resolveFirstYouTube(title);
+    const first = await resolveFirstEmbeddable(title);
     if (first?.id) {
       videoId = first.id;
       title = first.title || title;
       thumbnail =
         first.thumbnail ||
-        (videoId
-          ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
-          : thumbnail);
+        (videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : thumbnail);
     }
   }
 
-  // hard fallback if still missing
+  // hard fallback
   if (!videoId) {
     const fb = pick(SONG_POOL);
     videoId = fb.videoId;
@@ -295,7 +290,8 @@ export default function NASimulator({ roomCode }) {
   const initialized = useRef(false);
   const timersRef = useRef([]);
   const activeMembersRef = useRef(new Set());
-  const usedMembersRef = useRef(new Set());
+  const usedMembersRef = useRef(new Set()); // tracks used nicknames; we recycle it
+  const refillScheduledRef = useRef(false);
 
   // Cleanup all timers on unmount
   useEffect(() => {
@@ -305,43 +301,73 @@ export default function NASimulator({ roomCode }) {
     };
   }, []);
 
-  const getUnusedMember = () => {
-    const available = ALL_MEMBERS.filter(
+  // Keep queue alive — whenever it drops below 3, a fake member quickly adds one
+  useEffect(() => {
+    if (!roomCode) return;
+    const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
+    return onValue(queueRef, (snap) => {
+      const count = Object.keys(snap.val() || {}).length;
+      if (count < 3 && activeMembersRef.current.size > 0 && !refillScheduledRef.current) {
+        refillScheduledRef.current = true;
+        const t = setTimeout(async () => {
+          refillScheduledRef.current = false;
+          const activeList = [...activeMembersRef.current];
+          if (activeList.length === 0) return;
+          const nickname = pick(activeList);
+          const member = ALL_MEMBERS.find((m) => m.nickname === nickname);
+          if (member) {
+            await addSongRequest(roomCode, member);
+            console.log(`[NASimulator] 🎵 ${nickname} refilled queue`);
+          }
+        }, rand(4000, 12000));
+        timersRef.current.push(t);
+      }
+    });
+  }, [roomCode]);
+
+  // ✅ never-ending: recycle names after we use them all
+  const getMember = () => {
+    let available = ALL_MEMBERS.filter(
       (m) => !usedMembersRef.current.has(m.nickname)
     );
-    if (available.length === 0) return null;
+
+    if (available.length === 0) {
+      usedMembersRef.current.clear();
+      available = [...ALL_MEMBERS];
+    }
+
     const member = pick(available);
     usedMembersRef.current.add(member.nickname);
     return member;
   };
 
-  const scheduleMember = (roomCode, member, joinDelay) => {
+  const scheduleMember = (roomCode, member, joinDelayMs) => {
+    // stays 10 min – 4 hours
     const stayDuration = rand(msMin(10), msHour(4));
 
-    const willRequestSong = Math.random() < 0.8;
-    // make first request feel alive faster: 20–90s after join
-    const songDelay = joinDelay + rand(20_000, 90_000);
+    // Make it feel alive: first request 20–90s after join
+    const songDelay = joinDelayMs + rand(20_000, 90_000);
 
-    const willRequest2nd = Math.random() < 0.3;
-    const song2Delay = songDelay + msMin(rand(15, 45));
+    // 60% chance of a second request 10–30 min later
+    const willRequest2nd = Math.random() < 0.6;
+    const song2Delay = songDelay + msMin(rand(10, 30));
 
     // JOIN
     const joinTimer = setTimeout(async () => {
       activeMembersRef.current.add(member.nickname);
       await writeMember(roomCode, member);
       console.log(`[NASimulator] ➕ ${member.nickname} joined (${member.group})`);
-    }, joinDelay);
+    }, joinDelayMs);
+
     timersRef.current.push(joinTimer);
 
-    // SONG 1
-    if (willRequestSong) {
-      const songTimer = setTimeout(async () => {
-        if (!activeMembersRef.current.has(member.nickname)) return;
-        await addSongRequest(roomCode, member);
-        console.log(`[NASimulator] 🎵 ${member.nickname} requested a song`);
-      }, songDelay);
-      timersRef.current.push(songTimer);
-    }
+    // SONG 1 — everyone requests
+    const songTimer = setTimeout(async () => {
+      if (!activeMembersRef.current.has(member.nickname)) return;
+      await addSongRequest(roomCode, member);
+      console.log(`[NASimulator] 🎵 ${member.nickname} requested a song`);
+    }, songDelay);
+    timersRef.current.push(songTimer);
 
     // SONG 2
     if (willRequest2nd) {
@@ -350,6 +376,7 @@ export default function NASimulator({ roomCode }) {
         await addSongRequest(roomCode, member);
         console.log(`[NASimulator] 🎵 ${member.nickname} requested another song`);
       }, song2Delay);
+
       timersRef.current.push(song2Timer);
     }
 
@@ -363,13 +390,13 @@ export default function NASimulator({ roomCode }) {
         )}min`
       );
 
-      if (Math.random() < 0.7) {
-        const nextMember = getUnusedMember();
-        if (nextMember) {
-          scheduleMember(roomCode, nextMember, msMin(rand(5, 30)));
-        }
+      // Replace them most of the time so it stays busy
+      if (Math.random() < 0.95) {
+        const next = getMember();
+        // next join 5–30 minutes later
+        scheduleMember(roomCode, next, msMin(rand(5, 30)));
       }
-    }, joinDelay + stayDuration);
+    }, joinDelayMs + stayDuration);
 
     timersRef.current.push(leaveTimer);
   };
@@ -391,24 +418,25 @@ export default function NASimulator({ roomCode }) {
 
       await set(simRef, Date.now());
 
-      // Initial wave: 3–5 join fast (3–20s)
+      // Initial wave: 3–5 members join within 3–20 seconds
       const initialCount = rand(3, 5);
       const initialPool = shuffle([...ALL_MEMBERS]).slice(0, initialCount);
 
-      initialPool.forEach((member) => {
-        usedMembersRef.current.add(member.nickname);
+      initialPool.forEach((m) => {
+        usedMembersRef.current.add(m.nickname);
         const joinDelay = rand(3000, 20000);
-        scheduleMember(roomCode, member, joinDelay);
+        scheduleMember(roomCode, m, joinDelay);
       });
 
-      // Ongoing wave
+      // Ongoing wave: every 20–60 minutes, 1–2 show up
       let waveDelay = msMin(rand(20, 60));
       const scheduleWave = () => {
         const waveTimer = setTimeout(() => {
           const waveSize = rand(1, 2);
           for (let i = 0; i < waveSize; i++) {
-            const member = getUnusedMember();
-            if (member) scheduleMember(roomCode, member, msMin(rand(0, 5)));
+            const m = getMember();
+            // join within next 0–5 minutes
+            scheduleMember(roomCode, m, msMin(rand(0, 5)));
           }
           waveDelay = msMin(rand(20, 60));
           scheduleWave();

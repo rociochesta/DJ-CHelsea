@@ -235,6 +235,9 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
 
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
   const participants = roomState?.participants ? Object.values(roomState.participants) : [];
+  const naMembers = roomState?.naMembers
+    ? Object.values(roomState.naMembers).filter((m) => m.active)
+    : [];
   const currentSong = roomState?.currentSong;
   const participantMutes = roomState?.participantMutes || {};
 
@@ -418,7 +421,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                       hasSearched={hasSearched}
                       currentUser={currentUser}
                       participants={participants}
-                      roomCode={roomCode}
+                      naMembers={naMembers}
                       isParticipant={false}
                     />
                   </div>

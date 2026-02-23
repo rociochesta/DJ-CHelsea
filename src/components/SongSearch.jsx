@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Search, Plus, Music } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Search, Plus, Music, X } from "lucide-react";
 
 function SongSearch({
   searchQuery,
@@ -11,13 +11,54 @@ function SongSearch({
   hasSearched,
   currentUser,
   participants,
-  roomCode,
+  naMembers,
   isParticipant,
 }) {
-  const [error, setError] = useState("");
+  const [pendingVideo, setPendingVideo] = useState(null);
 
   const outlineBtn =
     "border-fuchsia-500/35 hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)]";
+
+  // Build unified singer list (only relevant for host)
+  const allSingers = useMemo(() => {
+    if (isParticipant) return [];
+
+    const singers = [];
+
+    // Current user (host) first
+    if (currentUser?.name) {
+      singers.push({
+        key: `user-${currentUser.id || "host"}`,
+        name: currentUser.name,
+        avatar: currentUser.avatar || "🎤",
+        group: currentUser.group || "",
+      });
+    }
+
+    // Real participants (excluding self)
+    (participants || []).forEach((p) => {
+      if (p.name && p.name !== currentUser?.name) {
+        singers.push({
+          key: `part-${p.id || p.name}`,
+          name: p.name,
+          avatar: p.avatar || "🎤",
+          group: p.group || "",
+        });
+      }
+    });
+
+    // NA (fake) members
+    (naMembers || []).forEach((m) => {
+      singers.push({
+        key: `na-${m.nickname}`,
+        name: m.nickname,
+        avatar: m.avatar || "🎵",
+        group: m.group || "",
+      });
+    });
+
+    return singers;
+  }, [isParticipant, currentUser, participants, naMembers]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -25,42 +66,104 @@ function SongSearch({
   };
 
   const handleAdd = (video) => {
-    if (!isParticipant && currentUser?.name) {
-      const options = [
-        currentUser.name,
-        ...((participants || []).map((p) => p.name).filter((n) => n !== currentUser.name)),
-        "Other (type name)",
-      ];
-
-      const choice = window.prompt(
-        `Who's singing this song?\n\n${options.map((opt, i) => `${i + 1}. ${opt}`).join("\n")}`,
-        "1"
-      );
-
-      if (!choice) return;
-
-      const choiceNum = parseInt(choice);
-      let requestedBy;
-
-      if (choiceNum >= 1 && choiceNum <= options.length) {
-        const selected = options[choiceNum - 1];
-        if (selected === "Other (type name)") {
-          requestedBy = window.prompt("Enter singer's name:", "")?.trim() || "Someone";
-        } else {
-          requestedBy = selected;
-        }
-      } else {
-        requestedBy = choice.trim() || currentUser.name;
-      }
-
-      onAddToQueue?.(video, requestedBy);
+    if (!isParticipant) {
+      setPendingVideo(video);
     } else {
       onAddToQueue?.(video, currentUser?.name || "Someone");
     }
   };
 
+  const confirmSinger = (singer) => {
+    if (!pendingVideo) return;
+    onAddToQueue?.(pendingVideo, singer.name);
+    setPendingVideo(null);
+  };
+
+  const confirmCustom = () => {
+    if (!pendingVideo) return;
+    const name = window.prompt("Enter singer's name:", "")?.trim();
+    if (name) {
+      onAddToQueue?.(pendingVideo, name);
+      setPendingVideo(null);
+    }
+  };
+
   return (
     <div>
+      {/* Singer picker modal */}
+      {pendingVideo && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setPendingVideo(null); }}
+        >
+          <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-[#0d0d1f] shadow-2xl overflow-hidden">
+            {/* Modal header */}
+            <div className="flex items-center justify-between p-5 border-b border-white/10">
+              <h3 className="font-bold text-lg">Who's singing?</h3>
+              <button
+                onClick={() => setPendingVideo(null)}
+                className="w-8 h-8 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center transition"
+              >
+                <X className="w-4 h-4 text-white/70" />
+              </button>
+            </div>
+
+            {/* Song preview */}
+            <div className="mx-5 mt-4 flex gap-3 p-3 rounded-2xl border border-white/10 bg-white/[0.03]">
+              <img
+                src={pendingVideo.thumbnail}
+                alt={pendingVideo.title}
+                className="w-16 h-12 rounded-xl object-cover border border-white/10 shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold text-sm text-white/90 line-clamp-2 leading-snug">
+                  {pendingVideo.title}
+                </div>
+                <div className="text-xs text-white/50 mt-0.5 truncate">
+                  {pendingVideo.channelTitle}
+                </div>
+              </div>
+            </div>
+
+            {/* Singer list */}
+            <div className="p-5 pt-3 space-y-2 max-h-64 overflow-y-auto">
+              {allSingers.map((singer) => (
+                <button
+                  key={singer.key}
+                  type="button"
+                  onClick={() => confirmSinger(singer)}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl border border-white/10 hover:border-fuchsia-400/40 hover:bg-fuchsia-500/10 active:scale-[0.98] transition text-left"
+                >
+                  <span className="text-xl w-10 h-10 flex items-center justify-center rounded-full bg-black/30 border border-white/15 shrink-0">
+                    {singer.avatar}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="font-semibold text-sm text-white/90 truncate">
+                      {singer.name}
+                    </div>
+                    {singer.group && (
+                      <div className="text-xs text-white/50 truncate">{singer.group}</div>
+                    )}
+                  </div>
+                </button>
+              ))}
+
+              {/* Someone else */}
+              <button
+                type="button"
+                onClick={confirmCustom}
+                className="w-full flex items-center gap-3 p-3 rounded-2xl border border-dashed border-white/15 hover:border-white/30 hover:bg-white/[0.03] active:scale-[0.98] transition text-white/50"
+              >
+                <span className="text-lg w-10 h-10 flex items-center justify-center rounded-full bg-black/20 border border-white/10 shrink-0">
+                  +
+                </span>
+                <span className="text-sm">Someone else…</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Music className="w-5 h-5 text-white/60" />
@@ -103,13 +206,6 @@ function SongSearch({
       <div className="text-xs text-white/50 mb-4">
         Some videos cannot be embedded. If playback fails, it will auto-skip.
       </div>
-
-      {/* Error */}
-      {error && (
-        <div className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-yellow-300 text-sm mb-4">
-          {error}
-        </div>
-      )}
 
       {/* Results */}
       <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
