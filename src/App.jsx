@@ -168,11 +168,11 @@ function App() {
     };
   }, [roomCode, screen, currentUser?.name]);
 
-  const handleCreateRoom = (chosenDj, roomMode, externalVideoLink) => {
+  const handleCreateRoom = (chosenDj, groupName, avatar, roomMode, externalVideoLink) => {
     const code = generateRoomCode();
     setRoomCode(code);
 
-    const updatedUser = { ...currentUser, name: chosenDj };
+    const updatedUser = { ...currentUser, name: chosenDj, group: groupName || "", avatar: avatar || "🎤" };
     setCurrentUser(updatedUser);
     localStorage.setItem("karaoke-username", chosenDj);
     localStorage.setItem("karaoke-djname", chosenDj);
@@ -202,6 +202,8 @@ function App() {
         [updatedUser.id]: {
           id: updatedUser.id,
           name: chosenDj,
+          group: groupName || "",
+          avatar: avatar || "🎤",
           role: "host",
           joinedAt: Date.now(),
         },

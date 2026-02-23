@@ -240,7 +240,8 @@ export default function NASimulator({ roomCode, roomState }) {
 
       initialPool.forEach((member) => {
         usedMembersRef.current.add(member.nickname);
-        const joinDelay = rand(0, msMin(1.5));
+        // Stagger initial joins: 3–20 seconds so they feel alive right away
+        const joinDelay = rand(3000, 20000);
         scheduleMember(roomCode, member, joinDelay);
       });
 

@@ -20,6 +20,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
   // ✅ separate names (future-proof for host transfer)
   const [hostName, setHostName] = useState("");
+  const [hostGroup, setHostGroup] = useState("");
+  const [hostAvatar, setHostAvatar] = useState("🎤");
   const [participantName, setParticipantName] = useState("");
   const [participantGroup, setParticipantGroup] = useState("");
   const [participantAvatar, setParticipantAvatar] = useState("🎤");
@@ -101,10 +103,10 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   };
 
   const handleCreateSubmit = () => {
-    if (!hostName.trim()) return; // ✅ require host name
+    if (!hostName.trim()) return;
     setPendingAction(
       () => () =>
-        onCreateRoom(getHostName(), roomMode, useExternalVideo ? externalVideoLink : null)
+        onCreateRoom(getHostName(), hostGroup.trim(), hostAvatar, roomMode, useExternalVideo ? externalVideoLink : null)
     );
     setShowDeviceSetup(true);
   };
@@ -292,8 +294,31 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                   <h2 className="text-2xl font-bold mb-2">Create a room</h2>
                   <p className="text-white/60 mb-6">Host name first. Chaos second.</p>
 
-                  {/* ✅ host name */}
-                  <div className="mb-6">
+                  {/* Avatar picker */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold text-white/80 mb-2">
+                      Pick your vibe
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {AVATAR_OPTIONS.map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => setHostAvatar(emoji)}
+                          className={`w-10 h-10 rounded-xl text-xl transition border ${
+                            hostAvatar === emoji
+                              ? "border-fuchsia-400/70 bg-fuchsia-500/20 shadow-[0_0_12px_rgba(232,121,249,0.4)]"
+                              : "border-white/10 bg-white/5 hover:border-white/25"
+                          }`}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Host name */}
+                  <div className="mb-4">
                     <label className="block text-sm font-semibold text-white/80 mb-2">
                       Host name
                     </label>
@@ -304,6 +329,20 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       placeholder="DJ Chelsea’s supervisor"
                       className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                       required
+                    />
+                  </div>
+
+                  {/* Group name */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold text-white/80 mb-2">
+                      Group name <span className="text-white/40 font-normal">(optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={hostGroup}
+                      onChange={(e) => setHostGroup(e.target.value)}
+                      placeholder="e.g. 3PM Early Birds"
+                      className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                     />
                   </div>
 
