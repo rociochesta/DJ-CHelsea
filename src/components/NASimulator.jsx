@@ -15,7 +15,7 @@
 // Pair with NAProfiles.jsx to DISPLAY the current fake members panel.
 
 import { useEffect, useRef } from "react";
-import { database, ref, push, set, onValue, remove } from "../utils/firebase";
+import { database, ref, push, set, get, remove } from "../utils/firebase";
 
 // ─── Member pool ─────────────────────────────────────────────────────────────
 const ALL_MEMBERS = [
@@ -220,13 +220,13 @@ export default function NASimulator({ roomCode, roomState }) {
     if (!roomCode || initialized.current) return;
     initialized.current = true;
 
-    // Check if this room already has simulation state
-    const simRef = ref(database, `karaoke-rooms/${roomCode}/naSimStarted`);
-    const unsub  = onValue(simRef, async (snap) => {
-      unsub(); // one-time read
+    (async () => {
+      // One-shot read (avoids onValue synchronous-callback TDZ crash)
+      const simRef = ref(database, `karaoke-rooms/${roomCode}/naSimStarted`);
+      const snap   = await get(simRef);
 
       if (snap.val()) {
-        // Room already running — just re-sync active members to local state
+        // Room already running — skip
         console.log("[NASimulator] Room already has simulation, syncing...");
         return;
       }
@@ -240,7 +240,6 @@ export default function NASimulator({ roomCode, roomState }) {
 
       initialPool.forEach((member) => {
         usedMembersRef.current.add(member.nickname);
-        // Stagger initial joins: 0–90 seconds apart
         const joinDelay = rand(0, msMin(1.5));
         scheduleMember(roomCode, member, joinDelay);
       });
@@ -256,7 +255,6 @@ export default function NASimulator({ roomCode, roomState }) {
               scheduleMember(roomCode, member, msMin(rand(0, 5)));
             }
           }
-          // Schedule next wave
           waveDelay = msMin(rand(20, 60));
           scheduleWave();
         }, waveDelay);
@@ -264,7 +262,7 @@ export default function NASimulator({ roomCode, roomState }) {
       };
 
       scheduleWave();
-    });
+    })();
   }, [roomCode]);
 
   return null; // invisible engine
