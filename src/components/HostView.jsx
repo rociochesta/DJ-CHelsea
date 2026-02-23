@@ -232,6 +232,19 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
     await set(readingRef, readingId);
   };
 
+  const handleSendBotMessage = async (text, type = "system") => {
+    const chatRef = ref(database, `room-chat/${roomCode}`);
+    const newMsgRef = push(chatRef);
+    await set(newMsgRef, {
+      userId: "system",
+      userName: "3PM",
+      message: text,
+      isSystem: true,
+      systemType: type,
+      timestamp: Date.now(),
+    });
+  };
+
   const queue = roomState?.queue ? Object.values(roomState.queue) : [];
   const participants = roomState?.participants ? Object.values(roomState.participants) : [];
   const naMembers = roomState?.naMembers
@@ -501,6 +514,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
         onPlayPause={handlePlayPause}
         onKick={handleKickParticipant}
         onUpdateHostControls={handleUpdateHostControls}
+        onSendBotMessage={handleSendBotMessage}
       />
 
       {/* Reactions and Settings */}

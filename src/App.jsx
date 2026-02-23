@@ -222,6 +222,9 @@ function App() {
     const hostParticipantRef = ref(database, `karaoke-rooms/${code}/participants/${updatedUser.id}`);
     onDisconnect(hostParticipantRef).remove();
 
+    // Auto-close the entire room when the host disconnects
+    onDisconnect(roomRef).remove();
+
     setScreen("room");
   };
 

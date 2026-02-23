@@ -12,11 +12,71 @@ import {
   UserX,
   ChevronDown,
   ChevronUp,
-  Volume2,
   Users,
   Settings,
   Sliders,
+  Sparkles,
 } from "lucide-react";
+
+// ─── Bot message pools ────────────────────────────────────────────────────────
+const BOT_MESSAGES = {
+  safety: [
+    "🔒 Share Mode disabled.\nIf you are struggling with a burning desire to use, hurt yourself, or hurt someone, please reach out to the Host immediately. You matter and support is available.",
+    "🔒 Share Mode is currently disabled.\nIf you are experiencing a burning desire to use, hurt yourself, or hurt someone else, please contact the Host immediately. You are not alone.",
+    "🔒 Share Mode is off.\nIf you are having thoughts of using, self-harm, or harming others, reach out to the Host right away. Support is here.",
+    "🔒 Share Mode OFF.\nIf you feel a burning desire to use or harm yourself/others, message the Host now.",
+    "🔒 Share Mode disabled.\nIf you are struggling with a burning desire to use, hurt yourself, or hurt someone, please reach out to the Host immediately. You matter and support is available.",
+  ],
+  spanjft: [
+    "📘 If you're here and mysteriously have nothing to do… go check Today's SPAN or JFT. Growth occasionally happens when we least want it.",
+    "📘 If you're just floating around with free time… Today's SPAN and JFT are waiting for you.",
+    "📘 Got a quiet moment? Take a look at Today's SPAN / JFT.",
+    "📘 Today's SPAN / JFT might accidentally become your meeting topic later. Spiritual foreshadowing is real.",
+    "📘 Go check Today's SPAN or JFT. It may contain information about you that you weren't emotionally prepared for.",
+    "📘 Could be boring. Could be life-altering. We won't know until you click.",
+    "📘 You might discover the meeting already started — internally.",
+    "📘 Today's SPAN / JFT may become tonight's 'why am I like this' discussion.",
+  ],
+  playful: [
+    "😈 This music ain't it. Pick something smoother… warmer… a little dangerous. Impress the Host.",
+    "😈 Current vibe: questionable. Choose something with more chemistry.",
+    "😈 Music weak. Energy low. Select a track with better intentions.",
+    "😈 This song not doing you any favors. Try again — darker, smoother, hotter.",
+    "😈 Respectfully… this ain't the one. Redeem yourself.",
+    "😈 The room needs atmosphere. Bring something hypnotic.",
+    "😈 This track committed a minor crime. Please select something better.",
+    "😈 This ain't it. Try again.",
+  ],
+  sad: [
+    "🖤 This one feels a little empty. Choose something that understands you better tonight.",
+    "🖤 Music not reaching the heart. Try something slower… softer.",
+    "🖤 Not every song finds us. Pick one that feels like your story.",
+    "🖤 This track missed the feeling. Choose something with more soul.",
+    "🖤 Some nights need softer music.",
+    "🖤 Sometimes the right song finds the part of us we don't talk about. Try again.",
+  ],
+  dark: [
+    "🌑 Choose something that sounds like the inside of your mind at 2AM.",
+    "🌑 Not every track carries weight. Try one that breathes in the dark.",
+    "🌑 Some music hides from the truth. Pick one that doesn't.",
+    "🌑 Low light. Quiet room. Choose the song that feels like night.",
+    "🌑 Too light. Try darker.",
+    "🌑 Bring the sound of slow thoughts and long nights.",
+    "🌑 If the music doesn't touch the shadow, it's not the right one.",
+  ],
+  dance: [
+    "💃 Enough feelings. Time to move. Bring something with rhythm.",
+    "💃 This room has legs. Use them.",
+    "💃 Mood shift. We dance now.",
+    "💃 Sad hours closed. Dance floor open.",
+    "💃 Emotional processing complete. Initiating: questionable dancing.",
+    "💃 Bring the beat. The room is ready.",
+    "💃 Lights up. Mood up. Give us something alive.",
+    "💃 Dancing recommended. Coordination optional.",
+  ],
+};
+
+const pickMsg = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export default function HostControlPanel({
   isOpen,
@@ -30,6 +90,7 @@ export default function HostControlPanel({
   onPlayPause,
   onKick,
   onUpdateHostControls,
+  onSendBotMessage,
 }) {
   const [expandedSection, setExpandedSection] = useState("room");
   const [kickConfirm, setKickConfirm] = useState(null);
@@ -44,6 +105,7 @@ export default function HostControlPanel({
   const micsLocked = hostControls.micsLocked || false;
   const autoMuteOnJoin = hostControls.autoMuteOnJoin !== false;
   const onlySingerMic = hostControls.onlySingerMic || false;
+  const shareMode = hostControls.shareMode !== false; // default ON
   const currentSinger =
     currentSong?.requestedBy || currentSong?.singerName || "";
 
@@ -471,6 +533,87 @@ export default function HostControlPanel({
                     />
                   </button>
                 </div>
+
+                {/* Share Mode */}
+                <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
+                  <div>
+                    <div className="text-sm font-semibold text-white/80">
+                      Share Mode
+                    </div>
+                    <div className="text-xs text-white/40 mt-0.5">
+                      Allow participants to share / speak
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const next = !shareMode;
+                      onUpdateHostControls({ shareMode: next });
+                      if (!next) {
+                        onSendBotMessage?.(pickMsg(BOT_MESSAGES.safety), "safety");
+                      }
+                    }}
+                    className={[
+                      "relative w-11 h-6 rounded-full transition-colors",
+                      shareMode ? "bg-fuchsia-500/50" : "bg-red-500/40",
+                    ].join(" ")}
+                  >
+                    <div
+                      className={[
+                        "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform",
+                        shareMode ? "translate-x-[22px]" : "translate-x-0.5",
+                      ].join(" ")}
+                    />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── BOT MESSAGES ── */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+            <button
+              onClick={() => toggleSection("bot")}
+              className="w-full flex items-center justify-between p-4 hover:bg-white/[0.02] transition"
+            >
+              <div className="flex items-center gap-3">
+                <Sparkles className="w-5 h-5 text-fuchsia-400/80" />
+                <span className="font-semibold text-white/85">Bot Messages</span>
+              </div>
+              {expandedSection === "bot" ? (
+                <ChevronUp className="w-4 h-4 text-white/50" />
+              ) : (
+                <ChevronDown className="w-4 h-4 text-white/50" />
+              )}
+            </button>
+
+            {expandedSection === "bot" && (
+              <div className="px-4 pb-4 space-y-2">
+                <p className="text-xs text-white/35 mb-3">
+                  Send an automated message to the chat room.
+                </p>
+
+                {[
+                  { key: "safety",  label: "🔒 Safety / Crisis",    sub: "Share Mode off + crisis support",  border: "border-red-500/30 hover:border-red-400/45",    text: "text-red-200/90"   },
+                  { key: "spanjft", label: "📘 SPAN / JFT",          sub: "Encourage daily reading",           border: "border-blue-500/30 hover:border-blue-400/45",  text: "text-blue-200/90"  },
+                  { key: "playful", label: "😈 Playful / Flirty",    sub: "Tease the song choice",             border: "border-fuchsia-500/30 hover:border-fuchsia-400/45", text: "text-fuchsia-200/90" },
+                  { key: "sad",     label: "🖤 Sad",                  sub: "Softer, emotional mood",            border: "border-white/10 hover:border-white/20",        text: "text-white/75"     },
+                  { key: "dark",    label: "🌑 Very Dark",            sub: "Deep / introspective vibe",         border: "border-indigo-500/30 hover:border-indigo-400/45", text: "text-indigo-200/90" },
+                  { key: "dance",   label: "💃 Dancing / Energy",     sub: "Get the room moving",               border: "border-amber-500/30 hover:border-amber-400/45", text: "text-amber-200/90"  },
+                ].map(({ key, label, sub, border, text }) => (
+                  <button
+                    key={key}
+                    onClick={() => onSendBotMessage?.(pickMsg(BOT_MESSAGES[key]), key)}
+                    className={[
+                      "w-full flex items-start gap-3 rounded-xl px-3 py-2.5 border bg-white/[0.02] hover:bg-white/[0.04] transition active:scale-[0.98] text-left",
+                      border,
+                    ].join(" ")}
+                  >
+                    <div className="min-w-0">
+                      <div className={["text-sm font-semibold", text].join(" ")}>{label}</div>
+                      <div className="text-xs text-white/35 mt-0.5">{sub}</div>
+                    </div>
+                  </button>
+                ))}
               </div>
             )}
           </div>
