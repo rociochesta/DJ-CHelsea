@@ -10,6 +10,7 @@ import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
 import ParticipantView from "./components/ParticipantView";
 import EnableMediaOnJoin from "./components/EnableMediaOnJoin";
+import NASimulator from "./components/NASimulator";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -168,59 +169,57 @@ function App() {
   }, [roomCode, screen, currentUser?.name]);
 
   const handleCreateRoom = (chosenDj, roomMode, externalVideoLink) => {
-  const code = generateRoomCode();
-  setRoomCode(code);
+    const code = generateRoomCode();
+    setRoomCode(code);
 
-  const updatedUser = { ...currentUser, name: chosenDj };
-  setCurrentUser(updatedUser);
-  localStorage.setItem("karaoke-username", chosenDj);
-  localStorage.setItem("karaoke-djname", chosenDj);
+    const updatedUser = { ...currentUser, name: chosenDj };
+    setCurrentUser(updatedUser);
+    localStorage.setItem("karaoke-username", chosenDj);
+    localStorage.setItem("karaoke-djname", chosenDj);
 
-  setIsHost(true);
+    setIsHost(true);
 
-  const roomRef = ref(database, `karaoke-rooms/${code}`);
-  set(roomRef, {
-    hostId: updatedUser.id,
-    hostName: chosenDj,
-    createdAt: Date.now(),
-    roomMode: roomMode,
-    externalVideoLink: externalVideoLink || null,
-    useExternalVideo: !!externalVideoLink,
-    micPolicy: roomMode === "karaoke" ? "auto" : "open",
-    hostControls: {
-      micsLocked: false,
-      autoMuteOnJoin: roomMode === "karaoke" || roomMode === "meeting",
-      onlySingerMic: roomMode === "karaoke",
-    },
-    activeReadingId: null,
-    activeSingerId: null,
-    activeSingerName: null,
-    queue: [],
-    currentSong: null,
-    participants: {
-      [updatedUser.id]: {
-        id: updatedUser.id,
-        name: chosenDj,
-        role: "host",
-        joinedAt: Date.now(),
+    const roomRef = ref(database, `karaoke-rooms/${code}`);
+    set(roomRef, {
+      hostId: updatedUser.id,
+      hostName: chosenDj,
+      createdAt: Date.now(),
+      roomMode: roomMode,
+      externalVideoLink: externalVideoLink || null,
+      useExternalVideo: !!externalVideoLink,
+      micPolicy: roomMode === "karaoke" ? "auto" : "open",
+      hostControls: {
+        micsLocked: false,
+        autoMuteOnJoin: roomMode === "karaoke" || roomMode === "meeting",
+        onlySingerMic: roomMode === "karaoke",
       },
-    },
-    playbackState: {
-      isPlaying: false,
-      currentTime: 0,
-      videoId: null,
-    },
-  });
+      activeReadingId: null,
+      activeSingerId: null,
+      activeSingerName: null,
+      queue: [],
+      currentSong: null,
+      participants: {
+        [updatedUser.id]: {
+          id: updatedUser.id,
+          name: chosenDj,
+          role: "host",
+          joinedAt: Date.now(),
+        },
+      },
+      playbackState: {
+        isPlaying: false,
+        currentTime: 0,
+        videoId: null,
+      },
+    });
 
-  // Auto-remove host participant on disconnect (browser close/refresh)
-  const hostParticipantRef = ref(database, `karaoke-rooms/${code}/participants/${updatedUser.id}`);
-  onDisconnect(hostParticipantRef).remove();
+    // Auto-remove host from participants list on disconnect (browser close/refresh)
+    const hostParticipantRef = ref(database, `karaoke-rooms/${code}/participants/${updatedUser.id}`);
+    onDisconnect(hostParticipantRef).remove();
 
-  // If host disconnects, delete the entire room
-  onDisconnect(roomRef).remove();
+    setScreen("room");
+  };
 
-  setScreen("room");
-};
   const handleJoinRoom = async (code, userName) => {
     const upper = code.toUpperCase();
     setRoomCode(upper);
@@ -329,6 +328,11 @@ function App() {
     >
       <RoomAudioRenderer />
       {/* <EnableMediaOnJoin /> */}
+
+      {/* NA Simulator — invisible engine, runs for everyone in the room */}
+      {roomCode && (
+        <NASimulator roomCode={roomCode} roomState={roomState} />
+      )}
 
       {isHost ? (
         <HostView
