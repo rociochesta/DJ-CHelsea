@@ -15,6 +15,7 @@ import ExternalVideoPrompt from "./ExternalVideoPrompt";
 
 import HostControlPanel from "./HostControlPanel";
 import MeetingDisplay from "./MeetingDisplay";
+import JamGames from "./JamGames";
 import MeetingReadingsList from "./MeetingReadingsList";
 import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen, ListMusic } from "lucide-react";
 
@@ -475,28 +476,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                 />
               )}
 
-              {/* Bot message quick-fire buttons */}
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-4">
-                <div className="text-[10px] uppercase tracking-widest text-white/40 mb-3">Bot Messages</div>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { key: "safety",  label: "🔒 Safety",   pool: ["🔒 Share Mode disabled.\nIf you are struggling with a burning desire to use, hurt yourself, or hurt someone, please reach out to the Host immediately. You matter and support is available.", "🔒 Share Mode is currently disabled.\nIf you are experiencing a burning desire to use, hurt yourself, or hurt someone else, please contact the Host immediately. You are not alone.", "🔒 Share Mode OFF.\nIf you feel a burning desire to use or harm yourself/others, message the Host now."], border: "border-red-500/30 hover:border-red-400/50 text-red-300/90" },
-                    { key: "spanjft", label: "📘 SPAN/JFT",  pool: ["📘 If you're here and mysteriously have nothing to do… go check Today's SPAN or JFT. Growth occasionally happens when we least want it.", "📘 Today's SPAN / JFT might accidentally become your meeting topic later. Spiritual foreshadowing is real.", "📘 Could be boring. Could be life-altering. We won't know until you click.", "📘 Go check Today's SPAN or JFT. It may contain information about you that you weren't emotionally prepared for."], border: "border-blue-500/30 hover:border-blue-400/50 text-blue-300/90" },
-                    { key: "playful", label: "😈 Playful",   pool: ["😈 This music ain't it. Pick something smoother… warmer… a little dangerous. Impress the Host.", "😈 Current vibe: questionable. Choose something with more chemistry.", "😈 Respectfully… this ain't the one. Redeem yourself."], border: "border-fuchsia-500/30 hover:border-fuchsia-400/50 text-fuchsia-300/90" },
-                    { key: "sad",     label: "🖤 Sad",        pool: ["🖤 This one feels a little empty. Choose something that understands you better tonight.", "🖤 Not every song finds us. Pick one that feels like your story.", "🖤 Some nights need softer music."], border: "border-white/10 hover:border-white/20 text-white/70" },
-                    { key: "dark",    label: "🌑 Dark",       pool: ["🌑 Choose something that sounds like the inside of your mind at 2AM.", "🌑 Low light. Quiet room. Choose the song that feels like night.", "🌑 Bring the sound of slow thoughts and long nights."], border: "border-indigo-500/30 hover:border-indigo-400/50 text-indigo-300/90" },
-                    { key: "dance",   label: "💃 Dance",      pool: ["💃 Enough feelings. Time to move. Bring something with rhythm.", "💃 Sad hours closed. Dance floor open.", "💃 Dancing recommended. Coordination optional."], border: "border-amber-500/30 hover:border-amber-400/50 text-amber-300/90" },
-                  ].map(({ key, label, pool, border }) => (
-                    <button
-                      key={key}
-                      onClick={() => handleSendBotMessage(pool[Math.floor(Math.random() * pool.length)], key)}
-                      className={["rounded-2xl px-2 py-2 border bg-white/[0.02] hover:bg-white/[0.04] text-xs font-semibold transition active:scale-[0.97] text-center leading-tight", border].join(" ")}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              {isDJ && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
 
               <ChatPanel
                 roomCode={roomCode}
@@ -517,6 +497,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                   />
                 </div>
               )}
+
             </div>
           </div>
         </div>

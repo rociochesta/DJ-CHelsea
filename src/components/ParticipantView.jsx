@@ -14,6 +14,7 @@ import EmojiReactions from "./EmojiReactions";
 import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import MeetingDisplay from "./MeetingDisplay";
+import JamGames from "./JamGames";
 import UnmuteRequestPrompt from "./UnmuteRequestPrompt";
 import JFTModal from "./JFTModal";
 
@@ -284,11 +285,13 @@ const ONE_SONG_MESSAGES = [
                     <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
                       <SongQueue queue={queue} onPlaySong={null} onDeleteSong={null} isHost={false} />
                     </div>
+
                   </div>
                 )}
               </div>
 
               <div className="space-y-6">
+                {isDJ && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
                 <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
               </div>
             </div>

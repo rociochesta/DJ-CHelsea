@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Headphones,
   Mic,
@@ -67,32 +67,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
     return () => unsub();
   }, []);
 
-  // ✅ Rotating banners only (text static)
-  const heroBanners = useMemo(
-    () => [
-      "/banners/3pm-jam.png",
-      "/banners/3pm-karaoke.png",
-      "/banners/3pm-streaming.png",
-      "/banners/3pm-meeting.png",
-    ],
-    []
-  );
-
-  const [heroIndex, setHeroIndex] = useState(0);
-
-  useEffect(() => {
-    heroBanners.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-
-    const t = setInterval(() => {
-      setHeroIndex((i) => (i + 1) % heroBanners.length);
-    }, 3200);
-
-    return () => clearInterval(t);
-  }, [heroBanners]);
-
   const getHostName = () => hostName.trim() || "DJ";
 
   const handleJoinSubmit = (e) => {
@@ -141,14 +115,6 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
           <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-white/5 backdrop-blur-xl">
             {/* HERO */}
             <div className="relative h-44 md:h-60 overflow-hidden">
-              <img
-                src={heroBanners[heroIndex]}
-                alt="3PM banner"
-                className="absolute inset-0 w-full h-full object-cover"
-                loading="eager"
-                decoding="async"
-              />
-
               {/* light overlays */}
               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.44)_48%,rgba(0,0,0,0.18)_100%)]" />
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,0,153,0.18),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.14),transparent_60%)]" />
@@ -382,6 +348,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                     />
                   </div>
 
+
                   <div className="mb-6 p-5 rounded-2xl border border-white/10 bg-black/25">
                     <label className="flex items-start gap-3 cursor-pointer group">
                       <input
@@ -533,7 +500,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               )}
 
               {/* HOME CARDS */}
-              {mode !== "join" && mode !== "create" && (
+              {mode === null && (
                 <div className="mt-10 grid grid-cols-1 md:grid-cols-4 gap-4">
                   {cards.map(({ t, d, chip, Icon, soon }) => (
                     <div

@@ -10,7 +10,8 @@ import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
 import ParticipantView from "./components/ParticipantView";
 import EnableMediaOnJoin from "./components/EnableMediaOnJoin";
-import NASimulator from "./components/NASimulator";
+// Temporarily disabled for testing with real guests and song requests.
+// import NASimulator from "./components/NASimulator";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -25,6 +26,7 @@ function App() {
   // LiveKit token state
   const [lkToken, setLkToken] = useState(null);
   const [lkError, setLkError] = useState("");
+  const [lkAttempt, setLkAttempt] = useState(0);
 
   // Device preferences
   const { cameraId, micId } = useDevicePreferences();
@@ -157,8 +159,15 @@ function App() {
           body: JSON.stringify({ room: roomCode, name: currentUser.name }),
         });
 
-        const data = await res.json();
+        const body = await res.text();
+        let data;
+        try {
+          data = JSON.parse(body);
+        } catch {
+          throw new Error("The video service is unavailable. For local rooms, run npm run dev and open http://localhost:8888, then retry.");
+        }
         if (!res.ok) throw new Error(data?.error || "LiveKit token request failed");
+        if (!data.token) throw new Error("The video service did not return a connection token. Please retry.");
 
         if (!cancelled) setLkToken(data.token);
       } catch (e) {
@@ -169,7 +178,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [roomCode, screen, currentUser?.name]);
+  }, [roomCode, screen, currentUser?.name, lkAttempt]);
 
   const handleCreateRoom = (chosenDj, groupName, avatar, roomMode, externalVideoLink) => {
     const code = generateRoomCode();
@@ -311,7 +320,10 @@ function App() {
 
   // LiveKit wrapper states
   if (lkError) {
-    return <div className="text-white p-6">LiveKit error: {lkError}</div>;
+    return <div className="text-white p-6 space-y-4">
+      <p role="alert">Unable to connect video: {lkError}</p>
+      <button className="rounded-xl border border-fuchsia-400/55 px-5 py-3" onClick={() => { setLkError(""); setLkAttempt((value) => value + 1); }}>Retry connection</button>
+    </div>;
   }
 
   if (!lkToken) {
@@ -339,10 +351,11 @@ function App() {
       <RoomAudioRenderer />
       {/* <EnableMediaOnJoin /> */}
 
-      {/* NA Simulator — invisible engine, runs for everyone in the room */}
+      {/* NA Simulator — disabled for real-people testing; uncomment to restore
       {roomCode && (
         <NASimulator roomCode={roomCode} roomState={roomState} />
       )}
+      */}
 
       {isHost ? (
         <HostView
