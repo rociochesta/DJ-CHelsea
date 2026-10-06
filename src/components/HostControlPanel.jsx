@@ -97,6 +97,7 @@ export default function HostControlPanel({
 
   const liveKitParticipants = useParticipants();
 
+  const isJam = roomState?.roomMode === "dj";
   const playbackState = roomState?.playbackState;
   const isPlaying = playbackState?.isPlaying || false;
   const currentSong = roomState?.currentSong;
@@ -204,7 +205,7 @@ export default function HostControlPanel({
                     <div className="text-sm font-semibold text-white/80 truncate">
                       {currentSong.title}
                     </div>
-                    {currentSinger && (
+                    {!isJam && currentSinger && (
                       <div className="text-xs text-fuchsia-400/70 mt-0.5">
                         Singer: {currentSinger}
                       </div>
@@ -251,7 +252,7 @@ export default function HostControlPanel({
                 </div>
 
                 {/* Mic controls */}
-                <div className="grid grid-cols-2 gap-2">
+                {!isJam && (<div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={onMuteAll}
                     className={[
@@ -288,7 +289,7 @@ export default function HostControlPanel({
                       </>
                     )}
                   </button>
-                </div>
+                </div>)}
               </div>
             )}
           </div>
@@ -327,7 +328,7 @@ export default function HostControlPanel({
                   const name = p?.name || p?.identity || `Guest ${idx + 1}`;
                   const identity = p?.identity || "";
                   const muteKey = identity || name;
-                  const isMuted = participantMutes?.[muteKey] === true;
+                  const isMuted = isJam ? !p.isMicrophoneEnabled : participantMutes?.[muteKey] === true;
                   const isSpeaking = p?.isSpeaking || false;
                   const isSinger = name === currentSinger;
                   const isLocal = !!p?.isLocal;
@@ -361,7 +362,7 @@ export default function HostControlPanel({
 
                       {/* Mic state */}
                       <div className="flex-shrink-0">
-                        {micsLocked && !isSinger ? (
+                        {!isJam && micsLocked && !isSinger ? (
                           <Lock className="w-3.5 h-3.5 text-red-400/60" />
                         ) : isMuted ? (
                           <MicOff className="w-3.5 h-3.5 text-white/30" />
@@ -381,7 +382,7 @@ export default function HostControlPanel({
                               Host
                             </span>
                           )}
-                          {isSinger && (
+                          {!isJam && isSinger && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded-lg border border-fuchsia-500/25 text-fuchsia-400/70">
                               Singing
                             </span>
@@ -397,7 +398,7 @@ export default function HostControlPanel({
                       {/* Actions */}
                       {!isLocal && (
                         <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <button
+                          {!isJam && (<button
                             onClick={() => {
                               if (isMuted) {
                                 // Can't force-unmute remotely — send a request
@@ -419,7 +420,7 @@ export default function HostControlPanel({
                             ) : (
                               <MicOff className="w-3.5 h-3.5 mx-auto text-white/60" />
                             )}
-                          </button>
+                          </button>)}
 
                           {!isHost && fbRecord && (
                             <button
@@ -460,7 +461,7 @@ export default function HostControlPanel({
           </div>
 
           {/* ── RULES ── */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+          {!isJam && (<div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
             <button
               onClick={() => toggleSection("rules")}
               className="w-full flex items-center justify-between p-4 hover:bg-white/[0.02] transition"
@@ -567,10 +568,10 @@ export default function HostControlPanel({
                 </div>
               </div>
             )}
-          </div>
+          </div>)}
 
           {/* ── BOT MESSAGES ── */}
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+          {!isJam && (<div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
             <button
               onClick={() => toggleSection("bot")}
               className="w-full flex items-center justify-between p-4 hover:bg-white/[0.02] transition"
@@ -616,7 +617,7 @@ export default function HostControlPanel({
                 ))}
               </div>
             )}
-          </div>
+          </div>)}
         </div>
       </div>
     </div>

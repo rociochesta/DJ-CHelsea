@@ -56,7 +56,7 @@ export default function SingerSpotlight({
 
   const isDJ = roomMode === "dj";
 
-  const currentSingerRaw = currentSong?.requestedBy || currentSong?.singerName || "";
+  const currentSingerRaw = isDJ ? "" : currentSong?.requestedBy || currentSong?.singerName || "";
 
   const nextSinger = useMemo(() => {
     if (!queue || queue.length === 0) return "";
@@ -205,9 +205,9 @@ export default function SingerSpotlight({
               participant={p}
               isSinging={!!currentSinger && name === currentSinger}
               isNext={!!nextSinger && name === nextSinger}
-              isMuted={participantMutes?.[identity || name] === true}
+              isMuted={!isDJ && participantMutes?.[identity || name] === true}
               isCurrentUser={!!p?.isLocal}
-              micsLocked={micsLocked}
+              micsLocked={!isDJ && micsLocked}
             />
           );
         })}

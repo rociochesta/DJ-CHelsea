@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { LiveKitRoom, RoomAudioRenderer } from "@livekit/components-react";
+import { LiveKitRoom, RoomAudioRenderer, StartAudio } from "@livekit/components-react";
 import "@livekit/components-styles";
 
 import { database, ref, onValue, set, get, remove, onDisconnect, isConfigured } from "./utils/firebase";
@@ -338,7 +338,7 @@ function App() {
       token={lkToken}
       serverUrl={import.meta.env.VITE_LIVEKIT_URL}
       connect={true}
-      audio={false}
+      audio={roomMode === "dj" ? (micId ? { deviceId: micId } : true) : false}
       video={true}
       options={{
         videoCaptureDefaults: {
@@ -349,6 +349,7 @@ function App() {
       data-lk-theme="default"
     >
       <RoomAudioRenderer />
+      <StartAudio label="Enable room audio" className="fixed bottom-4 left-4 z-50 rounded-xl border border-fuchsia-400/55 bg-[#171125] px-4 py-3 text-white" />
       {/* <EnableMediaOnJoin /> */}
 
       {/* NA Simulator — disabled for real-people testing; uncomment to restore

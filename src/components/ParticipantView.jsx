@@ -305,11 +305,11 @@ const ONE_SONG_MESSAGES = [
 
       <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
-      <UnmuteRequestPrompt
+      {!isDJ && <UnmuteRequestPrompt
         roomCode={roomCode}
         currentUser={currentUser}
         localParticipant={localParticipant}
-      />
+      />}
     </div>
   );
 }

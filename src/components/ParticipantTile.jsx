@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { Track } from "livekit-client";
-import { useTracks } from "@livekit/components-react";
+import { useTracks, useLocalParticipant } from "@livekit/components-react";
 import { Mic, MicOff, Video, VideoOff, Settings, Lock } from "lucide-react";
 
 export default function ParticipantTile({
@@ -16,6 +16,8 @@ export default function ParticipantTile({
   const videoRef = useRef(null);
   const [cameraBusy, setCameraBusy] = useState(false);
   const [micBusy, setMicBusy] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const { isMicrophoneEnabled: localMicEnabled } = useLocalParticipant();
 
   const participantName = participant.name || participant.identity || "Unknown";
 
@@ -28,7 +30,7 @@ export default function ParticipantTile({
     return trackRef?.publication || null;
   }, [tracks, participant?.identity]);
 
-  const isMicOn = !!participant.isMicrophoneEnabled;
+  const isMicOn = isCurrentUser ? localMicEnabled : !!participant.isMicrophoneEnabled;
   const isCameraEnabled = !!cameraPublication && !cameraPublication.isMuted;
 
   useEffect(() => {
@@ -69,11 +71,13 @@ export default function ParticipantTile({
     // Prevent unmuting when mics are locked (unless singing)
     if (micLockedForUser && !participant.isMicrophoneEnabled) return;
     setMicBusy(true);
+    setMediaError("");
     try {
       const next = !participant.isMicrophoneEnabled;
       await participant.setMicrophoneEnabled(next);
     } catch (e) {
       console.error("Failed to toggle mic:", e);
+      setMediaError("Mic unavailable. Allow microphone access and check your device settings.");
     } finally {
       setMicBusy(false);
     }
@@ -179,6 +183,7 @@ export default function ParticipantTile({
         </div>
       )}
 
+      {mediaError && <div role="alert" className="absolute inset-x-2 top-14 z-20 rounded-xl bg-black/90 p-2 text-xs text-red-200">{mediaError}</div>}
       {/* Bottom bar (structured glass, no gradient) */}
       <div className="absolute bottom-0 left-0 right-0 p-3">
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg px-3 py-2">
