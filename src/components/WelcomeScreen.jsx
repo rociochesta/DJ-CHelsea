@@ -99,10 +99,10 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   };
 
   const cards = [
-    { t: "3PM Jam", d: "Bring your tragic bangers. We’ll vibe responsibly and cry privately.", chip: "Queue • vibes • no mic drama", Icon: Headphones },
-    { t: "3PM Karaoke", d: "Live singing, spotlight, consent-based chaos. No emotional jump scares.", chip: "Mic • spotlight • rules", Icon: Mic },
-    { t: "3PM Streaming", d: "Watch together in sync. Pause like an adult. Rewind like a villain.", chip: "Sync • playback • watch party", Icon: MonitorPlay },
-    { t: "3PM Meeting", d: "Readings, structure, and shared screen. Emotionally supervised.", chip: "Readings • structure • mic control", Icon: Users },
+    { t: "Jam", d: "Queue the song you’re definitely over that person about. Then lose the music quiz. Stay humble.", chip: "Music • games • suspiciously specific lyrics", Icon: Headphones },
+    { t: "Karaoke", d: "I can’t promise we’ll hit the notes. I can promise someone will sing like the divorce is final.", chip: "Mic • spotlight • consequences", Icon: Mic },
+    { t: "Streaming", d: "Watch together. Escape your own plot for a bit. Judge someone else’s terrible decisions.", chip: "Watch parties • synced playback", Icon: MonitorPlay },
+    { t: "Meeting", d: "Catch up, make plans, or say the thing you’ve been avoiding. A mute button buys time, unfortunately.", chip: "Conversation • shared screen • groups", Icon: Users },
   ];
 
   return (
@@ -122,11 +122,11 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               <div className="absolute bottom-5 left-5 md:bottom-7 md:left-7">
                 <h1 className="text-4xl md:text-6xl font-extrabold">
                   <span className="bg-clip-text text-transparent bg-[linear-gradient(90deg,#ff3aa7,#9b7bff,#ffd24a)]">
-                    3PM Hub
+                    Rociwi's Hub
                   </span>
                 </h1>
                 <p className="mt-2 text-base md:text-lg text-white/90">
-                  Everything happens here. Emotionally supervised chaos.
+                  I made us a place to hang out. Apparently I do want company. Annoying discovery.
                 </p>
               </div>
             </div>
@@ -136,7 +136,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               {!mode && !showDeviceSetup && (
                 <div className="text-center">
                   <p className="text-white/60 mb-6">
-                    Pick a room. Bring a song. Don’t bring a TED Talk.
+                    Pick a room. Bring your friends and your questionable taste. Mine’s already here.
                   </p>
 
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -295,7 +295,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       type="text"
                       value={hostName}
                       onChange={(e) => setHostName(e.target.value)}
-                      placeholder="DJ Chelsea’s supervisor"
+                      placeholder="Your name. We’ll discover the rest of the damage later."
                       className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                       required
                     />
@@ -310,7 +310,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       type="text"
                       value={hostGroup}
                       onChange={(e) => setHostGroup(e.target.value)}
-                      placeholder="e.g. 3PM Early Birds"
+                      placeholder="e.g. The usual suspects"
                       className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                     />
                   </div>
@@ -322,28 +322,28 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       active={roomMode === "dj"}
                       onClick={() => setRoomMode("dj")}
                       title="Jam Mode"
-                      subtitle="Listening party. Feelings allowed. Sermons not."
+                      subtitle="A playlist and a quiz to keep your ego in check."
                       Icon={Headphones}
                     />
                     <ModeCard
                       active={roomMode === "karaoke"}
                       onClick={() => setRoomMode("karaoke")}
                       title="Karaoke Mode"
-                      subtitle="Live mic, spotlight, consent-based chaos."
+                      subtitle="Some feelings apparently need a backing track."
                       Icon={Mic}
                     />
                     <ModeCard
                       active={roomMode === "streaming"}
                       onClick={() => setRoomMode("streaming")}
                       title="Streaming Mode"
-                      subtitle="Watch together in sync. Pause like an adult."
+                      subtitle="Other people’s problems. Better lighting."
                       Icon={MonitorPlay}
                     />
                     <ModeCard
                       active={roomMode === "meeting"}
                       onClick={() => setRoomMode("meeting")}
                       title="Meeting Mode"
-                      subtitle="Readings, structure, and shared screen. No chaos."
+                      subtitle="Talk, plan, share your screen. We might get somewhere."
                       Icon={Users}
                     />
                   </div>
@@ -362,7 +362,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           Use external video chat (Zoom, Meet, etc.)
                         </div>
                         <div className="text-sm text-white/60 mt-1">
-                          3PM sync runs here. Video chat lives elsewhere.
+                          Keep the music and playback here. Use your usual app for the call.
                         </div>
                       </div>
                     </label>
@@ -450,7 +450,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           type="text"
                           value={participantName}
                           onChange={(e) => setParticipantName(e.target.value)}
-                          placeholder="Someone emotionally responsible"
+                          placeholder="What should we call you?"
                           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                           required
                         />
@@ -464,7 +464,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           type="text"
                           value={participantGroup}
                           onChange={(e) => setParticipantGroup(e.target.value)}
-                          placeholder="e.g. 3PM Early Birds"
+                          placeholder="e.g. The usual suspects"
                           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20"
                         />
                       </div>
@@ -532,7 +532,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
           </div>
 
           <div className="mt-6 text-center text-xs text-white/35">
-            NA-friendly • chaos-controlled • no inspirational speeches (we’re busy)
+            Glad you’re here. I made a whole website to avoid saying that out loud.
           </div>
         </div>
       </div>

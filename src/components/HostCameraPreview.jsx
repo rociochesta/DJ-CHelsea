@@ -5,6 +5,7 @@ import { Headphones, VideoOff } from "lucide-react";
 
 const HostCameraPreview = React.memo(function HostCameraPreview({
   isHost,
+  compact = false,
   hostIdentity, // ✅ optional: pass this if you have it (best)
 }) {
   const cameraVideoRef = useRef(null);
@@ -54,7 +55,7 @@ const HostCameraPreview = React.memo(function HostCameraPreview({
         />
 
         {/* ✅ 3PM glass scrim (no gradient blobs) */}
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+        {!compact && <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-4 sm:p-5">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-2xl border border-white/10 bg-white/[0.02] flex items-center justify-center">
@@ -75,11 +76,12 @@ const HostCameraPreview = React.memo(function HostCameraPreview({
               </div>
             </div>
           </div>
-        </div>
+        </div>}
       </div>
     );
   }
 
+  if (compact) return <div className="flex h-full items-center justify-center gap-2 text-sm text-white/50"><VideoOff className="h-4 w-4" />Host camera is off</div>;
   // No camera - show default (3PM system)
   return (
     <div className="flex items-center justify-center h-full">

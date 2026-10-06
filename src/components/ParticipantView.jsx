@@ -15,6 +15,7 @@ import DeviceSettingsPanel from "./DeviceSettingsPanel";
 import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import MeetingDisplay from "./MeetingDisplay";
 import JamGames from "./JamGames";
+import QuizHostCamera from './QuizHostCamera';
 import UnmuteRequestPrompt from "./UnmuteRequestPrompt";
 import JFTModal from "./JFTModal";
 
@@ -33,6 +34,7 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
   const roomMode = roomState?.roomMode || "karaoke";
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
+  const quizFocus = isDJ && roomState?.gameInvitation?.type === 'music-quiz';
   const isKaraoke = roomMode === "karaoke";
   const isMeeting = roomMode === "meeting";
 
@@ -180,7 +182,7 @@ const ONE_SONG_MESSAGES = [
 
           {/* Video / Meeting Display */}
           <div ref={videoContainerRef} className="relative">
-            {isMeeting ? (
+            {quizFocus ? <div className="space-y-4"><JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /><QuizHostCamera hostId={roomState?.hostId} isHost={false} /></div> : isMeeting ? (
               <MeetingDisplay
                 activeReadingId={roomState?.activeReadingId || null}
                 isHost={false}
@@ -207,7 +209,7 @@ const ONE_SONG_MESSAGES = [
             )}
 
             {/* Fullscreen + Performance Mode buttons */}
-            <div className="absolute top-3 right-3 flex gap-2 z-10">
+            {!quizFocus && <div className="absolute top-3 right-3 flex gap-2 z-10">
               <button
                 onClick={() => setPerformanceMode((v) => !v)}
                 className={[
@@ -228,11 +230,11 @@ const ONE_SONG_MESSAGES = [
               >
                 <Maximize className="w-4 h-4" />
               </button>
-            </div>
+            </div>}
           </div>
 
           {/* Spotlight — hidden in performance mode */}
-          {!performanceMode && (
+          {!performanceMode && !quizFocus && (
             <SingerSpotlight
               roomCode={roomCode}
               roomMode={roomMode}
@@ -247,8 +249,8 @@ const ONE_SONG_MESSAGES = [
           )}
 
           {!isMeeting && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
+            <div className={`grid grid-cols-1 gap-6 ${quizFocus ? '' : 'lg:grid-cols-3'}`}>
+              {!quizFocus && <div className="lg:col-span-2">
                 {isStreaming ? (
                   <StreamingQueue
                     roomCode={roomCode}
@@ -288,10 +290,10 @@ const ONE_SONG_MESSAGES = [
 
                   </div>
                 )}
-              </div>
+              </div>}
 
               <div className="space-y-6">
-                {isDJ && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
+                {isDJ && !quizFocus && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
                 <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
               </div>
             </div>

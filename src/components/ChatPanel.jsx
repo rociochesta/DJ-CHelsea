@@ -215,7 +215,7 @@ function ChatPanel({ roomCode, currentUser, currentSong, inline = false }) {
             return (
               <div key={msg.id} className="flex justify-center my-1">
                 <div className={["max-w-[92%] rounded-2xl border px-4 py-3 text-xs text-center shadow-sm", colorClass].join(" ")}>
-                  <div className="text-[9px] uppercase tracking-widest opacity-50 mb-1">3PM</div>
+                  <div className="text-[9px] uppercase tracking-widest opacity-50 mb-1">Rociwi's Hub</div>
                   <div className="whitespace-pre-line leading-relaxed">{msg.message}</div>
                 </div>
               </div>

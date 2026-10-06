@@ -16,6 +16,7 @@ import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import HostControlPanel from "./HostControlPanel";
 import MeetingDisplay from "./MeetingDisplay";
 import JamGames from "./JamGames";
+import QuizHostCamera from './QuizHostCamera';
 import MeetingReadingsList from "./MeetingReadingsList";
 import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen, ListMusic } from "lucide-react";
 
@@ -30,6 +31,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const roomMode = roomState?.roomMode || "karaoke";
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
+  const quizFocus = isDJ && roomState?.gameInvitation?.type === 'music-quiz';
   const isKaraoke = roomMode === "karaoke";
   const isMeeting = roomMode === "meeting";
 
@@ -236,7 +238,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
     const newMsgRef = push(chatRef);
     await set(newMsgRef, {
       userId: "system",
-      userName: "3PM",
+      userName: "Rociwi's Hub",
       message: text,
       isSystem: true,
       systemType: type,
@@ -402,7 +404,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Left */}
             <div className="xl:col-span-2 space-y-6">
-              {isMeeting ? (
+              {quizFocus ? <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
                 <MeetingDisplay
                   activeReadingId={roomState?.activeReadingId || null}
                   isHost={true}
@@ -427,7 +429,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
 />
               )}
 
-              <SingerSpotlight
+              {!quizFocus && <SingerSpotlight
                 roomCode={roomCode}
                 roomMode={roomMode}
                 currentSong={isKaraoke ? currentSong : null}
@@ -436,9 +438,9 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                 currentUser={currentUser}
                 micsLocked={roomState?.hostControls?.micsLocked || false}
                 naMembers={naMembers}
-              />
+              />}
 
-              {!isMeeting && (
+              {!isMeeting && !quizFocus && (
                 isStreaming ? (
                   <StreamingQueue
                     roomCode={roomCode}
@@ -476,7 +478,8 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                 />
               )}
 
-              {isDJ && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
+              {quizFocus && <QuizHostCamera hostId={roomState?.hostId} isHost />}
+              {isDJ && !quizFocus && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
 
               <ChatPanel
                 roomCode={roomCode}
@@ -485,7 +488,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                 inline={true}
               />
 
-              {!isStreaming && !isMeeting && (
+              {!isStreaming && !isMeeting && !quizFocus && (
                 <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
                   <SongQueue
                     queue={queue}

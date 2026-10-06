@@ -1,5 +1,21 @@
 # Setup Instructions for 3PM Karaoke
 
+## Music Quiz catalog (Supabase)
+
+Music Quiz uses `public/music-quiz-catalog.json` by default, with 1,478 audio files organized under category folders (`00s`, `10s`, `40s`, `50s`, `60s`, `70s`, `80s`, `90s`) in the public `songs` bucket in Supabase project `lwjxwrbzvvteywewpmlu`. Audio streams directly from Supabase. Update this catalog when adding or renaming files in the bucket. Update the folder filename lists in `scripts/music-quiz-files.json`, then run `node scripts/refresh-music-quiz-categories.mjs` to regenerate the catalog URLs, artists, titles, and categories. MP3 and M4A clips are supported. Before inviting the room, select one or more categories. Both clips and answer options come only from the checked categories, which must contain at least four distinct artists and titles combined.
+
+Optionally set `VITE_MUSIC_QUIZ_CATALOG_URL` in `.env.local` and the hosting environment to another public JSON catalog URL. Restart the development server after changing it.
+
+The catalog must contain an array of songs with public HTTPS MP3 URLs:
+
+```json
+[
+  { "artist": "Artist name", "title": "Song name", "category": "80s", "audio_url": "https://PROJECT.supabase.co/storage/v1/object/public/songs/80s/clip.mp3" }
+]
+```
+
+Include at least four distinct artists and four distinct titles. Each round randomly asks for the artist or the song title. Choose 20 questions, 50 questions, or continuous play before inviting the room. Songs repeat only after the selected pool is exhausted. Continuous play cycles through that pool until the host ends the game. Each round lasts up to 30 seconds, with the clock synchronized through Firebase. A correct answer awards points and immediately advances all players in the same shared transaction. If nobody answers correctly, the quiz automatically advances when time runs out, without awarding points. Any joined player can trigger the guarded timeout transaction so play continues if the inviter disconnects. The first correct answer earns points based on the displayed seconds remaining: 5 points at 30–20 seconds, 3 points at 19–10 seconds, and 1 point at 9–1 seconds. At zero, answers are rejected. Players join the invitation before the inviter presses Start quiz. Browsers that block automatic playback show a Play clip button. Use public catalog/clip URLs; do not put service-role keys in frontend environment variables.
+
 ## Quick Start Checklist
 
 Before you can run the app, you need to set up two services:

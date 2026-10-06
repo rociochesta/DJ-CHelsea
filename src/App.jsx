@@ -45,7 +45,7 @@ function App() {
 
           <div className="space-y-4 text-left">
             <p className="text-gray-300">
-              Before you can use 3PM Karaoke, you need to configure Firebase and
+              Before you can use Rociwi's Hub, you need to configure Firebase and
               YouTube API.
             </p>
 
