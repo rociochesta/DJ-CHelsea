@@ -50,3 +50,17 @@
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
+@keyframes quiz-celebrate {
+  from { opacity: 0; transform: translateY(10px) scale(.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.quiz-celebrate { animation: quiz-celebrate 400ms ease-out both; }
+@keyframes quiz-victory-halo {
+  from { opacity: 0; transform: translateX(-50%) scale(.7); }
+  40% { opacity: 1; }
+  to { opacity: .4; transform: translateX(-50%) scale(1.6); }
+}
+.quiz-victory-halo { animation: quiz-victory-halo 1.2s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .quiz-celebrate, .quiz-victory-halo { animation: none; }
+}

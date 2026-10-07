@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { database, ref, onValue, runTransaction } from '../utils/firebase';
 import { ROUND_MS, updateMusicQuiz, musicQuizPoints, musicQuizSong } from '../utils/musicQuiz';
 import MusicWaveRing from './MusicWaveRing';
+import { Disc3, Headphones } from 'lucide-react';
+import { QuizReveal, QuizResults } from './MusicQuizCelebration';
 
 export default function MusicQuiz({ roomCode, currentUser, invitation, players }) {
   const audio = useRef(null);
@@ -97,21 +99,13 @@ export default function MusicQuiz({ roomCode, currentUser, invitation, players }
   };
 
   return <section className="rounded-2xl border border-fuchsia-400/20 bg-gradient-to-br from-fuchsia-950/40 via-black/30 to-indigo-950/40 p-4 sm:p-6 space-y-5">
-    <h2 className="text-2xl font-bold">Music Quiz</h2>
-    {quiz.categories?.length > 0 && <p className="text-sm text-fuchsia-200">Categories: {quiz.categories.join(', ')}</p>}
-    <p className="text-sm text-white/60">Listen to 30 seconds. Each round randomly asks for the artist or song title. One answer per round; the first correct answer earns points and starts the next clip for everyone.</p>
-    {quiz.lastTimeout && (!quiz.lastWinner || quiz.lastTimeout.round > quiz.lastWinner.round)
-      ? <p role="status" className="rounded-xl bg-amber-500/10 p-3 text-sm text-amber-200">Time’s up on question {quiz.lastTimeout.round + 1}! No points awarded · {quiz.lastTimeout.artist} — {quiz.lastTimeout.title}</p>
-      : quiz.lastWinner && <p role="status" className="rounded-xl bg-emerald-500/10 p-3 text-sm text-emerald-200">🎉 {quiz.lastWinner.name} got question {quiz.lastWinner.round + 1} first! +{quiz.lastWinner.points} points · {quiz.lastWinner.artist} — {quiz.lastWinner.title}</p>}
+    <header className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex items-center gap-3"><Disc3 size={36} className="shrink-0 text-fuchsia-300" aria-hidden="true" /><div><h2 className="text-2xl sm:text-3xl font-black">Music Quiz</h2><p className="mt-1 text-white/65">Catch the beat. Beat the room.</p></div></div>
+      {quiz.categories?.length > 0 && <div aria-label="Selected categories" className="flex flex-wrap gap-2">{quiz.categories.map(category => <span key={category} className="rounded-full border border-fuchsia-300/20 bg-fuchsia-400/10 px-3 py-1 text-sm font-semibold text-fuchsia-200">{category}</span>)}</div>}
+    </header>
+    <QuizReveal quiz={quiz} />
     {song && <div className="flex flex-wrap gap-2">{standings.map(player => <span key={player.id} className="rounded-full border border-white/15 px-3 py-2 text-sm">{player.name}: {quiz.scores?.[player.id] || 0} points</span>)}</div>}
-    {!song ? <div role="status" className="space-y-3">
-      <h3 className="text-xl font-bold">🏆 Final results</h3>
-      <ol className="space-y-2">{standings.map(player => <li key={player.id} className="flex items-center justify-between rounded-xl border border-white/15 bg-white/5 p-3">
-        <span>{1 + standings.filter(other => (quiz.scores?.[other.id] || 0) > (quiz.scores?.[player.id] || 0)).length}. {player.name}</span>
-        <strong>{quiz.scores?.[player.id] || 0} points</strong>
-      </li>)}</ol>
-      {!standings.length && <p>No scores yet.</p>}
-    </div> : <>
+    {!song ? <QuizResults standings={standings} scores={quiz.scores || {}} /> : <>
       <div className="flex flex-wrap items-center gap-5 rounded-2xl border border-white/10 bg-gradient-to-br from-fuchsia-500/10 to-transparent p-4 sm:p-5">
         <div role="timer" aria-label={`${seconds} seconds remaining`} className="relative mx-auto h-48 w-48 shrink-0 sm:mx-0 sm:h-56 sm:w-56">
           <MusicWaveRing playing={playing && !ended} analyserRef={analyser} color={timerColor} />
@@ -123,17 +117,17 @@ export default function MusicQuiz({ roomCode, currentUser, invitation, players }
         </div>
         <div className="min-w-0 flex-1 space-y-3">
           <p className="text-xs uppercase tracking-widest text-white/50">Question {quiz.round + 1}{quiz.questionCount === 'unlimited' ? ' · Continuous play' : ` / ${quiz.rounds.length}`}</p>
-          <p className="text-sm text-white/60">{ended ? 'Clip finished' : playing ? '♫ Now playing · Listen closely' : quiz.startedAt ? 'Press Play clip to listen' : 'Your next music challenge'}</p>
+          <p className="flex items-center gap-2 text-sm text-white/70"><Headphones size={18} aria-hidden="true" />{ended ? 'Next beat incoming' : playing ? 'On the air' : quiz.startedAt ? 'Hit play. Find your groove.' : 'Ready to drop the beat?'}</p>
           <p className="text-xl font-semibold" style={{ color: timerColor }}>{ended ? (result ? 'Round won' : 'Time’s up') : quiz.startedAt ? `+${pointsNow} points to win` : 'Ready when you are'}</p>
           <div className="flex flex-wrap gap-2" aria-label="Points by seconds remaining">{[[5,'30–20s'],[3,'19–10s'],[1,'9–1s']].map(([points, range]) => <span key={points} className={`rounded-lg border px-2 py-1.5 text-xs ${!ended && pointsNow === points ? 'border-white/25 bg-white/10 text-white' : 'border-white/5 text-white/40'}`}><strong>{points} pts</strong><span className="ml-2">{range}</span></span>)}</div>
         </div>
       </div>
-      <audio ref={audio} src={song.audioUrl} crossOrigin={song.audioUrl.includes('.supabase.co/') ? 'anonymous' : undefined} preload="auto" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onLoadedMetadata={() => { if (quiz.startedAt && !ended) play(); }} onError={() => { setPlaying(false); setAudioStatus('This clip could not load. Try the next song.'); }} />
+      <audio ref={audio} src={song.audioUrl} crossOrigin={song.audioUrl.includes('.supabase.co/') ? 'anonymous' : undefined} preload="auto" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} onLoadedMetadata={() => { if (quiz.startedAt && !ended) play(); }} onError={() => { setPlaying(false); setAudioStatus('This clip could not load. The next beat starts when the timer ends.'); }} />
       {!quiz.startedAt ? (isInviter ? <button disabled={busy} onClick={() => act({ type: 'start' })} className="rounded-xl bg-fuchsia-600 px-4 py-3">Start quiz</button> : <p>Waiting for {invitation.inviterName} to start…</p>) : !ended && <button onClick={play} className="rounded-xl border border-white/20 px-4 py-2">Play clip</button>}
       {audioStatus && <p role="status" className="text-amber-200 text-sm">{audioStatus}</p>}
       <h3 className="text-2xl sm:text-3xl font-semibold">{(song.mode || quiz.mode) === 'artist' ? 'Who is the artist?' : 'What is the song called?'}</h3>
       <div className="grid gap-2 sm:grid-cols-2">{song.choices.map((choice, index) => <button key={`${quiz.round}-${index}`} disabled={busy || !quiz.startedAt || ended || attempt !== undefined} onClick={() => act({ type: 'answer', choice: index })} className={`rounded-xl border p-3 text-left disabled:opacity-60 ${ended && index === song.answer ? 'border-emerald-400 bg-emerald-500/10' : attempt === index ? 'border-amber-400' : 'border-white/15 hover:border-fuchsia-400'}`}>{choice}</button>)}</div>
-      {attempt !== undefined && !ended && <p role="status" className="text-sm text-white/60">Answer submitted. Waiting for the round to finish.</p>}
+      {attempt !== undefined && !ended && <p role="status" className="text-sm text-white/70">Locked in. Keep your ears on the beat.</p>}
       {ended && <p role="status" className="text-sm text-white/60">Time’s up! Moving to the next song…</p>}
     </>}
     {error && <p role="alert" className="text-red-300">{error}</p>}
