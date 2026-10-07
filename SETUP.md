@@ -2,7 +2,7 @@
 
 ## Music Quiz catalog (Supabase)
 
-Music Quiz uses `public/music-quiz-catalog.json` by default, with 1,478 audio files organized under category folders (`00s`, `10s`, `40s`, `50s`, `60s`, `70s`, `80s`, `90s`) in the public `songs` bucket in Supabase project `lwjxwrbzvvteywewpmlu`. Audio streams directly from Supabase. Update this catalog when adding or renaming files in the bucket. Update the folder filename lists in `scripts/music-quiz-files.json`, then run `node scripts/refresh-music-quiz-categories.mjs` to regenerate the catalog URLs, artists, titles, and categories. MP3 and M4A clips are supported. Before inviting the room, select one or more categories. Both clips and answer options come only from the checked categories, which must contain at least four distinct artists and titles combined.
+Music Quiz uses `public/music-quiz-catalog.json` by default, with 1,897 audio files organized under category folders (`00s`, `10s`, `40s`, `50s`, `60s`, `70s`, `80s`, `90s`) in the public `songs` bucket in Supabase project `lwjxwrbzvvteywewpmlu`. Audio streams directly from Supabase. Update this catalog when adding or renaming files in the bucket. Update the folder filename lists in `scripts/music-quiz-files.json`, then run `node scripts/refresh-music-quiz-categories.mjs` to regenerate the catalog URLs, artists, titles, and categories. MP3 and M4A clips are supported. Before inviting the room, select one or more categories. Both clips and answer options come only from the checked categories, which must contain at least four distinct artists and titles combined.
 
 Optionally set `VITE_MUSIC_QUIZ_CATALOG_URL` in `.env.local` and the hosting environment to another public JSON catalog URL. Restart the development server after changing it.
 

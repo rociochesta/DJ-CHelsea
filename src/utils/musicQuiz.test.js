@@ -35,9 +35,10 @@ test('every real category supports a quiz using its new folder URLs', () => {
   const manifest = JSON.parse(readFileSync(new URL('../../scripts/music-quiz-files.json', import.meta.url), 'utf8'));
   assert.equal(songs.length, Object.values(manifest).reduce((count, files) => count + files.length, 0));
   assert.deepEqual(musicQuizCategories(songs), ['00s', '10s', '40s', '50s', '60s', '70s', '80s', '90s']);
-  assert.equal(songs.filter(song => song.category === '00s').length, 661);
-  assert.equal(songs.filter(song => song.category === '10s').length, 190);
+
+
   for (const category of musicQuizCategories(songs)) {
+    assert.deepEqual(songs.filter(song => song.category === category).map(song => decodeURIComponent(song.audio_url.split('/').pop())).sort(), manifest[category].map(name => name.replace(/ actions$/,'')).sort());
     const quiz = createMusicQuiz(songs, Math.random, [category]);
     assert.equal(quiz.rounds.length, 20);
     assert.ok(quiz.rounds.every(round => round.category === category && round.audioUrl.includes(`/songs/${category}/`)));
