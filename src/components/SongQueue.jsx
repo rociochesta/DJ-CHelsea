@@ -111,6 +111,7 @@ function SongQueue({
                     </div>
 
                     <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {song.message && <span className="text-xs px-2 py-1 rounded-2xl border border-fuchsia-400/25 text-fuchsia-200">Message attached</span>}
                       <span className="text-xs px-2 py-1 rounded-2xl border border-white/10 bg-white/[0.02] text-white/75">
                         Requested by{" "}
                         <span className="font-semibold text-white/90">{requestedBy}</span>

@@ -8,9 +8,10 @@ import {
   Plus,
   LogIn,
   Radio,
+  LockKeyhole,
 } from "lucide-react";
-import { database, ref, onValue } from "../utils/firebase";
-import PreJoinDeviceSetup from "./PreJoinDeviceSetup";
+import { database, ref, onValue, get } from "../utils/firebase";
+import { isSecretRoom, verifyRoomPassword, getRoomMode } from '../utils/secretRoom';
 
 const AVATAR_OPTIONS = ["🎤","🎵","🎶","🎸","🥁","🎹","🎧","🌟","🔥","💫","✨","🌈","💎","👑","🏆","❤️","🙏","💪","🌊","🌺","😊","🎯","🦋","🌙","🃏"];
 
@@ -28,11 +29,12 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
   // backend modes: dj, karaoke, streaming
   const [roomMode, setRoomMode] = useState("dj");
+  const [hostPassword, setHostPassword] = useState('');
+  const [joinPassword, setJoinPassword] = useState('');
+  const [needsPassword, setNeedsPassword] = useState(false);
+  const [entryError, setEntryError] = useState('');
+  const [entryBusy, setEntryBusy] = useState(false);
 
-  const [useExternalVideo, setUseExternalVideo] = useState(false);
-  const [externalVideoLink, setExternalVideoLink] = useState("");
-  const [showDeviceSetup, setShowDeviceSetup] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null);
   const [activeRooms, setActiveRooms] = useState([]);
 
   // Listen for active rooms
@@ -49,7 +51,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
         .map(([code, room]) => ({
           code,
           hostName: room.hostName || "Unknown",
-          roomMode: room.roomMode || "karaoke",
+          roomMode: getRoomMode(room),
           participantCount:
             (room.participants ? Object.keys(room.participants).length : 0) +
             // TEST ONLY: include fake NA members in room count — remove for production
@@ -58,7 +60,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               : 0),
           createdAt: room.createdAt || 0,
         }))
-        .filter((room) => room.participantCount > 0)
+        .filter((room) => room.participantCount > 0 || room.roomMode === 'secret')
         .sort((a, b) => b.createdAt - a.createdAt);
 
       setActiveRooms(rooms);
@@ -69,40 +71,54 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
 
   const getHostName = () => hostName.trim() || "DJ";
 
-  const handleJoinSubmit = (e) => {
+  useEffect(() => {
+    if (mode !== 'join' || roomCode.length !== 6) return;
+    let active = true;
+    get(ref(database, `karaoke-rooms/${roomCode}`)).then(snapshot => {
+      if (active) setNeedsPassword(isSecretRoom(snapshot.val()));
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [mode, roomCode]);
+
+  const handleJoinSubmit = async (e) => {
     e.preventDefault();
+    if (entryBusy) return;
     if (roomCode.length === 6 && participantName.trim()) {
-      setPendingAction(() => () =>
-        onJoinRoom(roomCode, participantName.trim(), participantGroup.trim(), participantAvatar)
-      );
-      setShowDeviceSetup(true);
+      setEntryBusy(true);
+      setEntryError('');
+      try {
+      const snapshot = await get(ref(database, `karaoke-rooms/${roomCode}`));
+      if (!snapshot.exists()) throw new Error('Room not found. Check the code and try again.');
+      const secret = isSecretRoom(snapshot.val());
+      setNeedsPassword(secret);
+      if (secret && !joinPassword) throw new Error('Enter the password for this Secret room.');
+      if (!await verifyRoomPassword(snapshot.val(), joinPassword)) throw new Error('Incorrect password. Try again.');
+      await onJoinRoom(roomCode, participantName.trim(), participantGroup.trim(), participantAvatar, joinPassword);
+      } catch (cause) { setEntryError(cause.message || 'Could not join the room. Please try again.'); }
+      finally { setEntryBusy(false); }
     }
   };
 
-  const handleCreateSubmit = () => {
-    if (!hostName.trim()) return;
-    setPendingAction(
-      () => () =>
-        onCreateRoom(getHostName(), hostGroup.trim(), hostAvatar, roomMode, useExternalVideo ? externalVideoLink : null)
-    );
-    setShowDeviceSetup(true);
+  const handleCreateSubmit = async () => {
+    if (entryBusy || !hostName.trim() || (roomMode === 'secret' && !hostPassword.trim())) return;
+    setEntryBusy(true); setEntryError('');
+    try { await onCreateRoom(getHostName(), hostGroup.trim(), hostAvatar, roomMode, hostPassword); }
+    catch (cause) { setEntryError(cause.message || 'Could not create the room. Please try again.'); }
+    finally { setEntryBusy(false); }
   };
-
-  const handleDeviceSetupContinue = () => pendingAction?.();
-  const handleDeviceSetupSkip = () => pendingAction?.();
 
   const getModeLabel = () => {
     if (roomMode === "dj") return "Jam";
     if (roomMode === "karaoke") return "Karaoke";
-    if (roomMode === "meeting") return "Meeting";
+    if (roomMode === "secret") return "Secret";
     return "Streaming";
   };
 
   const cards = [
     { t: "Jam", d: "Queue the song you’re definitely over that person about. Then lose the music quiz. Stay humble.", chip: "Music • games • suspiciously specific lyrics", Icon: Headphones },
-    { t: "Karaoke", d: "I can’t promise we’ll hit the notes. I can promise someone will sing like the divorce is final.", chip: "Mic • spotlight • consequences", Icon: Mic },
+    { t: "Karaoke", d: "I can’t promise we’ll hit the notes. I can promise someone will sing like the divorce is final.", chip: "Songs • lyrics • consequences", Icon: Mic },
     { t: "Streaming", d: "Watch together. Escape your own plot for a bit. Judge someone else’s terrible decisions.", chip: "Watch parties • synced playback", Icon: MonitorPlay },
-    { t: "Meeting", d: "Catch up, make plans, or say the thing you’ve been avoiding. A mute button buys time, unfortunately.", chip: "Conversation • shared screen • groups", Icon: Users },
+    { t: "Secret room", d: "Bring your friends and a password. Keep the playlist and the inside jokes in the room.", chip: "Password • music • games", Icon: LockKeyhole },
   ];
 
   return (
@@ -132,8 +148,9 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
             </div>
 
             <div className="p-6 md:p-10">
+              {entryError && <p role="alert" className="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-red-200">{entryError}</p>}
               {/* LANDING CTA */}
-              {!mode && !showDeviceSetup && (
+              {!mode && (
                 <div className="text-center">
                   <p className="text-white/60 mb-6">
                     Pick a room. Bring your friends and your questionable taste. Mine’s already here.
@@ -181,7 +198,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                     <div className="mt-8">
                       <div className="flex items-center justify-center gap-2 mb-4">
                         <Radio className="w-4 h-4 text-emerald-400" />
-                        <span className="text-sm font-semibold text-white/70">Live Rooms</span>
+                        <span className="text-sm font-semibold text-white/70">Rooms</span>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-3xl mx-auto">
@@ -190,18 +207,21 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                             room.roomMode === "dj" ? Headphones
                             : room.roomMode === "karaoke" ? Mic
                             : room.roomMode === "streaming" ? MonitorPlay
-                            : Users;
+                            : room.roomMode === 'secret' ? LockKeyhole : Users;
                           const modeLabel =
                             room.roomMode === "dj" ? "Jam"
                             : room.roomMode === "karaoke" ? "Karaoke"
                             : room.roomMode === "streaming" ? "Streaming"
-                            : "Meeting";
+                            : room.roomMode === 'secret' ? 'Secret room' : "Meeting";
 
                           return (
                             <button
                               key={room.code}
                               onClick={() => {
                                 setRoomCode(room.code);
+                                setNeedsPassword(room.roomMode === 'secret');
+                                setJoinPassword('');
+                                setEntryError('');
                                 setMode("join");
                               }}
                               className="flex items-center gap-3 p-4 rounded-2xl border border-white/10 bg-black/20 hover:border-emerald-500/30 hover:bg-white/[0.04] transition active:scale-[0.98] text-left"
@@ -234,24 +254,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                 </div>
               )}
 
-              {/* DEVICE SETUP */}
-              {showDeviceSetup && (
-                <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
-                  <button
-                    onClick={() => setShowDeviceSetup(false)}
-                    className="text-white/70 hover:text-white transition mb-4"
-                  >
-                    ← Back
-                  </button>
-                  <PreJoinDeviceSetup
-                    onContinue={handleDeviceSetupContinue}
-                    onSkip={handleDeviceSetupSkip}
-                  />
-                </div>
-              )}
-
               {/* CREATE */}
-              {mode === "create" && !showDeviceSetup && (
+              {mode === "create" && (
                 <div className="mt-8 rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur-xl">
                   <button
                     onClick={() => setMode(null)}
@@ -340,55 +344,24 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       Icon={MonitorPlay}
                     />
                     <ModeCard
-                      active={roomMode === "meeting"}
-                      onClick={() => setRoomMode("meeting")}
-                      title="Meeting Mode"
-                      subtitle="Talk, plan, share your screen. We might get somewhere."
-                      Icon={Users}
+                      active={roomMode === "secret"}
+                      onClick={() => setRoomMode("secret")}
+                      title="Secret room"
+                      subtitle="The Jam experience, with a password for your friends."
+                      Icon={LockKeyhole}
                     />
                   </div>
 
 
-                  <div className="mb-6 p-5 rounded-2xl border border-white/10 bg-black/25">
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={useExternalVideo}
-                        onChange={(e) => setUseExternalVideo(e.target.checked)}
-                        className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 checked:bg-fuchsia-500"
-                      />
-                      <div className="flex-1">
-                        <div className="font-semibold text-white group-hover:text-fuchsia-200 transition">
-                          Use external video chat (Zoom, Meet, etc.)
-                        </div>
-                        <div className="text-sm text-white/60 mt-1">
-                          Keep the music and playback here. Use your usual app for the call.
-                        </div>
-                      </div>
-                    </label>
-
-                    {useExternalVideo && (
-                      <div className="mt-4">
-                        <label className="block text-sm font-semibold text-white/80 mb-2">
-                          Video Chat Link
-                        </label>
-                        <input
-                          type="url"
-                          value={externalVideoLink}
-                          onChange={(e) => setExternalVideoLink(e.target.value)}
-                          placeholder="https://zoom.us/j/123456789 or meet.google.com/abc-defg-hij"
-                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70 focus:ring-2 focus:ring-fuchsia-400/20 text-sm"
-                        />
-                        <div className="mt-2 text-xs text-white/50">
-                          Tip: paste the link so nobody asks “where’s the Zoom” 14 times.
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  {roomMode === 'secret' && <div className="mb-6">
+                    <label htmlFor="secret-room-password" className="block text-sm font-semibold text-white/80 mb-2">Room password</label>
+                    <input id="secret-room-password" type="password" autoComplete="new-password" value={hostPassword} onChange={e => setHostPassword(e.target.value)} placeholder="Choose a password" required className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70" />
+                    <p className="mt-2 text-sm text-white/60">Share this password with the friends you want to invite.</p>
+                  </div>}
 
                   <button
                     onClick={handleCreateSubmit}
-                    disabled={!hostName.trim()}
+                    disabled={entryBusy || !hostName.trim() || (roomMode === 'secret' && !hostPassword.trim())}
                     className="w-full px-6 py-3 rounded-xl font-semibold
                       border border-fuchsia-400/55 bg-transparent
                       disabled:opacity-40 disabled:cursor-not-allowed
@@ -404,7 +377,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
               )}
 
               {/* JOIN */}
-              {mode === "join" && !showDeviceSetup && (
+              {mode === "join" && (
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-5 gap-6">
                   <div className="md:col-span-2">
                     <button
@@ -476,7 +449,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         <input
                           type="text"
                           value={roomCode}
-                          onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                          onChange={(e) => { const code = e.target.value.toUpperCase(); setRoomCode(code); setNeedsPassword(activeRooms.some(room => room.code === code && room.roomMode === 'secret')); setJoinPassword(''); setEntryError(''); }}
                           placeholder="ABC123"
                           maxLength={6}
                           className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-indigo-400/70 focus:ring-2 focus:ring-indigo-400/20 text-center text-2xl font-mono tracking-[0.35em]"
@@ -484,9 +457,14 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         />
                       </div>
 
+                      {needsPassword && <div>
+                        <label htmlFor="join-room-password" className="block text-sm font-semibold text-white/80 mb-2">Room password</label>
+                        <input id="join-room-password" type="password" autoComplete="current-password" value={joinPassword} onChange={e => setJoinPassword(e.target.value)} placeholder="Enter the room password" required className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70" />
+                      </div>}
+
                       <button
                         type="submit"
-                        disabled={roomCode.length !== 6 || !participantName.trim()}
+                        disabled={entryBusy || roomCode.length !== 6 || !participantName.trim() || (needsPassword && !joinPassword)}
                         className="w-full px-6 py-3 rounded-xl font-semibold
                           border border-white/15 bg-white/5
                           disabled:opacity-40 disabled:cursor-not-allowed

@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef } from "react";
+import { playbackRoomMode, getRoomMode, isSecretRoom } from '../utils/secretRoom';
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 
@@ -7,16 +8,12 @@ import GoogleDrivePlayer from "./GoogleDrivePlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import StreamingQueue from "./StreamingQueue";
-import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
+import RoomWall from './RoomWall';
 import EmojiReactions from "./EmojiReactions";
-import DeviceSettingsPanel from "./DeviceSettingsPanel";
-import ExternalVideoPrompt from "./ExternalVideoPrompt";
 
-import HostControlPanel from "./HostControlPanel";
 import MeetingDisplay from "./MeetingDisplay";
 import JamGames from "./JamGames";
-import QuizHostCamera from './QuizHostCamera';
 import MeetingReadingsList from "./MeetingReadingsList";
 import { Mic, Radio, MonitorPlay, Headphones, Sliders, BookOpen, DoorOpen, ListMusic } from "lucide-react";
 
@@ -25,10 +22,10 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [hostPanelOpen, setHostPanelOpen] = useState(false);
   const [djAutoplay, setDjAutoplay] = useState(false);
   // Determine room mode
-  const roomMode = roomState?.roomMode || "karaoke";
+  const isSecret = isSecretRoom(roomState);
+  const roomMode = playbackRoomMode(getRoomMode(roomState));
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
   const quizFocus = isDJ && roomState?.gameInvitation?.type === 'music-quiz';
@@ -49,7 +46,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
     }
   };
 
-  const handleAddToQueue = async (video, requestedBy) => {
+  const handleAddToQueue = async (video, requestedBy, message = '') => {
     const queueRef = ref(database, `karaoke-rooms/${roomCode}/queue`);
     const newSongRef = push(queueRef);
 
@@ -59,18 +56,12 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
       title: video.title,
       thumbnail: video.thumbnail,
       addedBy: currentUser.id,
+      addedByName: currentUser.name,
+      ...(isSecret ? { message: message.trim(), messageAuthor: currentUser.name } : {}),
       requestedBy: requestedBy || "Someone",
       addedAt: Date.now(),
     });
   };
-  const setParticipantMute = async (participantName, muted) => {
-    const muteRef = ref(
-      database,
-      `karaoke-rooms/${roomCode}/participantMutes/${participantName}`
-    );
-    await set(muteRef, muted);
-  };
-
   const handlePlaySong = async (song) => {
     const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
     await set(currentSongRef, song);
@@ -85,22 +76,11 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
       startTime: Date.now(),
     });
 
-    if (isKaraoke) {
-      const singerName = song.requestedBy || song.singerName;
-      if (singerName) {
-        await setParticipantMute(singerName, false);
-      }
-    }
+
   };
 
   const handleStopSong = async () => {
-    if (isKaraoke) {
-      const currentSinger =
-        roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-      if (currentSinger) {
-        await setParticipantMute(currentSinger, true);
-      }
-    }
+
 
     const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
     await set(currentSongRef, null);
@@ -122,13 +102,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   };
 
   const handleSkipSong = async () => {
-    if (isKaraoke) {
-      const currentSinger =
-        roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-      if (currentSinger) {
-        await setParticipantMute(currentSinger, true);
-      }
-    }
+
 
     const currentSongRef = ref(database, `karaoke-rooms/${roomCode}/currentSong`);
     await set(currentSongRef, null);
@@ -192,42 +166,6 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
     }
   };
 
-  const handleMuteAll = async () => {
-    const participants = roomState?.participants ? Object.values(roomState.participants) : [];
-    const currentSinger =
-      roomState?.currentSong?.requestedBy || roomState?.currentSong?.singerName;
-
-    for (const participant of participants) {
-      if (participant.name !== currentSinger) {
-        await setParticipantMute(participant.name, true);
-      }
-    }
-  };
-
-  const handlePlayPause = async () => {
-    const playbackRef = ref(database, `karaoke-rooms/${roomCode}/playbackState`);
-    const isPlaying = roomState?.playbackState?.isPlaying || false;
-    await update(playbackRef, { isPlaying: !isPlaying });
-  };
-
-  const handleKickParticipant = async (participantId, participantName) => {
-    const participantRef = ref(database, `karaoke-rooms/${roomCode}/participants/${participantId}`);
-    await set(participantRef, null);
-    // Also remove their mute state
-    const muteRef = ref(database, `karaoke-rooms/${roomCode}/participantMutes/${participantName}`);
-    await set(muteRef, null);
-  };
-
-  const handleUpdateHostControls = async (updates) => {
-    const controlsRef = ref(database, `karaoke-rooms/${roomCode}/hostControls`);
-    await update(controlsRef, updates);
-  };
-
-  const handleRequestUnmute = async (participantName) => {
-    const requestRef = ref(database, `karaoke-rooms/${roomCode}/unmuteRequests/${participantName}`);
-    await set(requestRef, Date.now());
-  };
-
   const handleSelectReading = async (readingId) => {
     const readingRef = ref(database, `karaoke-rooms/${roomCode}/activeReadingId`);
     await set(readingRef, readingId);
@@ -252,7 +190,6 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
     ? Object.values(roomState.naMembers).filter((m) => m.active)
     : [];
   const currentSong = roomState?.currentSong;
-  const participantMutes = roomState?.participantMutes || {};
 
   // Stable playbackState — only changes when meaningful fields change,
   // so React.memo(VideoPlayer) won't re-render on chat/queue/naMembers writes
@@ -289,11 +226,12 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   );
 
   const modeMeta = useMemo(() => {
+    if (isSecret) return { label: 'Secret room', Icon: Headphones };
     if (isDJ) return { label: "DJ Mode", Icon: Headphones };
     if (isStreaming) return { label: "Streaming Mode", Icon: MonitorPlay };
     if (isMeeting) return { label: "Meeting Mode", Icon: BookOpen };
     return { label: "Karaoke Mode", Icon: Mic };
-  }, [isDJ, isStreaming, isMeeting]);
+  }, [isDJ, isStreaming, isMeeting, isSecret]);
 
   const ModeIcon = modeMeta.Icon;
 
@@ -308,7 +246,6 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
       <div className="relative p-4 pb-28">
         <div className="max-w-[1800px] mx-auto space-y-6">
           {/* External prompt (sticky, in-flow) */}
-          <ExternalVideoPrompt videoLink={roomState?.externalVideoLink} />
 
           {/* Hero / Banner (clean glass, structured) */}
           <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg">
@@ -348,35 +285,25 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setHostPanelOpen(true)}
-                      className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 border border-fuchsia-500/35 bg-fuchsia-500/[0.08] hover:bg-fuchsia-500/[0.14] hover:border-fuchsia-400/50 hover:shadow-[0_0_20px_rgba(232,121,249,0.18)] transition active:scale-[0.98]"
-                    >
-                      <Sliders className="w-4 h-4 text-fuchsia-400" />
-                      <span className="text-sm font-semibold text-fuchsia-300">Host Controls</span>
-                    </button>
+
 
                     <button
                       onClick={() => {
-                        if (window.confirm("Close this room? Everyone will be disconnected.")) {
+                        if (isSecret || window.confirm("Close this room? Everyone will be disconnected.")) {
                           onCloseRoom?.();
                         }
                       }}
                       className="inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 border border-red-500/30 bg-red-500/[0.06] hover:bg-red-500/[0.12] hover:border-red-400/50 transition active:scale-[0.98]"
-                      title="Close Room"
+                      title={isSecret ? 'Leave room' : 'Close Room'}
                     >
                       <DoorOpen className="w-4 h-4 text-red-400" />
-                      <span className="text-sm font-semibold text-red-300">Close</span>
+                      <span className="text-sm font-semibold text-red-300">{isSecret ? 'Leave' : 'Close'}</span>
                     </button>
                   </div>
 
                   {isDJ && (
                     <div className="mt-3 flex items-center gap-2 flex-wrap justify-end">
-                      <div className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-emerald-500/20 bg-white/[0.02]">
-                        <span className="text-xs font-semibold text-emerald-300/90">
-                          Mic: open
-                        </span>
-                      </div>
+
 
                       <button
                         onClick={() => setDjAutoplay((v) => !v)}
@@ -426,19 +353,19 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   playbackState={stablePlaybackState}
   onSkip={stableOnSkip}
   isHost={true}
+  roomMode={roomMode}
+  onStop={handleStopSong}
 />
               )}
 
-              {!quizFocus && <SingerSpotlight
-                roomCode={roomCode}
-                roomMode={roomMode}
-                currentSong={isKaraoke ? currentSong : null}
-                participantMutes={participantMutes}
-                queue={isKaraoke ? queue : []}
-                currentUser={currentUser}
-                micsLocked={roomState?.hostControls?.micsLocked || false}
-                naMembers={naMembers}
-              />}
+              {isSecret && !quizFocus && currentSong?.message && (
+                <div className="rounded-3xl border border-fuchsia-400/25 bg-white/[0.03] p-6">
+                  <p className="text-sm font-semibold text-fuchsia-200 mb-2">A message from {currentSong.messageAuthor || currentSong.addedByName || currentSong.requestedBy || 'Someone'}</p>
+                  <p className="whitespace-pre-wrap break-words text-white/90">{currentSong.message}</p>
+                </div>
+              )}
+
+
 
               {!isMeeting && !quizFocus && (
                 isStreaming ? (
@@ -463,6 +390,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                       participants={participants}
                       naMembers={naMembers}
                       isParticipant={false}
+                      allowMessage={isSecret}
                     />
                   </div>
                 )
@@ -478,15 +406,15 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                 />
               )}
 
-              {quizFocus && <QuizHostCamera hostId={roomState?.hostId} isHost />}
+
               {isDJ && !quizFocus && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
 
-              <ChatPanel
+              {isSecret ? <RoomWall roomCode={roomCode} currentUser={memoizedUser} /> : <ChatPanel
                 roomCode={roomCode}
                 currentUser={memoizedUser}
                 currentSong={currentSong}
                 inline={true}
-              />
+              />}
 
               {!isStreaming && !isMeeting && !quizFocus && (
                 <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
@@ -507,23 +435,9 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
       </div>
 
       {/* Host Control Panel */}
-      <HostControlPanel
-        isOpen={hostPanelOpen}
-        onClose={() => setHostPanelOpen(false)}
-        roomState={roomState}
-        roomCode={roomCode}
-        onSkip={handleSkipSong}
-        onMuteAll={handleMuteAll}
-        onMuteToggle={setParticipantMute}
-        onRequestUnmute={handleRequestUnmute}
-        onPlayPause={handlePlayPause}
-        onKick={handleKickParticipant}
-        onUpdateHostControls={handleUpdateHostControls}
-        onSendBotMessage={handleSendBotMessage}
-      />
+
 
       {/* Reactions and Settings */}
-      <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
 
     </div>

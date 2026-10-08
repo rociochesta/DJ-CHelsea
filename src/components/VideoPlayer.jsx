@@ -1,14 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import YouTube from "react-youtube";
-import HostCameraPreview from "./HostCameraPreview";
-import {
-  useLocalParticipant,
-  useParticipants,
-  TrackLoop,
-  VideoTrack,
-  AudioTrack,
-} from "@livekit/components-react";
-import { Track } from "livekit-client";
 import { database, ref, update } from "../utils/firebase";
 
 function VideoPlayer({
@@ -18,61 +9,17 @@ function VideoPlayer({
   onSkip,
   onStop,
   isHost,
-  showHostWhenIdle = false,
   roomMode = "karaoke",
-  performanceMode = false,
 }) {
   const [player, setPlayer] = useState(null);
   const [playerReady, setPlayerReady] = useState(false);
-  const [embedError, setEmbedError] = useState(false);
+  const [embedError, setEmbedError] = useState(null);
+  const [playerAttempt, setPlayerAttempt] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-
-  const { localParticipant } = useLocalParticipant();
-  const liveKitParticipants = useParticipants();
-
-  const hostCandidate = useMemo(() => {
-    if (!liveKitParticipants?.length) return null;
-    return liveKitParticipants.find((p) => !p?.isLocal) || null;
-  }, [liveKitParticipants]);
 
   const lastEndRef = useRef(0);
   const syncIntervalRef = useRef(null);
-  const wasPlayingRef = useRef(false);
-  const cameraWasOnRef = useRef(false);
   const hostSyncLockRef = useRef(false);
-
-  // PERFORMANCE MODE (opt-in)
-  useEffect(() => {
-    if (isHost || !localParticipant) return;
-
-    const isPlaying = !!(playbackState?.isPlaying && currentSong?.videoId);
-
-    if (!performanceMode) {
-      if (wasPlayingRef.current) {
-        wasPlayingRef.current = false;
-        if (cameraWasOnRef.current) {
-          localParticipant.setCameraEnabled(true).catch(console.error);
-        }
-      }
-      return;
-    }
-
-    if (isPlaying && !wasPlayingRef.current) {
-      wasPlayingRef.current = true;
-      cameraWasOnRef.current = localParticipant.isCameraEnabled;
-
-      if (cameraWasOnRef.current) {
-        localParticipant.setCameraEnabled(false).catch(console.error);
-      }
-    }
-
-    if (!isPlaying && wasPlayingRef.current) {
-      wasPlayingRef.current = false;
-      if (cameraWasOnRef.current) {
-        localParticipant.setCameraEnabled(true).catch(console.error);
-      }
-    }
-  }, [playbackState?.isPlaying, currentSong?.videoId, performanceMode]);
 
   // PARTICIPANT SYNC
   useEffect(() => {
@@ -118,7 +65,7 @@ function VideoPlayer({
   }, [player, playerReady, playbackState]);
 
   useEffect(() => {
-    setEmbedError(false);
+    setEmbedError(null);
     setPlayerReady(false);
   }, [currentSong?.videoId]);
 
@@ -128,7 +75,7 @@ function VideoPlayer({
   };
 
   const onError = (e) => {
-    if (e.data === 101 || e.data === 150) setEmbedError(true);
+    setEmbedError(e.data);
   };
 
   // GLOBAL HOST PLAY/PAUSE BROADCAST
@@ -187,6 +134,7 @@ function VideoPlayer({
     height: "100%",
     width: "100%",
     playerVars: {
+      origin: window.location.origin,
       autoplay: roomMode === "dj" ? 0 : 1,
       controls: isHost ? 1 : 0,
       disablekb: isHost ? 0 : 1,
@@ -197,52 +145,14 @@ function VideoPlayer({
     },
   };
 
-  // IDLE — show DJ camera to participants
-  if (!currentSong) {
-    const shouldShowHostTile =
-      !isHost && showHostWhenIdle && roomMode === "dj" && hostCandidate;
-
-    return (
-      <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-        <div className="aspect-video relative bg-black/40 rounded-2xl overflow-hidden">
-          {shouldShowHostTile ? (
-            <>
-              <TrackLoop
-                tracks={[
-                  { participant: hostCandidate, source: Track.Source.Camera },
-                ]}
-              >
-                <VideoTrack className="w-full h-full object-cover" />
-              </TrackLoop>
-
-              <TrackLoop
-                tracks={[
-                  {
-                    participant: hostCandidate,
-                    source: Track.Source.Microphone,
-                  },
-                ]}
-              >
-                <AudioTrack />
-              </TrackLoop>
-
-              <div className="absolute top-4 left-4 bg-black/40 px-4 py-2 rounded-xl text-white">
-                🎧 DJ is live
-              </div>
-            </>
-          ) : (
-            <HostCameraPreview isHost={isHost} />
-          )}
-        </div>
-      </div>
-    );
-  }
+  if (!currentSong) return <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center"><h2 className="text-xl font-bold">Ready for a song</h2><p className="mt-2 text-white/55">Choose a track from the queue to start listening.</p></div>;
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
       <div className="aspect-video rounded-2xl overflow-hidden bg-black">
         {!embedError ? (
           <YouTube
+            key={`${currentSong.videoId}-${playerAttempt}`}
             videoId={currentSong.videoId}
             opts={opts}
             onReady={onReady}
@@ -252,8 +162,16 @@ function VideoPlayer({
             className="w-full h-full"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-white">
-            Cannot embed — open in YouTube
+          <div role="alert" className="flex flex-col items-center justify-center gap-3 h-full p-5 text-center text-white">
+            <p>{embedError === 101 || embedError === 150
+              ? `YouTube refused embedded playback for this video (error ${embedError}). Try again or open it on YouTube.`
+              : embedError === 153 ? 'YouTube could not identify this website. Try opening the room in your regular browser.'
+              : embedError === 100 ? 'This video is unavailable or private.'
+              : `YouTube could not play this video (error ${embedError}).`}</p>
+            <div className="flex gap-3">
+              <button className="rounded-xl border border-fuchsia-400/50 px-4 py-2" onClick={() => { setEmbedError(null); setPlayer(null); setPlayerReady(false); setPlayerAttempt(value => value + 1); }}>Retry video</button>
+              <a href={`https://www.youtube.com/watch?v=${encodeURIComponent(currentSong.videoId)}`} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-white/20 px-4 py-2">Open in YouTube</a>
+            </div>
           </div>
         )}
       </div>

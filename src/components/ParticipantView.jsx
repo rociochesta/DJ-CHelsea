@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useLocalParticipant } from "@livekit/components-react";
+import { playbackRoomMode, getRoomMode, isSecretRoom } from '../utils/secretRoom';
 import { database, ref, set, push } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 
@@ -8,15 +8,10 @@ import GoogleDrivePlayer from "./GoogleDrivePlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import StreamingQueue from "./StreamingQueue";
-import SingerSpotlight from "./SingerSpotlight";
 import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
-import DeviceSettingsPanel from "./DeviceSettingsPanel";
-import ExternalVideoPrompt from "./ExternalVideoPrompt";
 import MeetingDisplay from "./MeetingDisplay";
 import JamGames from "./JamGames";
-import QuizHostCamera from './QuizHostCamera';
-import UnmuteRequestPrompt from "./UnmuteRequestPrompt";
 import JFTModal from "./JFTModal";
 
 import { Mic, MonitorPlay, Headphones, User, BookOpen, Maximize, Zap } from "lucide-react";
@@ -26,12 +21,11 @@ function ParticipantView({ roomCode, currentUser, roomState }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [performanceMode, setPerformanceMode] = useState(false);
   const [jftOpen, setJftOpen] = useState(false);
 
-  const { localParticipant } = useLocalParticipant();
   const videoContainerRef = React.useRef(null);
-  const roomMode = roomState?.roomMode || "karaoke";
+  const isSecret = isSecretRoom(roomState);
+  const roomMode = playbackRoomMode(getRoomMode(roomState));
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
   const quizFocus = isDJ && roomState?.gameInvitation?.type === 'music-quiz';
@@ -78,7 +72,6 @@ const ONE_SONG_MESSAGES = [
     ? Object.values(roomState.naMembers).filter((m) => m.active)
     : [];
   const currentSong = roomState?.currentSong;
-  const participantMutes = roomState?.participantMutes || {};
 
   // Queue limit: DJ mode allows 3 songs, other modes allow 1
   const userName = currentUser?.name || "";
@@ -117,11 +110,12 @@ const ONE_SONG_MESSAGES = [
   );
 
   const modeMeta = useMemo(() => {
+    if (isSecret) return { label: 'Secret room', Icon: Headphones };
     if (isDJ) return { label: "DJ Mode", Icon: Headphones };
     if (isStreaming) return { label: "Streaming Mode", Icon: MonitorPlay };
     if (isMeeting) return { label: "Meeting Mode", Icon: BookOpen };
     return { label: "Karaoke Mode", Icon: Mic };
-  }, [isDJ, isStreaming, isMeeting]);
+  }, [isDJ, isStreaming, isMeeting, isSecret]);
 
   const ModeIcon = modeMeta.Icon;
 
@@ -142,7 +136,6 @@ const ONE_SONG_MESSAGES = [
 
       <div className="relative p-4 pb-28">
         <div className="max-w-7xl mx-auto space-y-6">
-          <ExternalVideoPrompt videoLink={roomState?.externalVideoLink} />
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg p-6">
             <div className="flex items-start justify-between gap-6">
@@ -182,7 +175,7 @@ const ONE_SONG_MESSAGES = [
 
           {/* Video / Meeting Display */}
           <div ref={videoContainerRef} className="relative">
-            {quizFocus ? <div className="space-y-4"><JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /><QuizHostCamera hostId={roomState?.hostId} isHost={false} /></div> : isMeeting ? (
+            {quizFocus ? <div className="space-y-4"><JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /></div> : isMeeting ? (
               <MeetingDisplay
                 activeReadingId={roomState?.activeReadingId || null}
                 isHost={false}
@@ -203,25 +196,12 @@ const ONE_SONG_MESSAGES = [
                 playbackState={roomState?.playbackState}
                 isHost={false}
                 roomMode={roomMode}
-                showHostWhenIdle={roomMode === "dj"}
-                performanceMode={performanceMode}
               />
             )}
 
             {/* Fullscreen + Performance Mode buttons */}
             {!quizFocus && <div className="absolute top-3 right-3 flex gap-2 z-10">
-              <button
-                onClick={() => setPerformanceMode((v) => !v)}
-                className={[
-                  "w-9 h-9 rounded-xl border backdrop-blur-md transition active:scale-[0.95] flex items-center justify-center",
-                  performanceMode
-                    ? "border-fuchsia-500/40 bg-fuchsia-500/[0.15] text-fuchsia-300"
-                    : "border-white/10 bg-black/40 text-white/60 hover:text-white/90",
-                ].join(" ")}
-                title={performanceMode ? "Performance mode ON" : "Performance mode OFF"}
-              >
-                <Zap className="w-4 h-4" />
-              </button>
+
 
               <button
                 onClick={handleFullscreen}
@@ -234,19 +214,7 @@ const ONE_SONG_MESSAGES = [
           </div>
 
           {/* Spotlight — hidden in performance mode */}
-          {!performanceMode && !quizFocus && (
-            <SingerSpotlight
-              roomCode={roomCode}
-              roomMode={roomMode}
-              currentSong={isKaraoke ? currentSong : null}
-              participantMutes={participantMutes}
-              queue={isKaraoke ? queue : []}
-              currentUser={currentUser}
-              micsLocked={roomState?.hostControls?.micsLocked || false}
-              preferHostWhenIdle={isDJ}
-              naMembers={naMembers}
-            />
-          )}
+
 
           {!isMeeting && (
             <div className={`grid grid-cols-1 gap-6 ${quizFocus ? '' : 'lg:grid-cols-3'}`}>
@@ -305,13 +273,8 @@ const ONE_SONG_MESSAGES = [
         </div>
       </div>
 
-      <DeviceSettingsPanel />
       <EmojiReactions roomCode={roomCode} currentUser={memoizedUser} />
-      {!isDJ && <UnmuteRequestPrompt
-        roomCode={roomCode}
-        currentUser={currentUser}
-        localParticipant={localParticipant}
-      />}
+
     </div>
   );
 }

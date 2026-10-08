@@ -23,7 +23,6 @@ A real-time karaoke app for your friend group. No more laggy Zoom screen sharing
 - **Frontend**: React + Vite + Tailwind CSS
 - **Real-time**: Firebase Realtime Database
 - **Video**: YouTube IFrame API
-- **Voice**: WebRTC (coming soon)
 
 ## Setup
 
@@ -113,7 +112,6 @@ karaoke-rooms/
 - [x] YouTube search and playback
 - [x] Queue management
 - [x] Synced video playback
-- [ ] WebRTC voice streaming (for singing)
 - [ ] Recording performances
 - [ ] Lyrics overlay
 - [ ] Scoring system
@@ -121,7 +119,6 @@ karaoke-rooms/
 
 ## Known Issues
 
-- Voice chat not implemented yet (Phase 2)
 - Some karaoke videos may not be embeddable
 - Mobile browser support varies
 

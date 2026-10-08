@@ -2,6 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <script>
+      // YouTube rejects some embeds on the numeric loopback origin.
+      if (window.location.hostname === '127.0.0.1') {
+        const localUrl = new URL(window.location.href);
+        localUrl.hostname = 'localhost';
+        window.location.replace(localUrl.href);
+      }
+    </script>
     <link rel="icon" type="image/svg+xml" href="/microphone.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rociwi's Hub</title>

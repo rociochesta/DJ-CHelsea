@@ -1,5 +1,5 @@
-import { BookOpen, ChevronLeft, ChevronRight, Video } from "lucide-react";
-import HostCameraPreview from "./HostCameraPreview";
+import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
+
 import MEETING_READINGS from "../utils/meetingReadings.jsx";
 
 const parseReadingKey = (key) => {
@@ -49,28 +49,7 @@ export default function MeetingDisplay({
     selectReading(`${activeReading.id}|${safeSlideIndex + 1}`);
   };
 
-  // No reading selected → show camera card
-  if (!activeReading) {
-    return (
-      <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg overflow-hidden">
-        <div className="aspect-video bg-black/40 relative">
-          <HostCameraPreview isHost={isHost} />
-        </div>
-
-        <div className="px-6 py-4 border-t border-white/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-white/55">
-              <Video className="w-4 h-4 text-white/50" />
-              <span>Host Camera</span>
-            </div>
-            <div className="text-xs text-white/35">
-              {isHost ? "Select a reading from the list to display it." : "Waiting for the host to select a reading."}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!activeReading) return <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-white/60">Select a reading to display it here.</div>;
 
   // Reading selected → slide view
   return (
@@ -86,10 +65,10 @@ export default function MeetingDisplay({
             <button
               onClick={() => selectReading && selectReading(null)}
               className="flex items-center gap-1.5 rounded-xl px-3 py-2 border border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20 hover:text-white/90 transition active:scale-[0.98] text-xs font-medium"
-              title="Back to camera"
+              title="Back to readings"
             >
-              <Video className="w-3.5 h-3.5" />
-              Camera
+              <BookOpen className="w-3.5 h-3.5" />
+              Readings
             </button>
           )}
 

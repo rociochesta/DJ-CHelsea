@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { LiveKitRoom, RoomAudioRenderer, StartAudio } from "@livekit/components-react";
-import "@livekit/components-styles";
 
 import { database, ref, onValue, set, get, remove, onDisconnect, isConfigured } from "./utils/firebase";
 import { generateRoomCode, generateUserId } from "./utils/helpers";
-import { useDevicePreferences } from "./hooks/useDevicePreferences";
+import { createRoomPassword, verifyRoomPassword, playbackRoomMode, getRoomMode, isSecretRoom } from './utils/secretRoom';
 
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
 import ParticipantView from "./components/ParticipantView";
-import EnableMediaOnJoin from "./components/EnableMediaOnJoin";
 // Temporarily disabled for testing with real guests and song requests.
 // import NASimulator from "./components/NASimulator";
 
@@ -22,14 +19,6 @@ function App() {
   const [djName, setDjName] = useState(
     localStorage.getItem("karaoke-djname") || ""
   );
-
-  // LiveKit token state
-  const [lkToken, setLkToken] = useState(null);
-  const [lkError, setLkError] = useState("");
-  const [lkAttempt, setLkAttempt] = useState(0);
-
-  // Device preferences
-  const { cameraId, micId } = useDevicePreferences();
 
   // Check if Firebase is configured
   if (!isConfigured) {
@@ -128,8 +117,8 @@ function App() {
           setRoomCode("");
           setIsHost(false);
           setRoomState(null);
-          setLkToken(null);
-          setLkError("");
+
+
         }
       }, 150);
     });
@@ -140,49 +129,9 @@ function App() {
     };
   }, [roomCode, currentUser, screen]);
 
-  // Fetch LiveKit token when entering room
-  useEffect(() => {
-    if (!roomCode) return;
-    if (screen === "welcome") return;
-    if (!currentUser?.name) return;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        setLkError("");
-        setLkToken(null);
-
-        const res = await fetch("/.netlify/functions/livekit-token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ room: roomCode, name: currentUser.name }),
-        });
-
-        const body = await res.text();
-        let data;
-        try {
-          data = JSON.parse(body);
-        } catch {
-          throw new Error("The video service is unavailable. For local rooms, run npm run dev and open http://localhost:8888, then retry.");
-        }
-        if (!res.ok) throw new Error(data?.error || "LiveKit token request failed");
-        if (!data.token) throw new Error("The video service did not return a connection token. Please retry.");
-
-        if (!cancelled) setLkToken(data.token);
-      } catch (e) {
-        if (!cancelled) setLkError(String(e?.message || e));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [roomCode, screen, currentUser?.name, lkAttempt]);
-
-  const handleCreateRoom = (chosenDj, groupName, avatar, roomMode, externalVideoLink) => {
+  const handleCreateRoom = async (chosenDj, groupName, avatar, roomMode, password) => {
+    const passwordVerifier = roomMode === 'secret' ? await createRoomPassword(password) : null;
     const code = generateRoomCode();
-    setRoomCode(code);
 
     const updatedUser = { ...currentUser, name: chosenDj, group: groupName || "", avatar: avatar || "🎤" };
     setCurrentUser(updatedUser);
@@ -192,19 +141,12 @@ function App() {
     setIsHost(true);
 
     const roomRef = ref(database, `karaoke-rooms/${code}`);
-    set(roomRef, {
+    const newRoom = {
       hostId: updatedUser.id,
       hostName: chosenDj,
       createdAt: Date.now(),
       roomMode: roomMode,
-      externalVideoLink: externalVideoLink || null,
-      useExternalVideo: !!externalVideoLink,
-      micPolicy: roomMode === "karaoke" ? "auto" : "open",
-      hostControls: {
-        micsLocked: false,
-        autoMuteOnJoin: roomMode === "karaoke" || roomMode === "meeting",
-        onlySingerMic: roomMode === "karaoke",
-      },
+      ...(passwordVerifier ? { passwordVerifier } : {}),
       activeReadingId: null,
       activeSingerId: null,
       activeSingerName: null,
@@ -225,20 +167,27 @@ function App() {
         currentTime: 0,
         videoId: null,
       },
-    });
+    };
+    await set(roomRef, newRoom);
+    setRoomState(newRoom);
+    setRoomCode(code);
 
     // Auto-remove host from participants list on disconnect (browser close/refresh)
     const hostParticipantRef = ref(database, `karaoke-rooms/${code}/participants/${updatedUser.id}`);
     onDisconnect(hostParticipantRef).remove();
 
     // Auto-close the entire room when the host disconnects
-    onDisconnect(roomRef).remove();
+    if (roomMode !== 'secret') onDisconnect(roomRef).remove();
 
     setScreen("room");
   };
 
-  const handleJoinRoom = async (code, userName, groupName, avatar) => {
+  const handleJoinRoom = async (code, userName, groupName, avatar, password) => {
     const upper = code.toUpperCase();
+    const snapshot = await get(ref(database, `karaoke-rooms/${upper}`));
+    if (!snapshot.exists()) throw new Error('Room not found. Check the code and try again.');
+    if (!await verifyRoomPassword(snapshot.val(), password)) throw new Error('Incorrect password. Try again.');
+    setRoomState({ ...snapshot.val(), roomMode: getRoomMode(snapshot.val()) });
     setRoomCode(upper);
 
     const updatedUser = { ...currentUser, name: userName, group: groupName || "", avatar: avatar || "🎤" };
@@ -262,22 +211,6 @@ function App() {
 
     // Auto-remove participant on disconnect (browser close/refresh)
     onDisconnect(participantRef).remove();
-    // Also clean up their mute state on disconnect
-    const muteCleanupRef = ref(database, `karaoke-rooms/${upper}/participantMutes/${userName}`);
-    onDisconnect(muteCleanupRef).remove();
-
-    // Auto-mute on join if host has it enabled
-    try {
-      const controlsSnap = await get(ref(database, `karaoke-rooms/${upper}/hostControls`));
-      const controls = controlsSnap.val();
-      if (controls?.autoMuteOnJoin) {
-        const muteRef = ref(database, `karaoke-rooms/${upper}/participantMutes/${userName}`);
-        await set(muteRef, true);
-      }
-    } catch (e) {
-      console.error("Failed to check auto-mute setting:", e);
-    }
-
     setScreen("room");
     setIsHost(false);
   };
@@ -287,13 +220,17 @@ function App() {
     const roomRef = ref(database, `karaoke-rooms/${roomCode}`);
     // Cancel the onDisconnect so it doesn't fire after manual close
     onDisconnect(roomRef).cancel();
-    await remove(roomRef);
+    if (isSecretRoom(roomState)) {
+      await remove(ref(database, `karaoke-rooms/${roomCode}/participants/${currentUser.id}`));
+    } else {
+      await remove(roomRef);
+    }
     setScreen("welcome");
     setRoomCode("");
     setIsHost(false);
     setRoomState(null);
-    setLkToken(null);
-    setLkError("");
+
+
   };
 
   // Loading state
@@ -318,47 +255,9 @@ function App() {
     );
   }
 
-  // LiveKit wrapper states
-  if (lkError) {
-    return <div className="text-white p-6 space-y-4">
-      <p role="alert">Unable to connect video: {lkError}</p>
-      <button className="rounded-xl border border-fuchsia-400/55 px-5 py-3" onClick={() => { setLkError(""); setLkAttempt((value) => value + 1); }}>Retry connection</button>
-    </div>;
-  }
-
-  if (!lkToken) {
-    return <div className="text-white p-6">Connecting video…</div>;
-  }
-
-  const roomMode = roomState?.roomMode || roomState?.meta?.roomMode || "karaoke";
-  const isKaraoke = roomMode === "karaoke";
-
   return (
-    <LiveKitRoom
-      token={lkToken}
-      serverUrl={import.meta.env.VITE_LIVEKIT_URL}
-      connect={true}
-      audio={roomMode === "dj" ? (micId ? { deviceId: micId } : true) : false}
-      video={true}
-      options={{
-        videoCaptureDefaults: {
-          resolution: { width: 1280, height: 720 },
-        },
-      }}
-      style={{ minHeight: "100vh", overflow: "auto" }}
-      data-lk-theme="default"
-    >
-      <RoomAudioRenderer />
-      <StartAudio label="Enable room audio" className="fixed bottom-4 left-4 z-50 rounded-xl border border-fuchsia-400/55 bg-[#171125] px-4 py-3 text-white" />
-      {/* <EnableMediaOnJoin /> */}
-
-      {/* NA Simulator — disabled for real-people testing; uncomment to restore
-      {roomCode && (
-        <NASimulator roomCode={roomCode} roomState={roomState} />
-      )}
-      */}
-
-      {isHost ? (
+    <>
+      {isHost || isSecretRoom(roomState) ? (
         <HostView
           roomCode={roomCode}
           currentUser={currentUser}
@@ -372,7 +271,7 @@ function App() {
           roomState={roomState}
         />
       )}
-    </LiveKitRoom>
+    </>
   );
 }
 

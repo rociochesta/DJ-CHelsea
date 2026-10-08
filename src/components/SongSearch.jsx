@@ -13,8 +13,12 @@ function SongSearch({
   participants,
   naMembers,
   isParticipant,
+  allowMessage = false,
 }) {
   const [pendingVideo, setPendingVideo] = useState(null);
+  const [trackMessage, setTrackMessage] = useState('');
+  const [savingTrack, setSavingTrack] = useState(false);
+  const [trackError, setTrackError] = useState('');
 
   const outlineBtn =
     "border-fuchsia-500/35 hover:border-fuchsia-400/50 hover:shadow-[0_0_14px_rgba(232,121,249,0.16)]";
@@ -66,11 +70,26 @@ function SongSearch({
   };
 
   const handleAdd = (video) => {
-    if (!isParticipant) {
+    if (allowMessage || !isParticipant) {
+      setTrackMessage('');
+      setTrackError('');
       setPendingVideo(video);
     } else {
       onAddToQueue?.(video, currentUser?.name || "Someone");
     }
+  };
+
+  const confirmTrack = async () => {
+    if (!pendingVideo || savingTrack) return;
+    setSavingTrack(true);
+    setTrackError('');
+    try {
+      await onAddToQueue?.(pendingVideo, currentUser?.name || 'Someone', trackMessage);
+      setPendingVideo(null);
+      setTrackMessage('');
+    } catch {
+      setTrackError('Could not add this track. Your message is still here. Try again.');
+    } finally { setSavingTrack(false); }
   };
 
   const confirmSinger = (singer) => {
@@ -99,7 +118,7 @@ function SongSearch({
           <div className="w-full max-w-sm rounded-3xl border border-white/10 bg-[#0d0d1f] shadow-2xl overflow-hidden">
             {/* Modal header */}
             <div className="flex items-center justify-between p-5 border-b border-white/10">
-              <h3 className="font-bold text-lg">Who's singing?</h3>
+              <h3 className="font-bold text-lg">{allowMessage ? 'Leave a track' : "Who's singing?"}</h3>
               <button
                 onClick={() => setPendingVideo(null)}
                 className="w-8 h-8 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 flex items-center justify-center transition"
@@ -126,7 +145,13 @@ function SongSearch({
             </div>
 
             {/* Singer list */}
-            <div className="p-5 pt-3 space-y-2 max-h-64 overflow-y-auto">
+            {allowMessage ? <div className="p-5 space-y-4">
+              <label htmlFor="track-message" className="block text-sm font-semibold text-white/80">Message for the room <span className="font-normal text-white/50">(optional)</span></label>
+              <textarea id="track-message" rows={4} value={trackMessage} onChange={e => setTrackMessage(e.target.value)} placeholder="Why this song? Who is it for? Leave them a note." className="w-full rounded-xl border border-white/15 bg-white/5 p-3 text-white focus:outline-none focus:border-fuchsia-400/60" />
+              <p className="text-xs text-white/50">Your message appears below the player when this track plays.</p>
+              {trackError && <p role="alert" className="text-sm text-red-300">{trackError}</p>}
+              <button type="button" disabled={savingTrack} onClick={confirmTrack} className="w-full rounded-xl border border-fuchsia-400/50 px-4 py-3 font-semibold disabled:opacity-40">{savingTrack ? 'Adding track…' : 'Add to queue'}</button>
+            </div> : <div className="p-5 pt-3 space-y-2 max-h-64 overflow-y-auto">
               {allSingers.map((singer) => (
                 <button
                   key={singer.key}
@@ -159,7 +184,7 @@ function SongSearch({
                 </span>
                 <span className="text-sm">Someone else…</span>
               </button>
-            </div>
+            </div>}
           </div>
         </div>
       )}
