@@ -1,0 +1,6 @@
+English dictionary: ENABLE1 (Enhanced North American Benchmark Lexicon).
+Compiled by Mendel Cooper and Alan Beale. Released into the public domain.
+Source: https://github.com/dolph/dictionary/blob/master/enable1.txt
+Public-domain notice: https://github.com/BartMassey/wordlists/blob/main/README-enable2k.txt
+
+This is an independent word game using ENABLE1, not an official Words With Friends dictionary or integration.
