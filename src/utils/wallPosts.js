@@ -5,6 +5,7 @@ export function wallBlocks(post) {
   ];
 }
 export function wallMediaKind(block) {
+  if(block.type==='youtube'||block.type==='video')return 'video';
   if(block.type!=='image')return null;
   if(block.mediaKind==='doodle')return 'doodle';
   return block.giphyId || /^data:image\/gif[;,]/i.test(block.url||'') || /\.gif(?:[?#]|$)/i.test(block.url||'') ? 'gif' : 'photo';

@@ -1,3 +1,5 @@
+import {validWallVideoUrl} from './wallVideo.js';
+
 export function insertWallEmoji(blocks, selection, emoji) {
   const index = blocks[selection.index]?.type === 'text' ? selection.index : blocks.findIndex(block => block.type === 'text');
   if (index < 0) return { blocks, selection };
@@ -22,5 +24,7 @@ export function insertWallMedia(blocks, textIndex, start, end, media) {
 export function cleanWallDraft(blocks) {
   return blocks.flatMap(block => block.type === 'text'
     ? block.text.trim() ? [{ type: 'text', text: block.text.trim() }] : []
+    : block.type === 'video' ? validWallVideoUrl(block.url) ? [{type:'video',url:block.url}] : []
+    : block.type === 'youtube' ? /^[A-Za-z0-9_-]{11}$/.test(block.videoId || '') ? [{type:'youtube',videoId:block.videoId}] : []
     : [{ type: 'image', url: block.url, ...(block.mediaKind === 'doodle' ? { mediaKind: 'doodle' } : {}), ...(block.giphyId ? { giphyId: block.giphyId, sourceUrl: block.sourceUrl } : {}) }]);
 }
