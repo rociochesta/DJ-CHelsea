@@ -84,6 +84,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
       isPlaying: true,
       videoId: song.videoId || song.fileId,
       startTime: Date.now(),
+      pausedAtSeconds: null,
     });
     if (isSecret) { setDismissedVideo(null); openSecretGame(''); }
   };

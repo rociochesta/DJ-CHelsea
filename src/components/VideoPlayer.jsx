@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import YouTube from "react-youtube";
 import { database, ref, update } from "../utils/firebase";
+import { playbackPosition,playerPlaybackUpdate,seekPlaybackUpdate } from '../utils/playbackSync';
 
 function VideoPlayer({
   roomCode,
@@ -20,31 +21,32 @@ function VideoPlayer({
   const lastEndRef = useRef(0);
   const syncIntervalRef = useRef(null);
   const hostSyncLockRef = useRef(false);
+  const syncUnlockRef = useRef(null);
+  const broadcastPending = useRef(false);
+  const initializedPlayerRef = useRef(null);
 
   // PARTICIPANT SYNC
   useEffect(() => {
-    if (!player || !playerReady || !playbackState) return;
+    if (!player || !playerReady || !playbackState || playbackState.videoId !== currentSong?.videoId) return;
 
     if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
 
     try {
       if (playbackState.isPlaying && playbackState.videoId) {
-        const elapsed = Math.floor(
-          (Date.now() - playbackState.startTime) / 1000
-        );
+        const elapsed = playbackPosition(playbackState);
 
         hostSyncLockRef.current = true;
-        setTimeout(() => (hostSyncLockRef.current = false), 200);
+        clearTimeout(syncUnlockRef.current);
+        syncUnlockRef.current = setTimeout(() => (hostSyncLockRef.current = false), 500);
 
-        player.seekTo(elapsed, true);
-        player.playVideo();
+        if ((!isHost || initializedPlayerRef.current !== player) && Math.abs(player.getCurrentTime()-elapsed)>3) player.seekTo(elapsed, true);
+        initializedPlayerRef.current = player;
+        if(player.getPlayerState()!==1)player.playVideo();
 
         if (!isHost) {
           syncIntervalRef.current = setInterval(() => {
             try {
-              const currentElapsed = Math.floor(
-                (Date.now() - playbackState.startTime) / 1000
-              );
+              const currentElapsed = playbackPosition(playbackState);
               const playerTime = Math.floor(player.getCurrentTime());
 
               if (Math.abs(currentElapsed - playerTime) > 3) {
@@ -53,20 +55,36 @@ function VideoPlayer({
               }
             } catch {}
           }, 3000);
+        } else {
+          syncIntervalRef.current=setInterval(async()=>{
+            if(hostSyncLockRef.current||broadcastPending.current)return;
+            try{
+              if(player.getPlayerState()!==1)return;
+              const change=seekPlaybackUpdate(playbackState,player.getCurrentTime());
+              if(!change)return;
+              broadcastPending.current=true;
+              await update(ref(database,`karaoke-rooms/${roomCode}/playbackState`),change);
+            }catch{}finally{broadcastPending.current=false;}
+          },1000);
         }
       } else {
+        const paused=playbackPosition(playbackState);
+        if(!isHost&&Math.abs(player.getCurrentTime()-paused)>1)player.seekTo(paused,true);
         player.pauseVideo();
       }
     } catch {}
 
     return () => {
       if (syncIntervalRef.current) clearInterval(syncIntervalRef.current);
+      clearTimeout(syncUnlockRef.current);
+      hostSyncLockRef.current=false;
     };
-  }, [player, playerReady, playbackState]);
+  }, [player, playerReady, playbackState,isHost,roomCode,currentSong?.videoId]);
 
   useEffect(() => {
     setEmbedError(null);
     setPlayerReady(false);
+    setPlayer(null);
   }, [currentSong?.videoId]);
 
   const onReady = (e) => {
@@ -80,7 +98,8 @@ function VideoPlayer({
 
   // GLOBAL HOST PLAY/PAUSE BROADCAST
   const onStateChange = async (event) => {
-    if (!player) return;
+    const activePlayer=event.target;
+    if (!activePlayer || activePlayer.getVideoData()?.video_id !== currentSong?.videoId || playbackState?.videoId !== currentSong?.videoId) return;
 
     if (isHost && playbackState?.videoId) {
       if (hostSyncLockRef.current) return;
@@ -90,27 +109,12 @@ function VideoPlayer({
         `karaoke-rooms/${roomCode}/playbackState`
       );
 
-      if (event.data === 2) {
-        const t = Math.floor(player.getCurrentTime());
-        await update(playbackRef, { isPlaying: false, pausedAtSeconds: t });
-      }
-
-      if (event.data === 1) {
-        const paused =
-          typeof playbackState?.pausedAtSeconds === "number"
-            ? playbackState.pausedAtSeconds
-            : Math.floor(player.getCurrentTime());
-
-        await update(playbackRef, {
-          isPlaying: true,
-          startTime: Date.now() - paused * 1000,
-          pausedAtSeconds: null,
-        });
-      }
+      const change=playerPlaybackUpdate(playbackState,event.data,activePlayer.getCurrentTime());
+      if(change){try{await update(playbackRef,change);}catch{}}
     }
 
     if (!isHost && playbackState?.isPlaying === false && event.data === 1) {
-      player.pauseVideo();
+      activePlayer.pauseVideo();
       return;
     }
   };
@@ -160,6 +164,7 @@ function VideoPlayer({
             onEnd={onEnd}
             onStateChange={onStateChange}
             className="w-full h-full"
+            iframeClassName="w-full h-full"
           />
         ) : (
           <div role="alert" className="flex flex-col items-center justify-center gap-3 h-full p-5 text-center text-white">
