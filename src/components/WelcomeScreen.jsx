@@ -99,7 +99,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
       setNeedsPassword(secret);
       if (secret && !joinPassword) throw new Error('Enter the secret room name.');
       if (!await verifyRoomPassword(snapshot.val(), joinPassword)) throw new Error('Incorrect secret room name. Try again.');
-      await onJoinRoom(roomCode, participantName.trim(), participantGroup.trim(), participantAvatar, joinPassword, personalPassword, participantMood);
+      await onJoinRoom(roomCode, participantName.trim(), needsPassword ? '' : participantGroup.trim(), participantAvatar, joinPassword, personalPassword, participantMood);
       } catch (cause) { setEntryError(cause.message || 'Could not join the room. Please try again.'); }
       finally { setEntryBusy(false); }
     }
@@ -399,7 +399,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       ← Back
                     </button>
                     <h2 className="mt-3 text-2xl font-bold">Join the room</h2>
-                    <p className="mt-2 text-white/60">Name + room code. Secret rooms also need the secret name and your personal password.</p>
+                    <p className="mt-2 text-white/60">{needsPassword ? 'Your name, the secret room name, and your personal password.' : 'Your name and room code.'}</p>
                   </div>
 
                   <div className="md:col-span-3 rounded-2xl border border-white/10 bg-black/30 p-5 md:p-6 backdrop-blur-xl">
@@ -444,6 +444,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                         />
                       </div>
 
+                      {!needsPassword && <>
                       <div>
                         <label className="block text-sm font-semibold text-white/80 mb-2">
                           Group name <span className="text-white/40 font-normal">(optional)</span>
@@ -471,6 +472,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           required
                         />
                       </div>
+
+                      </>}
 
                       {needsPassword && <div>
                         <label htmlFor="join-room-password" className="block text-sm font-semibold text-white/80 mb-2">Secret room name</label>
