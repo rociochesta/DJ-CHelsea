@@ -1,6 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRoomPassword, verifyRoomPassword, playbackRoomMode, getRoomMode, isSecretRoom } from './secretRoom.js';
+import { secretProfileKey, createSecretProfile, verifySecretProfile } from './secretRoom.js';
+
+test('secret profiles identify the same name across devices and reject another password', async () => {
+  assert.equal(await secretProfileKey(' Rocio '), await secretProfileKey('ROCIO'));
+  assert.notEqual(await secretProfileKey('Rocio'), await secretProfileKey('Chelsea'));
+  const profile = await createSecretProfile('stable-id', 'Rocio', 'my password');
+  assert.equal(profile.id, 'stable-id');
+  assert.equal(await verifySecretProfile(profile, 'my password'), true);
+  assert.equal(await verifySecretProfile(profile, 'someone else'), false);
+  assert.equal(await verifySecretProfile(profile, ''), false);
+  await assert.rejects(createSecretProfile('id', 'Rocio', '   '), /personal password/);
+});
 
 test('secret room detection honors metadata and never bypasses stored password credentials', async () => {
   const credentials = await createRoomPassword('friends');

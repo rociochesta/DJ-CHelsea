@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Plus, ImagePlus, Link, Send, X, Pencil, Images, Youtube, Video } from 'lucide-react';
 import GiphyPicker from './GiphyPicker';
+import WallEmojiPicker from './WallEmojiPicker';
 import WallImage from './WallImage';
 import DrawingPad from './DrawingPad';
 import WallYouTube from './WallYouTube';
@@ -122,7 +123,7 @@ export default function WallComposer({ onPost, disabled, placeholder = 'Leave so
             <button type="button" onClick={() => { setMenuOpen(false); setLinkOpen(true); }} className="flex w-full items-center gap-2 rounded-xl p-3 text-left text-sm hover:bg-white/10"><Link className="h-4 w-4" />Image link</button>
           </div>}
         </div>
-        <div className="relative mr-auto"><button type="button" disabled={locked} aria-label="Add emoji" aria-expanded={emojiOpen} onClick={() => { setMenuOpen(false); setEmojiOpen(value => !value); }} className="rounded-full p-2 hover:bg-white/10">😊</button>{emojiOpen && <div aria-label="Choose an emoji" className="absolute bottom-full -left-8 z-20 mb-2 grid w-[272px] grid-cols-6 gap-1 rounded-2xl border border-white/15 bg-[#171020] p-2 shadow-xl" onKeyDown={event => { if (event.key === 'Escape') setEmojiOpen(false); }}>{['😏','🔥','👀','😈','😂','😘','🙈','💋','😎','🤔','✨','🌙','🎶','🎉','🍸','🎲','🫣','🤭','😜','🫠','🥂','💅','🤫','🍓'].map(emoji => <button key={emoji} type="button" disabled={locked} aria-label={`Insert ${emoji}`} onPointerDown={event => event.preventDefault()} onClick={() => addEmoji(emoji)} className="flex h-10 w-10 items-center justify-center rounded-lg text-xl hover:bg-white/10">{emoji}</button>)}</div>}</div>
+        <div className="relative mr-auto"><button type="button" disabled={locked} aria-label="Add emoji" aria-expanded={emojiOpen} onClick={() => { setMenuOpen(false); setEmojiOpen(value => !value); }} className="rounded-full p-2 hover:bg-white/10">😊</button>{emojiOpen && <WallEmojiPicker disabled={locked} onSelect={addEmoji} onClose={() => setEmojiOpen(false)} />}</div>
         {reading && <span role="status" className="text-xs text-white/40">Adding pictures…</span>}
         <div className="text-center"><button type="submit" aria-label={submitLabel} title={submitLabel} disabled={locked || !cleanWallDraft(blocks).length} className={`${wallStyle ? 'wall-send' : 'bg-fuchsia-600 hover:bg-fuchsia-500'} rounded-full p-2.5 text-white disabled:opacity-30`}><Send className="h-4 w-4" /></button>{wallStyle&&<p className="mt-1 text-[10px] text-white/40">{blocks.reduce((sum,block)=>sum+(block.type==='text'?block.text.length:0),0)} chars</p>}</div>
       </div>

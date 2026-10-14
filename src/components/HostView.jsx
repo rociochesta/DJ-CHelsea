@@ -1,17 +1,20 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { playbackRoomMode, getRoomMode, isSecretRoom } from '../utils/secretRoom';
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
 
 import VideoPlayer from "./VideoPlayer";
+import MoodPicker, { MoodIcon, MOODS } from './MoodPicker';
 import GoogleDrivePlayer from "./GoogleDrivePlayer";
 import SongQueue from "./SongQueue";
 import SongSearch from "./SongSearch";
 import StreamingQueue from "./StreamingQueue";
 import ChatPanel from "./ChatPanel";
 import RoomWall from './RoomWall';
-import QuestionForUs from './QuestionForUs';
+import QuestionForYou from './QuestionForYou';
+import { pendingQuestions } from '../utils/questionsForYou';
 import SecretGames from './SecretGames';
+import SecretMusicQuiz from './SecretMusicQuiz';
 import WordGame from './WordGame';
 import WheelGame from './WheelGame';
 import RevealGame from './RevealGame';
@@ -24,6 +27,18 @@ import MeetingReadingsList from "./MeetingReadingsList";
 import { Mic, Radio, MonitorPlay, Headphones, LockKeyhole, BookOpen, DoorOpen, ListMusic, ArrowDownWideNarrow } from "lucide-react";
 
 function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
+  const [moodOpen, setMoodOpen] = useState(false);
+  const [moodBusy, setMoodBusy] = useState(false);
+  const [moodError, setMoodError] = useState('');
+  const activeMood = roomState?.participants?.[currentUser?.id]?.mood || currentUser?.mood;
+  const changeMood = async mood => {
+    setMoodBusy(true); setMoodError('');
+    try {
+      await update(ref(database, `karaoke-rooms/${roomCode}/participants/${currentUser.id}`), { mood, moodUpdatedAt: Date.now() });
+      setMoodOpen(false);
+    } catch { setMoodError('Could not save your vibe. Please try again.'); }
+    finally { setMoodBusy(false); }
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -34,11 +49,25 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const openSecretGame = view => { setSecretGameView(view); sessionStorage.setItem(`secret-game-view:${roomCode}`,view); };
   // Determine room mode
   const isSecret = isSecretRoom(roomState);
+  const [questionPopupId, setQuestionPopupId] = useState(null);
+  const shownQuestions = useRef(new Set());
+  useEffect(() => {
+    if (!isSecret || questionPopupId) return;
+    const next = pendingQuestions(roomState?.questionsForYou, currentUser?.id).find(item => !shownQuestions.current.has(item.id));
+    if (next) {
+      shownQuestions.current.add(next.id);
+      setQuestionPopupId(next.id);
+    }
+  }, [isSecret, roomState?.questionsForYou, currentUser?.id, questionPopupId]);
+  const popupQuestion = roomState?.questionsForYou?.[questionPopupId];
+  useEffect(() => {
+    if (questionPopupId && (!popupQuestion || popupQuestion.answer)) setQuestionPopupId(null);
+  }, [questionPopupId, popupQuestion]);
   const roomMode = playbackRoomMode(getRoomMode(roomState));
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
   const quizFocus = !isSecret && isDJ && roomState?.gameInvitation?.type === 'music-quiz';
-  const secretGameFocus = isSecret && ['words','question','wheel','reveal','battleship'].includes(secretGameView);
+  const secretGameFocus = isSecret && ['words','question','wheel','reveal','battleship','music-quiz'].includes(secretGameView);
   const isKaraoke = roomMode === "karaoke";
   const isMeeting = roomMode === "meeting";
 
@@ -264,7 +293,10 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
           {isSecret ? <header className="flex items-center gap-3 px-1 py-2">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03]"><LockKeyhole className="h-4 w-4 text-white/80" /></div>
             <div className="min-w-0 flex-1"><h1 className="font-sans text-2xl font-semibold leading-tight text-white">Secret Room</h1><p className="mt-1 text-xs text-white/60">Good music. Questionable intentions.</p></div>
-            <span aria-label={`Here as ${currentUser?.name || 'Someone'}`} title={currentUser?.name || 'Someone'} className="wall-avatar shrink-0">{(currentUser?.name || '?').slice(0,1).toUpperCase()}</span>
+            <button type="button" onClick={() => setMoodOpen(!moodOpen)} aria-expanded={moodOpen} aria-label="Change your vibe" className="flex shrink-0 items-center gap-2 rounded-xl px-2 py-1 hover:bg-white/5 focus-visible:outline focus-visible:outline-fuchsia-400">
+              {activeMood ? <MoodIcon mood={activeMood} /> : <span className="wall-avatar">{(currentUser?.name || '?').slice(0,1).toUpperCase()}</span>}
+              <span className="hidden text-left sm:block"><span className="block text-sm text-white/90">{currentUser?.name}</span><span className="block text-xs text-white/55">{MOODS.find(m => m.id === activeMood)?.label || 'Pick your vibe'}</span></span>
+            </button>
           </header> : <div className="rounded-3xl overflow-hidden border border-white/10 bg-white/[0.03] backdrop-blur-md shadow-lg">
             <div className="p-6 sm:p-7">
               <div className="flex items-start justify-between gap-6">
@@ -345,11 +377,16 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
             </div>
           </div>}
 
+          {isSecret && moodOpen && <div className="max-w-lg rounded-2xl border border-white/10 bg-black/20 p-5">
+            <MoodPicker value={activeMood} onChange={changeMood} disabled={moodBusy} />
+            {moodError && <p role="alert" className="mt-3 text-sm text-rose-300">{moodError}</p>}
+          </div>}
+
           {/* Layout */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Left */}
             <div className="xl:col-span-2 space-y-6">
-              {secretGameFocus ? secretGameView === 'battleship' ? <Battleship roomCode={roomCode} currentUser={currentUser} game={roomState?.battleshipGame} featured onOpen={() => openSecretGame('battleship')} onClose={() => openSecretGame('')} /> : secretGameView === 'reveal' ? <RevealGame roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : secretGameView === 'words' ? <WordGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wordGame} featured onOpen={() => openSecretGame('words')} onClose={() => openSecretGame('')} /> : secretGameView === 'wheel' ? <WheelGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wheelGame} featured onOpen={() => openSecretGame('wheel')} onClose={() => openSecretGame('')} /> : <QuestionForUs roomCode={roomCode} currentUser={currentUser} game={roomState?.questionForUs} featured onClose={() => openSecretGame('')} /> : quizFocus ? <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
+              {secretGameFocus ? secretGameView === 'music-quiz' ? <SecretMusicQuiz roomCode={roomCode} currentUser={currentUser} games={roomState?.secretMusicQuizzes} onClose={() => openSecretGame('')} /> : secretGameView === 'battleship' ? <Battleship roomCode={roomCode} currentUser={currentUser} game={roomState?.battleshipGame} featured onOpen={() => openSecretGame('battleship')} onClose={() => openSecretGame('')} /> : secretGameView === 'reveal' ? <RevealGame roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : secretGameView === 'words' ? <WordGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wordGame} featured onOpen={() => openSecretGame('words')} onClose={() => openSecretGame('')} /> : secretGameView === 'wheel' ? <WheelGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wheelGame} featured onOpen={() => openSecretGame('wheel')} onClose={() => openSecretGame('')} /> : <QuestionForYou roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : quizFocus ? <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
                 <MeetingDisplay
                   activeReadingId={roomState?.activeReadingId || null}
                   isHost={true}
@@ -442,7 +479,10 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
 
               {isSecret ? <>
                 {currentSong && <div className="rounded-3xl border border-rose-300/20 bg-white/[0.03] p-5 space-y-3"><p className="text-xs uppercase tracking-widest text-rose-200/55">Now playing</p><p className="font-semibold text-sm">{currentSong.title}</p>{!secretVideoFocus && <button type="button" onClick={() => { setDismissedVideo(null); openSecretGame(''); }} className="rounded-xl border border-rose-300/30 px-4 py-2 text-sm text-rose-200">Open video</button>}</div>}
-                <div className="lounge-track-search rounded-2xl border p-5"><SongSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} isSearching={isSearching} searchResults={searchResults} onAddToQueue={handleAddToQueue} hasSearched={hasSearched} currentUser={currentUser} participants={participants} naMembers={naMembers} isParticipant={false} allowMessage={true} /></div>
+                <div className="lounge-queue rounded-2xl border p-5">
+                  <SongQueue queue={queue} onPlaySong={handlePlaySong} onDeleteSong={handleDeleteSong} onMoveSongUp={handleMoveSongUp} onMoveSongDown={handleMoveSongDown} isHost={true} compactCollapse={true} />
+                </div>
+                <div className="lounge-track-search rounded-2xl border p-5"><SongSearch searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSearch={handleSearch} isSearching={isSearching} searchResults={searchResults} onAddToQueue={handleAddToQueue} hasSearched={hasSearched} currentUser={currentUser} participants={participants} naMembers={naMembers} isParticipant={false} allowMessage={true} collapsible={true} /></div>
               </> : <ChatPanel
                 roomCode={roomCode}
                 currentUser={memoizedUser}
@@ -450,7 +490,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                 inline={true}
               />}
 
-              {!isStreaming && !isMeeting && !quizFocus && (
+              {!isSecret && !isStreaming && !isMeeting && !quizFocus && (
                 <div className="lounge-queue rounded-2xl border p-5">
                   <SongQueue
                     queue={queue}
@@ -469,6 +509,11 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
       </div>
 
       {/* Host Control Panel */}
+      {isSecret && popupQuestion && !popupQuestion.answer && <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="A question for you" onKeyDown={event => { if (event.key === 'Escape') setQuestionPopupId(null); }}>
+        <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl border border-white/15 bg-[#1d1726] p-5 sm:p-7">
+          <QuestionForYou key={popupQuestion.id} roomCode={roomCode} currentUser={currentUser} roomState={roomState} questionOnly={popupQuestion} onClose={() => setQuestionPopupId(null)} />
+        </div>
+      </div>}
 
 
       {/* Reactions and Settings */}

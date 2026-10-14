@@ -5,7 +5,8 @@ import WallComposer from './WallComposer';
 import WallImage from './WallImage';
 import WallYouTube from './WallYouTube';
 import WallVideo from './WallVideo';
-import { wallBlocks,wallMediaKind,filterWallPosts } from '../utils/wallPosts';
+import WallPostInteractions from './WallPostInteractions';
+import { wallBlocks,filterWallPosts } from '../utils/wallPosts';
 
 export default function RoomWall({ roomCode, currentUser }) {
   const [posts, setPosts] = useState([]);
@@ -48,7 +49,8 @@ export default function RoomWall({ roomCode, currentUser }) {
         const date = new Date(item.timestamp || 0);
         return <article key={item.id} className="wall-post min-w-0 rounded-2xl border border-white/10 bg-black/20 p-3 space-y-3">
           <div className="flex items-start justify-between gap-2"><div className="flex min-w-0 items-center gap-2"><span aria-hidden="true" className="wall-avatar wall-avatar-small shrink-0">{(item.userName||'?').slice(0,1).toUpperCase()}</span><div className="min-w-0"><p className="font-medium text-xs break-words">{item.userName || 'Someone'}</p><time className="mt-1 block text-[10px] text-white/50" dateTime={date.toISOString()}>{date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} · {date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</time></div></div>{item.userId === currentUser?.id && <button type="button" disabled={!!deleteBusy} onClick={() => deletePost(item)} aria-label="Delete your post" className="shrink-0 text-white/40 hover:text-red-300 disabled:opacity-40"><Trash2 className="h-4 w-4" /></button>}</div>
-          {content.map((block, index) => block.type === 'text' ? <p key={index} className="whitespace-pre-wrap break-words text-sm text-white/90">{block.text}</p> : block.type==='video' ? <WallVideo key={index} url={block.url}/> : block.type==='youtube' ? <WallYouTube key={index} videoId={block.videoId}/> : <div key={index} className="space-y-1"><div className="relative"><span className="wall-media-badge">{wallMediaKind(block)==='doodle'?'✎ Doodle':wallMediaKind(block)==='gif'?'GIF':'Photo'}</span><WallImage src={block.url} /></div>{block.giphyId && <a href={block.sourceUrl || 'https://giphy.com/'} target="_blank" rel="noopener noreferrer" className="block text-xs font-semibold text-white/50">Powered By GIPHY</a>}</div>)}
+          {content.map((block, index) => block.type === 'text' ? <p key={index} className="whitespace-pre-wrap break-words text-sm text-white/90">{block.text}</p> : block.type==='video' ? <WallVideo key={index} url={block.url}/> : block.type==='youtube' ? <WallYouTube key={index} videoId={block.videoId}/> : <div key={index} className="space-y-1"><WallImage src={block.url} />{block.giphyId && <a href={block.sourceUrl || 'https://giphy.com/'} target="_blank" rel="noopener noreferrer" className="block text-xs font-semibold text-white/50">Powered By GIPHY</a>}</div>)}
+          <WallPostInteractions roomCode={roomCode} post={item} currentUser={currentUser} />
         </article>;
       })}
     </div>

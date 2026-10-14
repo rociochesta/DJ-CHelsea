@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 
-import { database, ref, onValue, set, get, remove, onDisconnect, isConfigured } from "./utils/firebase";
+import { database, ref, onValue, set, get, remove, onDisconnect, runTransaction, isConfigured } from "./utils/firebase";
 import { generateRoomCode, generateUserId } from "./utils/helpers";
-import { createRoomPassword, verifyRoomPassword, playbackRoomMode, getRoomMode, isSecretRoom } from './utils/secretRoom';
+import { createRoomPassword, verifyRoomPassword, playbackRoomMode, getRoomMode, isSecretRoom, secretProfileKey, createSecretProfile, verifySecretProfile } from './utils/secretRoom';
 
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
@@ -129,11 +129,13 @@ function App() {
     };
   }, [roomCode, currentUser, screen]);
 
-  const handleCreateRoom = async (chosenDj, groupName, avatar, roomMode, password) => {
+  const handleCreateRoom = async (chosenDj, groupName, avatar, roomMode, password, personalPassword, mood = 'happy') => {
     const passwordVerifier = roomMode === 'secret' ? await createRoomPassword(password) : null;
+    const profile = roomMode === 'secret' ? await createSecretProfile(generateUserId(), chosenDj, personalPassword) : null;
+    const profileKey = profile ? await secretProfileKey(chosenDj) : null;
     const code = generateRoomCode();
 
-    const updatedUser = { ...currentUser, name: chosenDj, group: groupName || "", avatar: avatar || "🎤" };
+    const updatedUser = { ...currentUser, ...(profile ? { id: profile.id, mood } : {}), name: chosenDj, group: groupName || "", avatar: avatar || "🎤" };
     setCurrentUser(updatedUser);
     localStorage.setItem("karaoke-username", chosenDj);
     localStorage.setItem("karaoke-djname", chosenDj);
@@ -146,7 +148,7 @@ function App() {
       hostName: chosenDj,
       createdAt: Date.now(),
       roomMode: roomMode,
-      ...(passwordVerifier ? { passwordVerifier } : {}),
+      ...(passwordVerifier ? { passwordVerifier, secretProfiles: { [profileKey]: profile } } : {}),
       activeReadingId: null,
       activeSingerId: null,
       activeSingerName: null,
@@ -158,6 +160,7 @@ function App() {
           name: chosenDj,
           group: groupName || "",
           avatar: avatar || "🎤",
+          ...(profile ? { mood, moodUpdatedAt: Date.now() } : {}),
           role: "host",
           joinedAt: Date.now(),
         },
@@ -174,7 +177,7 @@ function App() {
 
     // Auto-remove host from participants list on disconnect (browser close/refresh)
     const hostParticipantRef = ref(database, `karaoke-rooms/${code}/participants/${updatedUser.id}`);
-    onDisconnect(hostParticipantRef).remove();
+    if (roomMode !== 'secret') onDisconnect(hostParticipantRef).remove();
 
     // Auto-close the entire room when the host disconnects
     if (roomMode !== 'secret') onDisconnect(roomRef).remove();
@@ -182,15 +185,29 @@ function App() {
     setScreen("room");
   };
 
-  const handleJoinRoom = async (code, userName, groupName, avatar, password) => {
+  const handleJoinRoom = async (code, userName, groupName, avatar, password, personalPassword, mood = 'happy') => {
     const upper = code.toUpperCase();
     const snapshot = await get(ref(database, `karaoke-rooms/${upper}`));
     if (!snapshot.exists()) throw new Error('Room not found. Check the code and try again.');
-    if (!await verifyRoomPassword(snapshot.val(), password)) throw new Error('Incorrect password. Try again.');
+    if (!await verifyRoomPassword(snapshot.val(), password)) throw new Error('Incorrect secret room name. Try again.');
+    let profile = null;
+    if (isSecretRoom(snapshot.val())) {
+      const key = await secretProfileKey(userName);
+      const profileRef = ref(database, `karaoke-rooms/${upper}/secretProfiles/${key}`);
+      const existing = await get(profileRef);
+      if (existing.exists()) {
+        profile = existing.val();
+      } else {
+        const candidate = await createSecretProfile(generateUserId(), userName, personalPassword);
+        const result = await runTransaction(profileRef, stored => stored || candidate);
+        profile = result.snapshot.val();
+      }
+      if (!await verifySecretProfile(profile, personalPassword)) throw new Error('Incorrect personal password for this name. Try again.');
+    }
     setRoomState({ ...snapshot.val(), roomMode: getRoomMode(snapshot.val()) });
     setRoomCode(upper);
 
-    const updatedUser = { ...currentUser, name: userName, group: groupName || "", avatar: avatar || "🎤" };
+    const updatedUser = { ...currentUser, ...(profile ? { id: profile.id, mood } : {}), name: userName, group: groupName || "", avatar: avatar || "🎤" };
     setCurrentUser(updatedUser);
     localStorage.setItem("karaoke-username", userName);
 
@@ -205,14 +222,15 @@ function App() {
       name: userName,
       group: groupName || "",
       avatar: avatar || "🎤",
-      role: "participant",
+      ...(profile ? { mood, moodUpdatedAt: Date.now() } : {}),
+      role: snapshot.val().hostId === updatedUser.id ? "host" : "participant",
       joinedAt: Date.now(),
     });
 
     // Auto-remove participant on disconnect (browser close/refresh)
-    onDisconnect(participantRef).remove();
+    if (!isSecretRoom(snapshot.val())) onDisconnect(participantRef).remove();
     setScreen("room");
-    setIsHost(false);
+    setIsHost(snapshot.val().hostId === updatedUser.id);
   };
 
   const handleCloseRoom = async () => {

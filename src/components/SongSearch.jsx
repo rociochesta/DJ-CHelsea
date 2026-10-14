@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Plus, Music, X } from "lucide-react";
+import { Search, Plus, Minus, Music, X } from "lucide-react";
 
 function SongSearch({
   searchQuery,
@@ -14,7 +14,9 @@ function SongSearch({
   naMembers,
   isParticipant,
   allowMessage = false,
+  collapsible = false,
 }) {
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [pendingVideo, setPendingVideo] = useState(null);
   const [trackMessage, setTrackMessage] = useState('');
   const [savingTrack, setSavingTrack] = useState(false);
@@ -190,11 +192,15 @@ function SongSearch({
       )}
 
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className={`flex items-center gap-2 ${isCollapsed ? '' : 'mb-4'}`}>
         <Music className="w-5 h-5 text-white/60" />
         <h3 className="text-xl font-bold">Find a track</h3>
+        {collapsible && <button type="button" onClick={() => setIsCollapsed(value => !value)} aria-label={isCollapsed ? 'Expand search' : 'Minimize search'} aria-expanded={!isCollapsed} title={isCollapsed ? 'Expand search' : 'Minimize search'} className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-white/75 transition hover:border-white/20">
+          {isCollapsed ? <Plus className="h-5 w-5" /> : <Minus className="h-5 w-5" />}
+        </button>}
       </div>
 
+      <div hidden={collapsible && isCollapsed}>
       {/* Search bar */}
       <form onSubmit={handleSearch} className="mb-4 flex gap-3">
         <input
@@ -283,6 +289,7 @@ function SongSearch({
           <div>No results found</div>
         </div>
       )}
+      </div>
     </div>
   );
 }

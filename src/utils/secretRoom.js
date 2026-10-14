@@ -20,3 +20,19 @@ export async function verifyRoomPassword(room, password) {
   if (!password || !credentials?.hash || !Array.isArray(credentials.salt)) return false;
   return (await derivePassword(password, credentials.salt)) === credentials.hash;
 }
+
+export async function secretProfileKey(name) {
+  const normalized = name.trim().normalize('NFKC').toLocaleLowerCase('en-US');
+  if (!normalized) throw new Error('Enter your name.');
+  const bits = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(normalized));
+  return Array.from(new Uint8Array(bits), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export async function createSecretProfile(id, name, password) {
+  if (!password?.trim()) throw new Error('Choose your personal password.');
+  return { id, name: name.trim(), passwordVerifier: await createRoomPassword(password) };
+}
+
+export async function verifySecretProfile(profile, password) {
+  return verifyRoomPassword({ roomMode: 'secret', passwordVerifier: profile?.passwordVerifier }, password);
+}

@@ -8,6 +8,7 @@ function SongQueue({
   onMoveSongUp,
   onMoveSongDown,
   isHost,
+  compactCollapse = false,
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -31,7 +32,7 @@ function SongQueue({
   return (
     <div>
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-4">
+      <div className={`flex items-start justify-between gap-4 ${isCollapsed && compactCollapse ? '' : 'mb-4'}`}>
         <div className="min-w-0">
           <div className="text-xs tracking-widest uppercase text-white/50">Up Next</div>
           <h3 className="text-xl md:text-2xl font-extrabold flex items-baseline gap-2">
@@ -41,10 +42,10 @@ function SongQueue({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md text-xs text-white/70">
+          {!compactCollapse && <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-md text-xs text-white/70">
             <ListMusic className="w-4 h-4 text-white/55" />
             {isHost ? "Host controls" : "View only"}
-          </div>
+          </div>}
 
           {/* + / - */}
           <button
@@ -57,6 +58,8 @@ function SongQueue({
               outlineBtn("neutral"),
             ].join(" ")}
             title={isCollapsed ? "Expand" : "Collapse"}
+            aria-label={isCollapsed ? "Expand queue" : "Minimize queue"}
+            aria-expanded={!isCollapsed}
           >
             {isCollapsed ? (
               <Plus className="w-5 h-5 mx-auto" />
@@ -68,11 +71,11 @@ function SongQueue({
       </div>
 
       {/* Collapsed state */}
-      {isCollapsed ? (
+      {isCollapsed ? (compactCollapse ? null : (
         <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md p-4 text-white/55 text-sm">
           Queue collapsed.
         </div>
-      ) : sortedQueue.length === 0 ? (
+      )) : sortedQueue.length === 0 ? (
         <div className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md p-6 text-center">
           <div className="w-12 h-12 mx-auto rounded-2xl border border-white/10 bg-white/[0.03] flex items-center justify-center">
             <ListMusic className="w-6 h-6 text-white/55" />

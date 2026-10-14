@@ -13,6 +13,8 @@ import {
 import { database, ref, onValue, get } from "../utils/firebase";
 import { isSecretRoom, verifyRoomPassword, getRoomMode } from '../utils/secretRoom';
 
+import MoodPicker from './MoodPicker';
+
 const AVATAR_OPTIONS = ["🎤","🎵","🎶","🎸","🥁","🎹","🎧","🌟","🔥","💫","✨","🌈","💎","👑","🏆","❤️","🙏","💪","🌊","🌺","😊","🎯","🦋","🌙","🃏"];
 
 function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
@@ -22,6 +24,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   // ✅ separate names (future-proof for host transfer)
   const [hostName, setHostName] = useState("");
   const [hostGroup, setHostGroup] = useState("");
+  const [hostMood, setHostMood] = useState('happy');
+  const [participantMood, setParticipantMood] = useState('happy');
   const [hostAvatar, setHostAvatar] = useState("🎤");
   const [participantName, setParticipantName] = useState("");
   const [participantGroup, setParticipantGroup] = useState("");
@@ -31,6 +35,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
   const [roomMode, setRoomMode] = useState("dj");
   const [hostPassword, setHostPassword] = useState('');
   const [joinPassword, setJoinPassword] = useState('');
+  const [hostPersonalPassword, setHostPersonalPassword] = useState('');
+  const [personalPassword, setPersonalPassword] = useState('');
   const [needsPassword, setNeedsPassword] = useState(false);
   const [entryError, setEntryError] = useState('');
   const [entryBusy, setEntryBusy] = useState(false);
@@ -91,18 +97,18 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
       if (!snapshot.exists()) throw new Error('Room not found. Check the code and try again.');
       const secret = isSecretRoom(snapshot.val());
       setNeedsPassword(secret);
-      if (secret && !joinPassword) throw new Error('Enter the password for this Secret room.');
-      if (!await verifyRoomPassword(snapshot.val(), joinPassword)) throw new Error('Incorrect password. Try again.');
-      await onJoinRoom(roomCode, participantName.trim(), participantGroup.trim(), participantAvatar, joinPassword);
+      if (secret && !joinPassword) throw new Error('Enter the secret room name.');
+      if (!await verifyRoomPassword(snapshot.val(), joinPassword)) throw new Error('Incorrect secret room name. Try again.');
+      await onJoinRoom(roomCode, participantName.trim(), participantGroup.trim(), participantAvatar, joinPassword, personalPassword, participantMood);
       } catch (cause) { setEntryError(cause.message || 'Could not join the room. Please try again.'); }
       finally { setEntryBusy(false); }
     }
   };
 
   const handleCreateSubmit = async () => {
-    if (entryBusy || !hostName.trim() || (roomMode === 'secret' && !hostPassword.trim())) return;
+    if (entryBusy || !hostName.trim() || (roomMode === 'secret' && (!hostPassword.trim() || !hostPersonalPassword.trim()))) return;
     setEntryBusy(true); setEntryError('');
-    try { await onCreateRoom(getHostName(), hostGroup.trim(), hostAvatar, roomMode, hostPassword); }
+    try { await onCreateRoom(getHostName(), hostGroup.trim(), hostAvatar, roomMode, hostPassword, hostPersonalPassword, hostMood); }
     catch (cause) { setEntryError(cause.message || 'Could not create the room. Please try again.'); }
     finally { setEntryBusy(false); }
   };
@@ -118,7 +124,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
     { t: "Jam", d: "Queue the song you’re definitely over that person about. Then lose the music quiz. Stay humble.", chip: "Music • games • suspiciously specific lyrics", Icon: Headphones },
     { t: "Karaoke", d: "I can’t promise we’ll hit the notes. I can promise someone will sing like the divorce is final.", chip: "Songs • lyrics • consequences", Icon: Mic },
     { t: "Streaming", d: "Watch together. Escape your own plot for a bit. Judge someone else’s terrible decisions.", chip: "Watch parties • synced playback", Icon: MonitorPlay },
-    { t: "Secret room", d: "Bring your friends and a password. Keep the playlist and the inside jokes in the room.", chip: "Password • music • games", Icon: LockKeyhole },
+    { t: "Secret room", d: "Bring your friends who know the secret name. Keep the playlist and the inside jokes in the room.", chip: "Secret name • music • games", Icon: LockKeyhole },
   ];
 
   return (
@@ -267,6 +273,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                   <h2 className="text-2xl font-bold mb-2">Create a room</h2>
                   <p className="text-white/60 mb-6">Host name first. Chaos second.</p>
 
+                  {roomMode === 'secret' ? <div className="mb-6"><MoodPicker value={hostMood} onChange={setHostMood} /></div> : <>
                   {/* Avatar picker */}
                   <div className="mb-4">
                     <label className="block text-sm font-semibold text-white/80 mb-2">
@@ -289,6 +296,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       ))}
                     </div>
                   </div>
+
+                  </>}
 
                   {/* Host name */}
                   <div className="mb-4">
@@ -347,16 +356,19 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       active={roomMode === "secret"}
                       onClick={() => setRoomMode("secret")}
                       title="Secret room"
-                      subtitle="The Jam experience, with a password for your friends."
+                      subtitle="Only friends who know the secret room name can enter."
                       Icon={LockKeyhole}
                     />
                   </div>
 
 
                   {roomMode === 'secret' && <div className="mb-6">
-                    <label htmlFor="secret-room-password" className="block text-sm font-semibold text-white/80 mb-2">Room password</label>
-                    <input id="secret-room-password" type="password" autoComplete="new-password" value={hostPassword} onChange={e => setHostPassword(e.target.value)} placeholder="Choose a password" required className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70" />
-                    <p className="mt-2 text-sm text-white/60">Share this password with the friends you want to invite.</p>
+                    <label htmlFor="secret-room-password" className="block text-sm font-semibold text-white/80 mb-2">Secret room name</label>
+                    <input id="secret-room-password" type="password" autoComplete="new-password" value={hostPassword} onChange={e => setHostPassword(e.target.value)} placeholder="Choose the secret room name" required className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70" />
+                    <p className="mt-2 text-sm text-white/60">The name is the secret. Share it only with the friends you want to invite.</p>
+                    <label htmlFor="host-personal-password" className="block text-sm font-semibold text-white/80 mt-4 mb-2">Your personal password</label>
+                    <input id="host-personal-password" type="password" autoComplete="new-password" value={hostPersonalPassword} onChange={e => setHostPersonalPassword(e.target.value)} placeholder="Choose your own password" required className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70" />
+                    <p className="mt-2 text-sm text-white/60">Use the same name and personal password on your phone and browser.</p>
                   </div>}
 
                   <button
@@ -387,11 +399,12 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       ← Back
                     </button>
                     <h2 className="mt-3 text-2xl font-bold">Join the room</h2>
-                    <p className="mt-2 text-white/60">Name + 6-character code.</p>
+                    <p className="mt-2 text-white/60">Name + room code. Secret rooms also need the secret name and your personal password.</p>
                   </div>
 
                   <div className="md:col-span-3 rounded-2xl border border-white/10 bg-black/30 p-5 md:p-6 backdrop-blur-xl">
                     <form onSubmit={handleJoinSubmit} className="space-y-4">
+                      {needsPassword ? <MoodPicker value={participantMood} onChange={setParticipantMood} /> : <>
                       {/* Avatar picker */}
                       <div>
                         <label className="block text-sm font-semibold text-white/80 mb-2">
@@ -414,6 +427,8 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                           ))}
                         </div>
                       </div>
+
+                      </>}
 
                       <div>
                         <label className="block text-sm font-semibold text-white/80 mb-2">
@@ -458,13 +473,16 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
                       </div>
 
                       {needsPassword && <div>
-                        <label htmlFor="join-room-password" className="block text-sm font-semibold text-white/80 mb-2">Room password</label>
-                        <input id="join-room-password" type="password" autoComplete="current-password" value={joinPassword} onChange={e => setJoinPassword(e.target.value)} placeholder="Enter the room password" required className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70" />
+                        <label htmlFor="join-room-password" className="block text-sm font-semibold text-white/80 mb-2">Secret room name</label>
+                        <input id="join-room-password" type="password" autoComplete="current-password" value={joinPassword} onChange={e => setJoinPassword(e.target.value)} placeholder="Enter the secret room name" required className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70" />
+                        <label htmlFor="personal-password" className="block text-sm font-semibold text-white/80 mt-4 mb-2">Your personal password</label>
+                    <input id="personal-password" type="password" autoComplete="current-password" value={personalPassword} onChange={e => setPersonalPassword(e.target.value)} placeholder="Enter or choose your own password" required className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-fuchsia-400/70" />
+                    <p className="mt-2 text-sm text-white/60">First visit? Choose a password. Returning? Use the same name and password on any device.</p>
                       </div>}
 
                       <button
                         type="submit"
-                        disabled={entryBusy || roomCode.length !== 6 || !participantName.trim() || (needsPassword && !joinPassword)}
+                        disabled={entryBusy || roomCode.length !== 6 || !participantName.trim() || (needsPassword && (!joinPassword || !personalPassword))}
                         className="w-full px-6 py-3 rounded-xl font-semibold
                           border border-white/15 bg-white/5
                           disabled:opacity-40 disabled:cursor-not-allowed
