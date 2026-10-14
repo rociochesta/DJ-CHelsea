@@ -2,6 +2,29 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRoomPassword, verifyRoomPassword, playbackRoomMode, getRoomMode, isSecretRoom } from './secretRoom.js';
 import { secretProfileKey, createSecretProfile, verifySecretProfile } from './secretRoom.js';
+import { restoreLegacyProfile, secretOnlineCount } from './secretRoom.js';
+
+test('password profile restores legacy host and game identities without changing game data', () => {
+  const profile = { id: 'new', name: 'Rocio', passwordVerifier: { hash: 'verified' } };
+  const game = { players: { old: { name: 'Rocio', score: 26, rack: ['A'] }, lt: { name: 'LT' } }, turn: 'old' };
+  const room = { hostName: 'Rocio', hostId: 'old', wordGame: game, secretProfiles: { rocio: profile } };
+  assert.equal(restoreLegacyProfile(room, profile).id, 'old');
+  assert.equal(restoreLegacyProfile({ wordGame: game }, profile).id, 'old');
+  assert.equal(game.turn, 'old');
+  assert.equal(game.players.old.score, 26);
+  assert.equal(restoreLegacyProfile({ ...room, secretProfiles: { other: { name: 'Other', id: 'old' } } }, profile).id, 'new');
+});
+
+test('presence counts a person once across devices and excludes disconnected and stale profiles', () => {
+  const now = 200000;
+  const room = { participants: { old: {}, new: {}, lt: {} }, presence: { rocio: { browser: { lastSeen: now }, phone: { lastSeen: now } }, lt: { old: { lastSeen: 1 } } } };
+  assert.equal(secretOnlineCount(room, now), 1);
+  delete room.presence.rocio.phone;
+  assert.equal(secretOnlineCount(room, now), 1);
+  delete room.presence.rocio.browser;
+  assert.equal(secretOnlineCount(room, now), 0);
+  assert.equal(secretOnlineCount({ participants: room.participants }, now), 0);
+});
 
 test('secret profiles identify the same name across devices and reject another password', async () => {
   assert.equal(await secretProfileKey(' Rocio '), await secretProfileKey('ROCIO'));

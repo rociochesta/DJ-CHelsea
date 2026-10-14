@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import { database, ref, onValue, set, get, remove, onDisconnect, runTransaction, isConfigured } from "./utils/firebase";
 import { generateRoomCode, generateUserId } from "./utils/helpers";
-import { createRoomPassword, verifyRoomPassword, playbackRoomMode, getRoomMode, isSecretRoom, secretProfileKey, createSecretProfile, verifySecretProfile } from './utils/secretRoom';
+import { createRoomPassword, verifyRoomPassword, playbackRoomMode, getRoomMode, isSecretRoom, secretProfileKey, createSecretProfile, verifySecretProfile, restoreLegacyProfile } from './utils/secretRoom';
 
 import WelcomeScreen from "./components/WelcomeScreen";
 import HostView from "./components/HostView";
@@ -129,6 +129,27 @@ function App() {
     };
   }, [roomCode, currentUser, screen]);
 
+  // Device-specific presence keeps one device from marking another offline.
+  useEffect(() => {
+    if (screen !== 'room' || !roomCode || !currentUser?.id || !isSecretRoom(roomState)) return;
+    const sessionId = crypto.randomUUID();
+    const presenceRef = ref(database, `karaoke-rooms/${roomCode}/presence/${currentUser.id}/${sessionId}`);
+    let active = true;
+    let heartbeat;
+    const unsubscribe = onValue(ref(database, '.info/connected'), async snapshot => {
+      clearInterval(heartbeat);
+      if (!snapshot.val()) return;
+      try {
+        await onDisconnect(presenceRef).remove();
+        if (!active) { await onDisconnect(presenceRef).cancel(); return; }
+        await set(presenceRef, { lastSeen: Date.now() });
+        if (!active) { await remove(presenceRef); return; }
+        heartbeat = setInterval(() => { if (active) set(presenceRef, { lastSeen: Date.now() }).catch(() => {}); }, 30000);
+      } catch (error) { console.error('Could not update room presence', error); }
+    });
+    return () => { active = false; clearInterval(heartbeat); unsubscribe(); remove(presenceRef).catch(() => {}); };
+  }, [screen, roomCode, currentUser?.id, isSecretRoom(roomState)]);
+
   const handleCreateRoom = async (chosenDj, groupName, avatar, roomMode, password, personalPassword, mood = 'happy') => {
     const passwordVerifier = roomMode === 'secret' ? await createRoomPassword(password) : null;
     const profile = roomMode === 'secret' ? await createSecretProfile(generateUserId(), chosenDj, personalPassword) : null;
@@ -203,6 +224,15 @@ function App() {
         profile = result.snapshot.val();
       }
       if (!await verifySecretProfile(profile, personalPassword)) throw new Error('Incorrect personal password for this name. Try again.');
+      const verifiedHash = profile.passwordVerifier.hash;
+      const restored = await runTransaction(ref(database, `karaoke-rooms/${upper}`), room => {
+        const stored = room?.secretProfiles?.[key];
+        if (!stored || stored.passwordVerifier?.hash !== verifiedHash) return;
+        const migrated = restoreLegacyProfile(room, stored);
+        return { ...room, secretProfiles: { ...room.secretProfiles, [key]: migrated } };
+      });
+      if (!restored.committed) throw new Error('Your profile changed. Please sign in again.');
+      profile = restored.snapshot.val().secretProfiles[key];
     }
     setRoomState({ ...snapshot.val(), roomMode: getRoomMode(snapshot.val()) });
     setRoomCode(upper);

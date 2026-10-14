@@ -11,7 +11,7 @@ import {
   LockKeyhole,
 } from "lucide-react";
 import { database, ref, onValue, get } from "../utils/firebase";
-import { isSecretRoom, verifyRoomPassword, getRoomMode } from '../utils/secretRoom';
+import { isSecretRoom, verifyRoomPassword, getRoomMode, secretOnlineCount } from '../utils/secretRoom';
 
 import MoodPicker from './MoodPicker';
 
@@ -59,7 +59,7 @@ function WelcomeScreen({ onCreateRoom, onJoinRoom }) {
           hostName: room.hostName || "Unknown",
           roomMode: getRoomMode(room),
           participantCount:
-            (room.participants ? Object.keys(room.participants).length : 0) +
+            (isSecretRoom(room) ? secretOnlineCount(room) : (room.participants ? Object.keys(room.participants).length : 0)) +
             // TEST ONLY: include fake NA members in room count — remove for production
             (room.naMembers
               ? Object.values(room.naMembers).filter((m) => m.active).length

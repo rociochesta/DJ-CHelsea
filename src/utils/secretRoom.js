@@ -36,3 +36,26 @@ export async function createSecretProfile(id, name, password) {
 export async function verifySecretProfile(profile, password) {
   return verifyRoomPassword({ roomMode: 'secret', passwordVerifier: profile?.passwordVerifier }, password);
 }
+
+const normalizeName = name => String(name || '').trim().normalize('NFKC').toLocaleLowerCase('en-US');
+
+// Password verification happens before this migration. Reuse the identity already
+// owning the room/game instead of replacing its scores, tiles, or authored content.
+export function restoreLegacyProfile(room, profile) {
+  const matches = name => normalizeName(name) === normalizeName(profile.name);
+  const claimed = new Set(Object.values(room.secretProfiles || {}).filter(other => other !== profile && !matches(other.name)).map(other => other.id));
+  if (matches(room.hostName) && room.hostId && !claimed.has(room.hostId)) return { ...profile, id: room.hostId };
+  const gameIds = new Set();
+  for (const game of [room.wordGame, room.wheelGame, room.battleshipGame]) {
+    for (const [id, player] of Object.entries(game?.players || {})) {
+      if (matches(player.name) && !claimed.has(id)) gameIds.add(id);
+    }
+  }
+  if (gameIds.has(profile.id)) return profile;
+  if (gameIds.size === 1) return { ...profile, id: [...gameIds][0] };
+  return profile;
+}
+
+export function secretOnlineCount(room, now = Date.now()) {
+  return Object.values(room?.presence || {}).filter(sessions => Object.values(sessions || {}).some(session => Number(session.lastSeen) > now - 90000)).length;
+}
