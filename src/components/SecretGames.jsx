@@ -1,8 +1,9 @@
-import { ChevronRight, MessageCircle, Ship, CircleDashed, LockKeyhole, WholeWord, Disc3 } from 'lucide-react';
+import { ChevronRight, MessageCircle, Ship, CircleDashed, LockKeyhole, WholeWord, Disc3, MonitorPlay } from 'lucide-react';
 import { pendingQuestions } from '../utils/questionsForYou';
 import { visibleReveals } from './RevealGame';
 
 const games = [
+  { id: 'stream', title: 'Stream', Icon: MonitorPlay },
   { id: 'music-quiz', title: 'Music Quiz', Icon: Disc3 },
   { id: 'question', title: 'A question for you', Icon: MessageCircle },
   { id: 'wheel', title: 'Wheel of Fortune', Icon: CircleDashed },

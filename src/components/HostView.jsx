@@ -14,6 +14,7 @@ import RoomWall from './RoomWall';
 import QuestionForYou from './QuestionForYou';
 import { pendingQuestions } from '../utils/questionsForYou';
 import SecretGames from './SecretGames';
+import SecretStream from './SecretStream';
 import SecretMusicQuiz from './SecretMusicQuiz';
 import WordGame from './WordGame';
 import WheelGame from './WheelGame';
@@ -67,7 +68,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
   const quizFocus = !isSecret && isDJ && roomState?.gameInvitation?.type === 'music-quiz';
-  const secretGameFocus = isSecret && ['words','question','wheel','reveal','battleship','music-quiz'].includes(secretGameView);
+  const secretGameFocus = isSecret && ['words','question','wheel','reveal','battleship','music-quiz','stream'].includes(secretGameView);
   const isKaraoke = roomMode === "karaoke";
   const isMeeting = roomMode === "meeting";
 
@@ -386,7 +387,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
             {/* Left */}
             <div className="xl:col-span-2 space-y-6">
-              {secretGameFocus ? secretGameView === 'music-quiz' ? <SecretMusicQuiz roomCode={roomCode} currentUser={currentUser} games={roomState?.secretMusicQuizzes} onClose={() => openSecretGame('')} /> : secretGameView === 'battleship' ? <Battleship roomCode={roomCode} currentUser={currentUser} game={roomState?.battleshipGame} featured onOpen={() => openSecretGame('battleship')} onClose={() => openSecretGame('')} /> : secretGameView === 'reveal' ? <RevealGame roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : secretGameView === 'words' ? <WordGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wordGame} featured onOpen={() => openSecretGame('words')} onClose={() => openSecretGame('')} /> : secretGameView === 'wheel' ? <WheelGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wheelGame} featured onOpen={() => openSecretGame('wheel')} onClose={() => openSecretGame('')} /> : <QuestionForYou roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : quizFocus ? <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
+              {secretGameFocus ? secretGameView === 'stream' ? <SecretStream roomCode={roomCode} stream={roomState?.secretStream} onClose={() => openSecretGame('')} /> : secretGameView === 'music-quiz' ? <SecretMusicQuiz roomCode={roomCode} currentUser={currentUser} games={roomState?.secretMusicQuizzes} onClose={() => openSecretGame('')} /> : secretGameView === 'battleship' ? <Battleship roomCode={roomCode} currentUser={currentUser} game={roomState?.battleshipGame} featured onOpen={() => openSecretGame('battleship')} onClose={() => openSecretGame('')} /> : secretGameView === 'reveal' ? <RevealGame roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : secretGameView === 'words' ? <WordGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wordGame} featured onOpen={() => openSecretGame('words')} onClose={() => openSecretGame('')} /> : secretGameView === 'wheel' ? <WheelGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wheelGame} featured onOpen={() => openSecretGame('wheel')} onClose={() => openSecretGame('')} /> : <QuestionForYou roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : quizFocus ? <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
                 <MeetingDisplay
                   activeReadingId={roomState?.activeReadingId || null}
                   isHost={true}
