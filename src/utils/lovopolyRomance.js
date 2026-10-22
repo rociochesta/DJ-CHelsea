@@ -78,7 +78,7 @@ export function romanticAction(game,action) {
     item.status='completed';item.completedAt=now;item.confirmedBy=user.id;
     recordChallengeCompletion(game,item);
     const performer=game.players[item.from];
-    if(['ready','playing'].includes(game.status) && item.matchId===game.id && item.detentionId && performer?.detained && performer.detentionId===item.detentionId && !(game.turn===performer.id && game.phase==='detention-release')) performer.romanticReleaseId=item.detentionId;
+    if(['ready','playing'].includes(game.status) && item.matchId===game.id && item.detentionId && performer?.detained && performer.detentionId===item.detentionId) releaseDetention(performer);
   } else if(type==='romance-respond') {
     if(item.to!==user.id || !romancePending(item) || !['accepted','declined'].includes(action.response) || (action.response==='accepted' && item.status!=='pending')) throw new Error('This invitation is not available for that response.');
     item.status=action.response;item.respondedAt=now;

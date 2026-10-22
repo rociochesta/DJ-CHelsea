@@ -2,14 +2,18 @@ import {completedGroups} from '../utils/lovopolyVisuals';
 import LovopolyConfirm from './LovopolyConfirm';
 import {propertyRent} from '../utils/lovopolyLanding';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Dice5, Heart, Minus, Plus, X } from 'lucide-react';
+import { ArrowLeft, Dice5, Heart, X } from 'lucide-react';
 import { LOVOPOLY_GROUPS, LOVOPOLY_TILES, LOVOPOLY_TOKENS, lovopolyTileLayout } from '../utils/lovopolyBoard';
 import { QUICK_ROUNDS } from '../utils/lovopoly';
 import './Lovopoly.css';
-import LovopolyEconomy, { LovopolyNetWorth } from './LovopolyEconomy';
+import LovopolyEconomy, { LovopolyNetWorth, LovopolyDebt } from './LovopolyEconomy';
 import LovopolyLanding from './LovopolyLanding';
 import LovopolyInbox from './LovopolyInbox';
-import LovopolyEscapeChoices from './LovopolyEscapeChoices';
+import LovopolyDetention from './LovopolyDetention';
+import LovopolyLeave from './LovopolyLeave';
+import LovopolyDeed from './LovopolyDeed';
+import LovopolyDice from './LovopolyDice';
+import {DICE_ROLL_MS,DICE_SETTLE_MS,TOKEN_STEP_MS,rollPresentationMs,latestBoardRoll} from '../utils/lovopolyAnimation';
 
 const tokenById = id => LOVOPOLY_TOKENS.find(token => token.id === id) || LOVOPOLY_TOKENS[0];
 const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
@@ -60,7 +64,29 @@ function TileDetails({ tile, game, onClose }) {
   </dialog>;
 }
 
-export function LovopolyBoard({ players = [], onSelect, showNumbers = false, zoom = 1, turn, game }) {
+export function LovopolyBoard({ players = [], onSelect, showNumbers = false, zoom = 1, turn, game, rolling = false }) {
+  const [shownPlayers,setShownPlayers]=useState(players);
+  const shownRef=useRef(players);
+  const lastRoll=latestBoardRoll(game);
+  const rollKey=`${game?.id || ''}:${lastRoll?.id || ''}`;
+  const seenRoll=useRef(rollKey);
+  const positionKey=players.map(p=>`${p.id}:${p.position}`).join('|');
+  useEffect(()=>{
+    const previous=shownRef.current;
+    const save=value=>{shownRef.current=value;setShownPlayers(value);};
+    const isNew=seenRoll.current!==rollKey;
+    seenRoll.current=rollKey;
+    if(!isNew || !lastRoll || window.matchMedia('(prefers-reduced-motion: reduce)').matches){save(players);return;}
+    const actor=players.find(p=>p.id===lastRoll.userId),old=previous.find(p=>p.id===lastRoll.userId);
+    if(!actor || !old || actor.position===old.position){save(players);return;}
+    const count=(game.lastDice || []).reduce((a,b)=>a+b,0);
+    const timers=[];
+    // Keep the saved game intact; only the displayed token waits for the dice.
+    const direct=actor.detained || actor.position!==(old.position+count)%40;
+    const steps=direct?1:count;
+    for(let step=1;step<=steps;step++)timers.push(setTimeout(()=>save(players.map(p=>p.id===actor.id?{...p,position:step===steps?actor.position:(old.position+step)%40}:p)),DICE_ROLL_MS+DICE_SETTLE_MS+step*TOKEN_STEP_MS));
+    return()=>timers.forEach(clearTimeout);
+  },[rollKey,positionKey]);
   const monopolies=completedGroups(game?.owners);
   const previous=useRef(null);
   const [celebration,setCelebration]=useState(null);
@@ -74,13 +100,13 @@ export function LovopolyBoard({ players = [], onSelect, showNumbers = false, zoo
   useEffect(()=>{if(!celebration)return;const timer=setTimeout(()=>setCelebration(null),3500);return()=>clearTimeout(timer);},[celebration]);
   return <div className="lovo-board-scroll" tabIndex={0} aria-label="Lovopoly board; scroll to explore when zoomed">
     <div className={`lovo-board ${showNumbers ? 'lovo-numbered' : ''}`} style={{ width: `${zoom * 100}%` }}>
-      <div className="lovo-board-center" aria-hidden="true"><Heart className="lovo-center-heart" fill="currentColor" /><h3>LOVOPOLY</h3><p>A little love.<br />A little rivalry.</p><span>40 places to fall for you.</span></div>
+      <div className="lovo-board-center"><Heart className="lovo-center-heart" fill="currentColor" aria-hidden="true"/><h3>LOVOPOLY</h3><p>A little love.<br />A little rivalry.</p><LovopolyDice game={game} rolling={rolling}/></div>
       {celebration && <div className="lovo-monopoly-celebration" role="status">👑 Monopoly!<br/>{celebration}</div>}
       {LOVOPOLY_TILES.map(tile => {
         const { x, y, w, h, rotation } = lovopolyTileLayout(tile.id);
         const owner=game?.players?.[game?.owners?.[tile.id]],level=game?.buildings?.[tile.id] || 0,mortgaged=game?.mortgages?.[tile.id];
         const complete=!!monopolies[tile.group];
-        const occupants = players.filter(player => player.position === tile.id);
+        const occupants = shownPlayers.filter(player => player.position === tile.id);
         return <button type="button" key={tile.id} className={`lovo-tile ${w > h ? 'lovo-tile-side' : ''} ${complete?'lovo-monopoly-tile':''}`} data-monopoly={complete || undefined}
           style={{ '--monopoly-color':LOVOPOLY_GROUPS[tile.group]?.color, left: `${x / 12.5}%`, top: `${y / 12.5}%`, width: `${w / 12.5}%`, height: `${h / 12.5}%` }}
           onClick={() => onSelect(tile)} aria-label={`Space ${tile.id}: ${tile.name}${owner?`. Owned by ${owner.name}`:''}${level?`. ${level===5?'Love Castle':`${level} Love Nests`}`:''}${mortgaged?'. Mortgaged, no rent':''}${complete?'. Complete monopoly':''}${occupants.length ? `. ${occupants.map(player => player.name).join(' and ')} here` : ''}`}>
@@ -105,12 +131,10 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
   const [token, setToken] = useState('heart');
   const [selectedTile, setSelectedTile] = useState(null);
   const [landingOpen,setLandingOpen] = useState(false);
-  const [zoom, setZoom] = useState(1);
-  const [showNumbers, setShowNumbers] = useState(false);
+  const [detentionOpen,setDetentionOpen] = useState(false);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
-  const [confirmCancel, setConfirmCancel] = useState(false);
-  const [confirmSurrender, setConfirmSurrender] = useState(false);
+  const [matchTab, setMatchTab] = useState('Properties');
   const lock = useRef(false);
   const players = Object.values(game?.players || {});
   const me = game?.players?.[currentUser?.id];
@@ -126,18 +150,31 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
     if(!game?.lastLanding || game.lastLanding.playerId!==currentUser?.id || game.status!=='playing')return;
     const key=`lovo-landing:${game.id}:${currentUser.id}`;
     let seen=null;try{seen=sessionStorage.getItem(key);}catch{}
-    if(seen!==game.lastLanding.id){setSelectedTile(null);setLandingOpen(true);}
+    if(seen!==game.lastLanding.id){setSelectedTile(null);const timer=setTimeout(()=>setLandingOpen(true),window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:rollPresentationMs(game.lastDice));return()=>clearTimeout(timer);}
   },[game?.id,game?.lastLanding?.id,currentUser?.id,game?.status]);
+  useEffect(()=>{
+    if(me?.detained && game?.turn===me.id && ['ready','playing'].includes(game?.status)) {
+      setSelectedTile(null);setLandingOpen(false);const timer=setTimeout(()=>setDetentionOpen(true),window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:rollPresentationMs(game.lastDice));return()=>clearTimeout(timer);
+    } else setDetentionOpen(false);
+  },[game?.id,currentUser?.id,me?.detained,me?.detentionId,game?.turn,game?.status]);
+  const openDetention=()=>{setSelectedTile(null);setLandingOpen(false);setDetentionOpen(true);};
+  const selectBoardTile=tile=>{if(tile.id===10)openDetention();else setSelectedTile(tile);};
   const closeLanding=()=>{setLandingOpen(false);try{sessionStorage.setItem(`lovo-landing:${game.id}:${currentUser.id}`,game.lastLanding.id);}catch{}};
 
-  useEffect(() => { setError(''); setConfirmCancel(false); setConfirmSurrender(false); }, [game?.id, currentUser?.id, game?.status]);
+  useEffect(() => { setError(''); setMatchTab('Properties'); }, [game?.id, currentUser?.id, game?.status]);
 
   async function act(type, extra = {}, confirmed=false) {
     if(!confirmed && ['buy','mortgage','unmortgage','build','sell-building','trade-offer','trade-accept'].includes(type)){setConfirmation({type,extra,revision:game.revision,gameId:game.id,userId:currentUser.id});return false;}
     if(confirmed && (confirmation.revision!==game.revision || confirmation.gameId!==game.id || confirmation.userId!==currentUser.id)){setConfirmation(null);setError('The match changed. Review the action again.');return false;}
     if (lock.current) return;
     lock.current = true; setBusy(type); setError('');
-    try { await onAction(type, extra); setConfirmCancel(false); setConfirmSurrender(false); return true; }
+    try {
+      if(type==='roll'){setDetentionOpen(false);document.querySelector('.lovo-board-center')?.scrollIntoView({block:'center',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+      await onAction(type, extra);
+      if(type==='roll')await new Promise(resolve=>setTimeout(resolve,window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:rollPresentationMs()));
+      if(type==='buy' && game?.lastLanding)closeLanding();
+      return true;
+    }
     catch (cause) { setError(cause.message || 'Could not save. Please try again.'); return false; }
     finally { lock.current = false; setBusy(''); }
   }
@@ -151,20 +188,19 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
   return <section className="lovo-game" aria-label="Lovopoly">
     <header className="lovo-header"><button type="button" className="lovo-back" onClick={onClose}><ArrowLeft size={16} /> Back to room</button><div><small>LOVE, WITH A COMPETITIVE STREAK</small><h2>Lovopoly<span>♥</span></h2></div><span className="lovo-preview-badge">Classic & Quick</span></header>
     <p className="lovo-status" role="status">{busy ? 'Saving your move…' : status}</p>
-    {me && game.turn===me.id && ['ready','playing'].includes(game.status) && <div className="lovo-turn-banner" key={`${game.id}:${game.completedTurns}`} role="status"><strong>Your turn, beautiful! 💋</strong><p>{game.lastTurnSummary?.playerId!==me.id && game.lastTurnSummary?.text || 'Your dice are ready.'}</p></div>}
-    <p className="lovo-preview-note">Roll, buy your favorite places, and collect rent. Progress is saved after every action.</p>
+    {creating && <p className="lovo-preview-note">Roll, buy your favorite places, and collect rent. Progress is saved after every action.</p>}
     {error && <p className="lovo-error" role="alert">{error}</p>}
 
-    {players.length > 0 && !cancelled && <div className="lovo-players">{players.map(player => <article key={player.id} className={player.id === game.turn ? 'lovo-player lovo-player-first' : 'lovo-player'}>
+    {players.length > 0 && !cancelled && !['ready','playing','finished'].includes(game.status) && <div className="lovo-players">{players.map(player => <article key={player.id} className={player.id === game.turn ? 'lovo-player lovo-player-first' : 'lovo-player'}>
       <span className="lovo-player-token" style={{ color: tokenById(player.token).color }}>{tokenById(player.token).symbol}</span>
       <div><h3>{player.name}{player.id === currentUser?.id && <small> You</small>}</h3><p>${player.cash.toLocaleString()} <span>· {LOVOPOLY_TILES[player.position].name}</span></p></div>
       {game.status !== 'setup' && <div className="lovo-player-roll"><Dice values={game.openingRolls?.[player.id]?.dice} rolling={busy === 'opening-roll' && player.id === currentUser?.id} /><small>{game.firstPlayerId === player.id ? 'Goes first' : game.openingRolls?.[player.id] ? `Total ${game.openingRolls[player.id].total}` : 'Opening roll'}</small></div>}
     </article>)}{players.length === 1 && <div className="lovo-player lovo-player-empty"><Heart size={24} /><span>A place for your person.<small>They can join from this room whenever they return.</small></span></div>}</div>}
 
     {game?.lastRent && !cancelled && game.status !== 'finished' && <div className="lovo-rent-notice" role="status"><strong>{game.lastRent.status === 'paid' ? 'Rent paid automatically' : game.lastRent.status === 'owed' ? 'Rent awaiting payment' : 'Rent resolved by bankruptcy'} · ${game.lastRent.amount}</strong><span>{game.players[game.lastRent.payerId]?.name} → {game.players[game.lastRent.ownerId]?.name} · {LOVOPOLY_TILES[game.lastRent.tileId]?.name}</span><small>{game.lastRent.status === 'paid' ? 'Both balances have already been updated.' : game.lastRent.status === 'owed' ? 'Not enough cash. Resolve the debt in Your match before continuing.' : 'Remaining assets were settled with the creditor.'}</small></div>}
-    <div className="lovo-workspace"><div className="lovo-board-area"><div className="lovo-board-toolbar"><span>YOUR BOARD</span><div><button type="button" onClick={() => setZoom(value => Math.max(1, value - 0.5))} disabled={zoom <= 1} aria-label="Zoom out"><Minus size={15} /></button><button type="button" onClick={() => setZoom(1)} aria-label="Fit board">{Math.round(zoom * 100)}%</button><button type="button" onClick={() => setZoom(value => Math.min(3, value + 0.5))} disabled={zoom >= 3} aria-label="Zoom in"><Plus size={15} /></button><label><input type="checkbox" checked={showNumbers} onChange={event => setShowNumbers(event.target.checked)} /> Numbers</label></div></div>
-      <LovopolyBoard game={cancelled?null:game} players={cancelled ? [] : players} turn={game?.turn} onSelect={setSelectedTile} zoom={zoom} showNumbers={showNumbers} />
-      <p className="lovo-board-hint">Select a tile to see its artwork. Zoom in to explore the details.</p>
+    <div className="lovo-workspace"><div className="lovo-board-area">
+      <LovopolyBoard game={cancelled?null:game} players={cancelled ? [] : players} turn={game?.turn} onSelect={selectBoardTile} rolling={busy==='roll' && !game?.lastDice} />
+      <p className="lovo-board-hint">Select a tile to explore its details.</p>
     </div>
 
     <aside className="lovo-setup">
@@ -187,11 +223,16 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
           <button type="button" className="lovo-button lovo-primary" disabled={!!busy || !!openingRoll} onClick={() => act('opening-roll')}><Dice5 size={17} />{openingRoll ? 'Opening roll saved' : 'Roll to choose first player'}</button>
         </div>}
         {me && ['ready', 'playing', 'finished'].includes(game.status) && <div className="lovo-turn">
-          <div className={`lovo-turn-indicator${game.status !== 'finished' && game.turn === me.id ? ' lovo-turn-indicator-active' : ''}`} role="status">
-            <span className="lovo-turn-dot" aria-hidden="true" />
-            <span>{game.status === 'finished' ? 'Match complete' : game.turn === me.id ? 'Your turn' : `${game.players[game.turn]?.name || 'Your person'}’s turn`}</span>
+          <LovopolyNetWorth game={game} userId={me.id} />
+          <div className="lovo-main-action">
+          {game.status !== 'finished' && game.turn === me.id && !game.debt && <>
+            {(!game.phase || game.phase === 'roll') && <button className="lovo-button lovo-primary" disabled={!!busy} onClick={() => me.detained ? openDetention() : act('roll')}>{me.detained ? 'Choose an escape' : 'Roll dice'}</button>}
+            {game.phase === 'purchase' && <><button className="lovo-button lovo-primary" disabled={!!busy || me.cash < LOVOPOLY_TILES[me.position].price} onClick={() => act('buy')}>Buy property</button><button className="lovo-button" disabled={!!busy} onClick={() => act('pass')}>Pass</button></>}
+            {game.phase === 'end' && <button className="lovo-button lovo-primary" disabled={!!busy} onClick={() => act('end-turn')}>{game.extraRoll ? 'Continue · doubles bonus roll' : 'End turn'}</button>}
+          </>}
+<p role="status">{game.status === 'finished' ? 'Match complete' : game.debt ? 'Resolve the outstanding debt to continue.' : game.turn !== me.id ? `Waiting for ${game.players[game.turn]?.name || 'your person'} to play` : game.phase === 'purchase' ? `Buy ${LOVOPOLY_TILES[me.position].name} for ${LOVOPOLY_TILES[me.position].price}, or pass.` : game.phase === 'detention-release' ? 'Open escape options to pay or use a card.' : game.phase === 'end' ? game.extraRoll ? 'Doubles! Take your bonus roll.' : 'Finish your turn and pass the dice.' : me.detained ? 'Choose a challenge, pay $50, use a card, or try doubles.' : 'Roll to move across the board'}</p>
           </div>
-          <LovopolyNetWorth game={game} />
+          <LovopolyDebt game={game} me={me} act={act} busy={!!busy} />
           {(game.lastDice || busy === 'roll') && <Dice values={game.lastDice} rolling={busy === 'roll'} />}
           {game.result && <p>{game.result}</p>}
           {game.status==='finished' && <div className="lovo-rematch"><h4>Play again?</h4><p>New match · {game.mode==='quick'?`Quick, ${game.roundLimit} rounds`:'Classic'} · $1,500 each · same tokens. The previous result and Romantic Inbox are saved. Both players must agree.</p>
@@ -199,40 +240,24 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
               : game.rematch.requestedBy===me.id ? <><p role="status">Waiting for your person to accept the rematch.</p><button className="lovo-button" disabled={!!busy} onClick={()=>act('rematch-withdraw')}>Withdraw rematch request</button></>
               : <><p>{game.players[game.rematch.requestedBy]?.name} wants to play again.</p><button className="lovo-button lovo-primary" disabled={!!busy} onClick={()=>act('rematch-accept')}>Accept rematch</button><button className="lovo-button" disabled={!!busy} onClick={()=>act('rematch-decline')}>Decline rematch</button></>}
           </div>}
-          {game.status !== 'finished' && me.detained && <div className="lovo-detention"><h4>Kiss Detention</h4><p>Failed attempts: {me.detentionAttempts || 0}/3. Escape with doubles and move without a bonus roll. Pay $50 or use a card before rolling to take a normal turn.</p>
-            {game.turn===me.id && ['roll','detention-release',undefined].includes(game.phase) && <>
-              {game.phase==='detention-release' && <p>Release required. Your roll is saved: {game.detentionRoll?.dice.join(' + ')}. Pay or use a card, then move with that roll. If short of cash, raise money and pay the debt below.</p>}
-              {!game.debt && <button className="lovo-button" disabled={!!busy || me.cash<50} onClick={()=>act('detention-pay')}>Pay $50 to leave</button>}
-              {!!me.detentionCards && (!game.debt || game.debt.reason==='detention') && <button className="lovo-button" disabled={!!busy} onClick={()=>act('detention-card')}>Use detention card</button>}
-            </>}
-            <LovopolyEscapeChoices key={`${game.id}:${me.id}:${me.detentionId || 'legacy'}`} game={game} me={me} act={act} busy={!!busy}/>
-          </div>}
-          {game.status !== 'finished' && game.turn === me.id && !game.debt && <>
-            {(!game.phase || game.phase === 'roll') && <button className="lovo-button lovo-primary" disabled={!!busy} onClick={() => act('roll')}>Roll dice</button>}
-            {game.phase === 'purchase' && <><p>{LOVOPOLY_TILES[me.position].name} · $ {LOVOPOLY_TILES[me.position].price}</p><button className="lovo-button lovo-primary" disabled={!!busy || me.cash < LOVOPOLY_TILES[me.position].price} onClick={() => act('buy')}>Buy property</button><button className="lovo-button" disabled={!!busy} onClick={() => act('pass')}>Pass</button></>}
-            {game.phase === 'end' && <button className="lovo-button lovo-primary" disabled={!!busy} onClick={() => act('end-turn')}>{game.extraRoll ? 'Continue · doubles bonus roll' : 'End turn'}</button>}
-          </>}
-          <LovopolyEconomy game={game} me={me} act={act} busy={!!busy} />
-          {game.lastLanding && <button className="lovo-button" onClick={()=>setLandingOpen(true)}>View last landing</button>}
-          <details><summary>Rules & current limits</summary><p>Mortgage for 50%, repay principal plus 10%. Mortgaged properties collect no rent. Build and sell evenly; sales return half the building cost. Trades and gifts require acceptance and remain pending. Quick mode counts both players’ completed turns, including bonus rolls, and compares cash, property value (half when mortgaged), and building cost. No auctions. Each deck has 30 cards drawn without repeats until cycling; kept cards return when used. Romantic invitations never affect money or block turns. Kiss Detention allows three doubles attempts. Pay or use a card before rolling for a normal turn; doubles escape or third-attempt release uses that roll without a bonus.</p></details>
+          {game.status !== 'finished' && me.detained && <div className="lovo-detention-notice"><span>Kiss Detention · {me.detentionAttempts || 0}/3 attempts</span><button className="lovo-button" disabled={!!busy} onClick={openDetention}>View escape options</button></div>}
+          <div className="lovo-match-tabs" role="tablist" aria-label="Match details">{['Properties','Trade','History','Rules'].map((tab,index) => <button key={tab} id={`lovo-tab-${tab}`} type="button" role="tab" aria-selected={matchTab===tab} aria-controls="lovo-match-panel" tabIndex={matchTab===tab?0:-1} onClick={()=>setMatchTab(tab)} onKeyDown={event=>{const tabs=['Properties','Trade','History','Rules'];const next=event.key==='ArrowRight'?(index+1)%4:event.key==='ArrowLeft'?(index+3)%4:event.key==='Home'?0:event.key==='End'?3:null;if(next!==null){event.preventDefault();setMatchTab(tabs[next]);event.currentTarget.parentElement.children[next].focus();}}}>{tab}{tab==='Trade' && Object.values(game.trades || {}).some(t=>t.status==='pending') ? ' •' : ''}</button>)}</div>
+          <div className="lovo-match-content">
+            <div role="tabpanel" id="lovo-match-panel" aria-labelledby={`lovo-tab-${matchTab}`} tabIndex={0}>
+              <LovopolyEconomy game={game} me={me} act={act} busy={!!busy} tab={matchTab} onDeed={setSelectedTile} onTrade={()=>setMatchTab('Trade')} error={error} />
+              {matchTab==='History' && <><h4>Match history</h4>{game.lastLanding && <button className="lovo-button" onClick={()=>setLandingOpen(true)}>View last landing</button>}{!events.length && <p>No moves yet.</p>}<ol className="lovo-match-history">{events.map(event=><li key={event.id}><p>{event.text}</p><time dateTime={new Date(event.at).toISOString()}>{new Date(event.at).toLocaleString()}</time></li>)}</ol>{Object.values(game.archives || {}).filter(match=>match.status==='finished' && match.id!==game.id).map(match=><p key={match.id}>{match.result}</p>)}</>}
+              {matchTab==='Rules' && <><h4>Rules & current limits</h4><ul className="lovo-match-rules"><li>Complete a color group for double rent. Doubles grant another roll; three consecutive doubles send you to Kiss Detention.</li><li>Mortgage for 50%, repay principal plus 10%.</li><li>Mortgaged properties collect no rent.</li><li>Build and sell evenly; sales return half the building cost.</li><li>Trades and gifts require acceptance and remain pending.</li><li>Quick mode counts both players’ completed turns, including bonus rolls, and compares cash, property value (half when mortgaged), and building cost.</li><li>No auctions.</li><li>Each deck has 30 cards drawn without repeats until cycling; kept cards return when used.</li><li>Romantic invitations never affect money or block turns.</li><li>Kiss Detention allows three doubles attempts.</li><li>Pay or use a card before rolling for a normal turn; doubles escape or third-attempt release uses that roll without a bonus.</li></ul></>}
+            </div>
+          </div>
         </div>}
-        {me && players.length === 2 && ['opening', 'ready', 'playing'].includes(game.status) && <div className="lovo-cancel">
-          {confirmSurrender ? <div role="group" aria-label="Confirm surrender"><p>This ends the match immediately. {players.find(player => player.id !== me.id)?.name} wins, and your surrender is saved in match history. You cannot undo this.</p><button type="button" className="lovo-button" disabled={!!busy} onClick={() => act('surrender')}>Confirm surrender</button><button type="button" className="lovo-text-button" disabled={!!busy} onClick={() => setConfirmSurrender(false)}>Keep playing</button></div>
-            : <button type="button" className="lovo-text-button" disabled={!!busy} onClick={() => { setConfirmCancel(false); setConfirmSurrender(true); }}>Surrender</button>}
-        </div>}
-        {me && game.status !== 'finished' && !confirmSurrender && <div className="lovo-cancel">
-          {game.cancellation ? <><p>{game.cancellation.requestedBy === me.id ? 'Your cancellation request is waiting for your person.' : `${game.players[game.cancellation.requestedBy]?.name || 'Your person'} asked to cancel this setup.`}</p>{game.cancellation.requestedBy !== me.id && <button type="button" className="lovo-button" disabled={!!busy} onClick={() => act('cancel-accept')}>Agree to cancel</button>}<button type="button" className="lovo-text-button" disabled={!!busy} onClick={() => act('cancel-decline')}>{game.cancellation.requestedBy === me.id ? 'Withdraw request' : 'Keep setup'}</button></>
-            : confirmCancel ? <><p>{players.length === 1 ? 'Cancel this unjoined setup?' : 'Ask your person to cancel this setup? It stays saved until they agree.'}</p><button type="button" className="lovo-button" disabled={!!busy} onClick={() => act('cancel-request')}>{players.length === 1 ? 'Confirm cancellation' : 'Send cancellation request'}</button><button type="button" className="lovo-text-button" onClick={() => setConfirmCancel(false)}>Keep setup</button></>
-            : <button type="button" className="lovo-text-button" disabled={!!busy} onClick={() => setConfirmCancel(true)}>Cancel setup</button>}
-        </div>}
+        {me && game.status !== 'finished' && <LovopolyLeave game={game} me={me} act={act} busy={!!busy} error={error} />}
       </>}
     </aside></div>
 
-    {!!events.length && <details className="lovo-activity"><summary>Match history <span>{events.length}</span></summary><ol>{events.map(event => <li key={event.id}><span>{event.text}</span><time dateTime={new Date(event.at).toISOString()}>{new Date(event.at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</time></li>)}</ol></details>}
-    {Object.values(game?.archives || {}).some(match=>match.status==='finished' && match.id!==game.id) && <details className="lovo-activity"><summary>Previous matches</summary>{Object.values(game.archives).filter(match=>match.status==='finished' && match.id!==game.id).sort((a,b)=>(b.finishedAt || b.createdAt)-(a.finishedAt || a.createdAt)).map(match=><div key={match.id}><p><strong>{match.winner==='tie'?'Draw':`${match.players[match.winner]?.name} won`}</strong> · {new Date(match.finishedAt || match.createdAt).toLocaleDateString()}</p><p>{match.result}</p></div>)}</details>}
     <LovopolyInbox game={game} userId={currentUser?.id} act={act} busy={!!busy}/>
-    {landingOpen && game?.lastLanding && <LovopolyLanding error={error} game={game} landing={game.lastLanding} userId={currentUser?.id} act={act} busy={!!busy} onClose={closeLanding} onDeed={tile=>{closeLanding();setSelectedTile(tile);}}/>}
+    {landingOpen && !detentionOpen && !me?.detained && game?.lastLanding && <LovopolyLanding error={error} game={game} landing={game.lastLanding} userId={currentUser?.id} act={act} busy={!!busy} onClose={closeLanding} onDeed={tile=>{closeLanding();setSelectedTile(tile);}}/>}
+    {detentionOpen && <LovopolyDetention game={game} me={me} act={act} busy={!!busy} error={error} onClose={()=>setDetentionOpen(false)} onManage={()=>{setDetentionOpen(false);setMatchTab('Properties');}}/>}
     {confirmation && <LovopolyConfirm game={game} user={currentUser} request={confirmation} busy={!!busy} error={error} onClose={()=>setConfirmation(null)} onConfirm={async()=>{if(await act(confirmation.type,confirmation.extra,true))setConfirmation(null);}}/>}
-    {selectedTile && <TileDetails key={selectedTile.id} tile={selectedTile} game={game} onClose={() => setSelectedTile(null)} />}
+    {selectedTile && (selectedTile.price ? <LovopolyDeed key={selectedTile.id} tile={selectedTile} game={game} userId={currentUser?.id} act={act} busy={!!busy} onClose={()=>setSelectedTile(null)} /> : <TileDetails key={selectedTile.id} tile={selectedTile} game={game} onClose={() => setSelectedTile(null)} />)}
   </section>;
 }

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1657" viewBox="0 0 949 1657"><title>Sushi chopsticks pickup</title><desc>Transparent overlay for the cleaned Sushi tile. Chopsticks enter, grasp the rear maki, lift it gently and return it, then withdraw. Plays once in 1.5 seconds; remount to replay.</desc><style>#sushi-roll{animation:sushi-lift 1.5s both}.sticks{animation:sushi-sticks 1.5s both}@keyframes sushi-lift{0%,33%{transform:translate(0,0)}53%,65%{transform:translate(0,-65px)}84%,100%{transform:translate(0,0)}}@keyframes sushi-sticks{0%{opacity:0;transform:translate(220px,-100px)}12%{opacity:1}30%,33%{opacity:1;transform:translate(0,0)}53%,65%{opacity:1;transform:translate(0,-65px)}84%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(220px,-100px)}}@media(prefers-reduced-motion:reduce){#sushi-roll{animation:none}.sticks{display:none}}</style>
+<g id="sushi-roll">
+<path d="M470 817C470 786 511 774 551 774C591 774 634 791 634 817L634 937C628 962 593 978 553 976C514 975 477 958 470 938Z" fill="#102116" stroke="#080b09" stroke-width="10" stroke-linejoin="round"/>
+<path d="M564 855Q609 849 628 828V935Q615 957 565 967Z" fill="#08150c"/>
+<path d="M484 852V914" stroke="#526453" stroke-width="8" stroke-linecap="round"/>
+<ellipse cx="552" cy="817" rx="82" ry="43" fill="#fff2d8" stroke="#080b09" stroke-width="10"/>
+<path d="M514 805L550 793L584 805L584 824L549 839L514 826Q507 821 514 805Z" fill="#ff7439"/>
+<path d="M514 805L550 818L584 805L550 793Z" fill="#ff8c4c"/>
+<path d="M550 818V837L582 824V806Z" fill="#ed632b"/>
+<path d="M550 826L583 808Q592 806 597 813L597 825L565 840L550 836Z" fill="#a7c638"/>
+<path d="M565 831L594 816" stroke="#c5d957" stroke-width="6" stroke-linecap="round"/>
+</g>
+<g class="sticks">
+<path d="M542 864L870 640Q877 637 881 645L885 654Q887 660 881 664L551 876Q543 880 539 873Q537 868 542 864Z" fill="#c47b35" stroke="#080808" stroke-width="7" stroke-linejoin="round"/>
+<path d="M551 865L874 646" stroke="#f2bb73" stroke-width="6" stroke-linecap="round"/>
+<path d="M603 850L893 698Q902 693 906 701L911 712Q914 718 906 722L610 864Q602 869 598 861Q595 855 603 850Z" fill="#bd732f" stroke="#080808" stroke-width="7" stroke-linejoin="round"/>
+<path d="M609 853L899 704" stroke="#f2bb73" stroke-width="6" stroke-linecap="round"/>
+</g></svg>

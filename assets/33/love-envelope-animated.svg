@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" width="900" height="700" viewBox="0 0 900 700" fill="none">
+<title>Animated love envelope</title><style>
+#flap { transform-origin:450px 240px; animation:flap-open 7s ease-in-out infinite; }
+#seal { transform-origin:453px 450px; animation:seal-pop 7s ease-in-out infinite; }
+#letter { animation:letter-rise 7s ease-in-out infinite; }
+@keyframes flap-open {
+0%,20%,92%,100% { transform:scaleY(1); }
+38%,72% { transform:scaleY(-1); }
+}
+@keyframes seal-pop {
+0%,8%,94%,100% { opacity:1; transform:translateY(0) scale(1); }
+14% { opacity:1; transform:translateY(-12px) scale(1.12); }
+21%,84% { opacity:0; transform:translateY(30px) scale(.75); }
+}
+@keyframes letter-rise {
+0%,38%,88%,100% { transform:translateY(65px); }
+53%,68% { transform:translateY(-65px); }
+}
+@media (prefers-reduced-motion:reduce) {
+#flap,#seal,#letter { animation:none; }
+}
+</style>
+<desc>Seven-second looping animation; seal pops, flap opens, letter rises, then resets. Named groups: envelope-back, letter, envelope-front, flap, seal. Flap hinge runs from 110,240 to 790,240. Letter can translate upward behind front.</desc>
+<g id="envelope" transform="rotate(-8 450 420)" stroke="#10100f" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+<g id="envelope-back"><path d="M110 240 Q450 225 790 240 L790 625 Q450 639 110 625Z" fill="#efc69f"/></g>
+<g id="letter"><path d="M175 245 L175 155 Q450 145 725 155 L725 550 L175 550Z" fill="#ffa4ac"/><path d="M195 180 L705 180 L705 525" stroke="#d85270" stroke-width="3"/><path d="M292 215 Q335 200 380 211 T470 211 M290 250 Q360 235 430 246 T620 246 M290 285 Q370 270 445 281 T620 281" stroke="#bd0a41" stroke-width="5"/>
+<path d="M237 244 C180 210 208 180 235 207 C255 175 290 205 237 244Z" fill="#ed1450" stroke="#b7073a" stroke-width="5"/></g>
+<g id="envelope-front"><path d="M110 240 L450 440 L790 240 L790 625 Q450 638 110 625Z" fill="#fbe6c8"/><path d="M110 625 L383 408 M790 625 L517 408" stroke="#17120e" stroke-width="7"/><path d="M130 601 L374 416 M770 601 L525 416" stroke="#e8bd96" stroke-width="10"/><path d="M136 580 L166 550 M144 597 L160 582 M740 570 L763 593" stroke-width="3"/></g>
+<g id="flap"><path d="M110 240 Q450 226 790 240 L477 464 Q451 483 425 464Z" fill="#fff0d8"/><path d="M137 252 L432 442 Q450 456 470 442 L761 253" stroke="#e9c39c" stroke-width="7"/><path d="M151 264 L180 278 M716 263 L735 253" stroke-width="3"/></g>
+<g id="seal"><path d="M450 378 C473 364 485 385 505 385 C529 383 528 407 541 422 C559 440 540 456 540 476 C541 500 515 499 501 515 C486 533 465 516 446 520 C424 530 413 507 393 503 C370 499 380 472 367 458 C352 439 371 424 373 406 C377 385 400 394 415 381 C426 371 437 374 450 378Z" fill="#d20b43" stroke-width="8"/><circle cx="453" cy="450" r="65" fill="#ed1551" stroke="#890d35" stroke-width="5"/><circle cx="453" cy="450" r="55" stroke="#ff7893" stroke-width="3"/><path d="M453 487 C360 437 415 393 451 431 C486 391 544 435 453 487Z" fill="#f92360" stroke-width="6"/><path d="M414 437 Q418 423 431 427 M405 400 Q419 390 433 395 M489 496 L505 484" stroke="#ffb3c2" stroke-width="5"/></g>
+</g></svg>

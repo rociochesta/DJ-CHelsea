@@ -36,7 +36,7 @@ test('acceptance and submission do not count; confirmation counts once and survi
   g=act(g,'romance-respond',b,{invitationId:id,response:'accepted'});assert.deepEqual(g.escapeProgress.a.completed,{});
   g=submit(g,id);assert.deepEqual(g.escapeProgress.a.completed,{});
   assert.throws(()=>act(g,'romance-confirm',a,{invitationId:id}));
-  g=act(g,'romance-confirm',b,{invitationId:id});assert.equal(g.escapeProgress.a.completed[chosen],true);assert.equal(g.players.a.romanticReleaseId,'stay-1');
+  g=act(g,'romance-confirm',b,{invitationId:id});assert.equal(g.escapeProgress.a.completed[chosen],true);assert.equal(g.players.a.detained,false);
   assert.throws(()=>act(g,'romance-confirm',b,{invitationId:id}));
   g=act(g,'surrender');g=act(g,'rematch-request');g=act(g,'rematch-accept',b);
   assert.equal(g.escapeProgress.a.completed[chosen],true);assert.equal(g.romanticInbox[id].status,'completed');assert.equal(g.players.a.romanticReleaseId,undefined);
@@ -51,9 +51,9 @@ test('late confirmation after a rematch records progress but never releases a ne
   let g=send(game());const id=g.lastCommandId,chosen=g.romanticInbox[id].challengeId;g=submit(g,id);g=act(g,'surrender');g=act(g,'rematch-request');g=act(g,'rematch-accept',b);
   enterDetention(g.players.a,'new-stay');g=act(g,'romance-confirm',b,{invitationId:id});assert.equal(g.escapeProgress.a.completed[chosen],true);assert.equal(g.players.a.romanticReleaseId,null);
 });
-test('a pending or declined challenge does not block paying before rolling; confirmation waits for actual next turn',()=>{
+test('a pending or declined challenge does not block paying before rolling; confirmation releases immediately without interrupting the other turn',()=>{
   let g=send(game());const id=g.lastCommandId;g=act(g,'romance-respond',b,{invitationId:id,response:'declined'});g=act(g,'detention-pay');assert.equal(g.players.a.cash,1450);assert.equal(g.players.a.detained,false);
   g=send(game());const otherId=g.lastCommandId;g=submit(g,otherId);g.turn='b';g.phase='end';g.extraRoll=true;
-  g=act(g,'romance-confirm',b,{invitationId:otherId});g=act(g,'end-turn',b);assert.equal(g.turn,'b');assert.equal(g.players.a.detained,true);
+  g=act(g,'romance-confirm',b,{invitationId:otherId});g=act(g,'end-turn',b);assert.equal(g.turn,'b');assert.equal(g.players.a.detained,false);
   g.phase='end';g=act(g,'end-turn',b);assert.equal(g.turn,'a');assert.equal(g.players.a.detained,false);assert.equal(g.players.a.cash,1500);
 });

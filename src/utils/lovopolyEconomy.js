@@ -49,11 +49,14 @@ export function economyAction(game, action) {
     }
   };
   if (type === 'trade-offer') {
+    const original=action.counterTradeId ? game.trades[action.counterTradeId] : null;
+    if(action.counterTradeId && (!original || original.status!=='pending' || original.to!==user.id))throw new Error('This offer is no longer available to counter.');
     const give=normalizeTradeSide(action.give), receive=normalizeTradeSide(action.receive);
     validateSide(give, user.id); validateSide(receive, other.id);
     if (![give, receive].some(s => s.cash || s.cards || s.properties.length)) throw new Error('Include money, a property, or a card.');
     game.trades[action.id] = { id: action.id, from: user.id, to: other.id, give, receive, status: 'pending', at: action.now };
-    return `${player.name} sent an offer. It stays pending until answered or withdrawn.`;
+    if(original){original.status='countered';original.counterOfferId=action.id;game.trades[action.id].counterOf=original.id;}
+    return `${player.name} sent ${original?'a counteroffer':'an offer'}. It stays pending until answered or withdrawn.`;
   }
   if (['trade-accept', 'trade-decline', 'trade-withdraw'].includes(type)) {
     const trade = game.trades[action.tradeId];

@@ -54,12 +54,11 @@ test('messages and acceptance do not complete a gesture: performer submits, part
   g=act(g,'surrender');g=act(g,'romance-message',b,{invitationId:'i',text:'I loved it.'});assert.equal(Object.keys(g.romanticInbox.i.messages).length,3);
   assert.throws(()=>act(g,'romance-confirm',b,{invitationId:'i'}));
 });
-test('romantic escape is confirmed once per stay, effective next turn, never blocks ordinary attempts',()=>{
+test('romantic escape is confirmed once per stay, effective immediately, never blocks ordinary attempts',()=>{
   let g=invite(start());const id=g.lastCommandId;
   assert.throws(()=>act(g,'detention-challenge'));
   g=act(g,'romance-submit',a,{invitationId:id,text:'I would love a sunset walk with you.'});
-  g=act(g,'romance-confirm',b,{invitationId:id});assert.equal(g.players.a.detained,true);
-  g=act(g,'roll',a,{dice:[1,2]});g=nextAttempt(g);assert.equal(g.players.a.detained,false);assert.equal(g.players.a.cash,1500);
+  g=act(g,'romance-confirm',b,{invitationId:id});assert.equal(g.players.a.detained,false);assert.equal(g.players.a.cash,1500);
   g=act(g,'roll',a,{dice:[2,2]});assert.equal(g.extraRoll,true);
 });
 test('late completion cannot free a new detention or change a finished match',()=>{
@@ -70,4 +69,18 @@ test('late completion cannot free a new detention or change a finished match',()
     g=act(g,'romance-confirm',b,{invitationId:id});assert.ok(!g.players.a.romanticReleaseId);assert.equal(g.players.a.detained,true);
     assert.equal(g.romanticInbox[id].status,'completed');
   }
+});
+
+test('confirmation after a failed attempt allows a normal roll in the same turn',()=>{
+ let g=invite(start());const id=g.lastCommandId;
+ g=act(g,'romance-submit',a,{invitationId:id,text:'Done'});
+ g=act(g,'roll',a,{dice:[1,2]});assert.equal(g.phase,'end');
+ g=act(g,'romance-confirm',b,{invitationId:id});assert.equal(g.phase,'roll');assert.equal(g.turn,'a');assert.equal(g.players.a.detained,false);
+ g=act(g,'roll',a,{dice:[2,2]});assert.equal(g.players.a.position,14);assert.equal(g.extraRoll,true);
+});
+test('confirmation at mandatory release clears only detention debt and uses saved dice',()=>{
+ let g=invite(start());const id=g.lastCommandId;g.players.a.detentionAttempts=2;g.players.a.cash=0;
+ g=act(g,'romance-submit',a,{invitationId:id,text:'Done'});g=act(g,'roll',a,{dice:[1,2]});
+ g=act(g,'romance-confirm',b,{invitationId:id});assert.equal(g.players.a.detained,false);assert.equal(g.players.a.position,13);assert.equal(g.players.a.cash,0);assert.equal(g.debt,null);assert.equal(g.detentionRoll,null);assert.equal(g.extraRoll,false);
+ assert.throws(()=>act(g,'roll',a,{dice:[2,2]}));
 });

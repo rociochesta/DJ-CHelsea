@@ -17,10 +17,14 @@ async function load(g){await page.evaluate(g=>localStorage.setItem('lovopoly-loc
 await load(roll(fixture()));
 const landing=page.getByRole('dialog');await landing.waitFor();
 await landing.getByRole('button',{name:'Buy property · $60',exact:true}).click();
-await landing.getByText('Owner: Rocio',{exact:true}).waitFor();
-await landing.getByRole('button',{name:'View Deed',exact:true}).click();
-await page.getByRole('button',{name:'Close tile'}).click();
-await page.reload();if(await page.getByRole('dialog').isVisible())throw new Error('Dismissed landing reopened');
+const confirm=page.getByRole('dialog',{name:'Buy property',exact:true});
+await confirm.getByRole('button',{name:'Cancel',exact:true}).click();
+await page.getByRole('dialog').getByRole('button',{name:'Buy property · $60',exact:true}).click();
+await confirm.getByRole('button',{name:'Buy · $60',exact:true}).click();
+if(await page.getByRole('dialog').count())throw new Error('Purchase left a popup open');
+const purchased=await page.evaluate(()=>JSON.parse(localStorage.getItem('lovopoly-local-v1')));
+if(purchased.owners[3]!==a.id || purchased.players[a.id].cash!==1440)throw new Error('Purchase not saved');
+await page.reload();if(await page.getByRole('dialog').count())throw new Error('Purchased landing reopened');
 let g=fixture();g.players[a.id].position=4;ensureDecks(g);g.decks.chance.remaining=['chance-romance-0',...g.decks.chance.remaining.filter(id=>id!=='chance-romance-0')];
 await load(roll(g));await page.getByRole('dialog').getByText('A daring compliment',{exact:true}).waitFor();
 mkdirSync('outputs/lovopoly',{recursive:true});await page.screenshot({path:'outputs/lovopoly/drawn-card.png'});
@@ -59,4 +63,5 @@ if(saved.players[a.id].cash!==1450 || saved.players[a.id].position!==13 || saved
 if(errors.length)throw new Error(errors.join('\n'));
 console.log('UI passed: landing, purchase/deed, animation, message, submit, reload, partner confirmation, History, mobile, bankruptcy guard, third-attempt payment and saved movement.');
 }finally{await browser.close();}
+
 

@@ -32,7 +32,7 @@ await page.screenshot({path:'outputs/lovopoly/desktop.png',fullPage:true});
 await page.getByRole('button',{name:'Space 18: Midnight Spicy',exact:false}).click();
 await page.getByRole('dialog').waitFor();
 await page.screenshot({path:'outputs/lovopoly/deed.png'});
-await page.getByRole('button',{name:'Close tile'}).click();
+await page.getByRole('button',{name:'Close deed'}).click();
 await page.setViewportSize({width:390,height:844});
 await page.screenshot({path:'outputs/lovopoly/mobile.png',fullPage:true});
 const overflow = await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
@@ -56,3 +56,4 @@ await page.getByText('Chelsea surrendered. Rocio wins.',{exact:true}).waitFor();
 if(overflow || errors.length) throw new Error(JSON.stringify({overflow,errors}));
 console.log('Browser checks passed: mortgage, gift acceptance, 40 spaces, deed, mobile overflow, no runtime errors.');
 await browser.close();
+

@@ -119,7 +119,21 @@ export function updateLovopoly(game, action) {
   } else {
     if (!player) throw new Error('Join this match first.');
     if (romanticResponse || type==='detention-challenge' || type==='detention-options') {
+      const performerId=type==='romance-confirm' ? next.romanticInbox?.[action.invitationId]?.from : null;
+      const wasDetained=performerId && next.players[performerId]?.detained;
       romanticAction(next,action);
+      if(wasDetained && !next.players[performerId].detained) {
+        let message=`${next.players[performerId].name} leaves Kiss Detention for free: challenge confirmed.`;
+        if(next.turn===performerId) {
+          if(next.phase==='detention-release') {
+            if(next.debt?.playerId===performerId && next.debt.reason==='detention')next.debt=null;
+            message+=' '+finishDetentionMove(next,{...action,user:next.players[performerId]});
+          } else if(next.phase==='end') {
+            next.phase='roll';next.extraRoll=false;next.doubles=0;
+          }
+        }
+        log(next,action,message);
+      }
     } else if (type === 'surrender') {
       const opponent = Object.values(next.players).find(other => other.id !== user.id);
       if (!opponent || !['opening', 'ready', 'playing'].includes(next.status)) throw new Error('Both players must join before you can surrender.');
