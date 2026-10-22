@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect, lazy, Suspense } from "react";
 import { playbackRoomMode, getRoomMode, isSecretRoom } from '../utils/secretRoom';
 import { database, ref, set, update, push, remove } from "../utils/firebase";
 import { searchKaraokeVideos } from "../utils/youtube";
@@ -27,7 +27,10 @@ import JamGames from "./JamGames";
 import MeetingReadingsList from "./MeetingReadingsList";
 import { Mic, Radio, MonitorPlay, Headphones, LockKeyhole, BookOpen, DoorOpen, ListMusic, ArrowDownWideNarrow } from "lucide-react";
 
+const Lovopoly = lazy(() => import('./Lovopoly'));
+
 function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
+  const [lovoToolsOpen, setLovoToolsOpen] = useState(false);
   const [moodOpen, setMoodOpen] = useState(false);
   const [moodBusy, setMoodBusy] = useState(false);
   const [moodError, setMoodError] = useState('');
@@ -68,7 +71,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
   const isStreaming = roomMode === "streaming";
   const isDJ = roomMode === "dj";
   const quizFocus = !isSecret && isDJ && roomState?.gameInvitation?.type === 'music-quiz';
-  const secretGameFocus = isSecret && ['words','question','wheel','reveal','battleship','music-quiz','stream'].includes(secretGameView);
+  const secretGameFocus = isSecret && ['words','question','wheel','reveal','battleship','music-quiz','stream','lovopoly'].includes(secretGameView);
   const isKaraoke = roomMode === "karaoke";
   const isMeeting = roomMode === "meeting";
 
@@ -384,10 +387,10 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
           </div>}
 
           {/* Layout */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className={isSecret && secretGameView === 'lovopoly' ? `lovo-room-layout ${lovoToolsOpen ? 'lovo-tools-open' : ''}` : 'grid grid-cols-1 xl:grid-cols-3 gap-6'}>
             {/* Left */}
             <div className="xl:col-span-2 space-y-6">
-              {secretGameFocus ? secretGameView === 'stream' ? <SecretStream roomCode={roomCode} stream={roomState?.secretStream} onClose={() => openSecretGame('')} /> : secretGameView === 'music-quiz' ? <SecretMusicQuiz roomCode={roomCode} currentUser={currentUser} games={roomState?.secretMusicQuizzes} onClose={() => openSecretGame('')} /> : secretGameView === 'battleship' ? <Battleship roomCode={roomCode} currentUser={currentUser} game={roomState?.battleshipGame} featured onOpen={() => openSecretGame('battleship')} onClose={() => openSecretGame('')} /> : secretGameView === 'reveal' ? <RevealGame roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : secretGameView === 'words' ? <WordGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wordGame} featured onOpen={() => openSecretGame('words')} onClose={() => openSecretGame('')} /> : secretGameView === 'wheel' ? <WheelGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wheelGame} featured onOpen={() => openSecretGame('wheel')} onClose={() => openSecretGame('')} /> : <QuestionForYou roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : quizFocus ? <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
+              {secretGameFocus ? secretGameView === 'lovopoly' ? <Suspense fallback={<p role="status" className="p-6 text-sm text-white/60">Opening Lovopoly…</p>}><Lovopoly roomCode={roomCode} currentUser={currentUser} game={roomState?.lovopolyGame} onClose={() => openSecretGame('')} /></Suspense> : secretGameView === 'stream' ? <SecretStream roomCode={roomCode} stream={roomState?.secretStream} onClose={() => openSecretGame('')} /> : secretGameView === 'music-quiz' ? <SecretMusicQuiz roomCode={roomCode} currentUser={currentUser} games={roomState?.secretMusicQuizzes} onClose={() => openSecretGame('')} /> : secretGameView === 'battleship' ? <Battleship roomCode={roomCode} currentUser={currentUser} game={roomState?.battleshipGame} featured onOpen={() => openSecretGame('battleship')} onClose={() => openSecretGame('')} /> : secretGameView === 'reveal' ? <RevealGame roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : secretGameView === 'words' ? <WordGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wordGame} featured onOpen={() => openSecretGame('words')} onClose={() => openSecretGame('')} /> : secretGameView === 'wheel' ? <WheelGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wheelGame} featured onOpen={() => openSecretGame('wheel')} onClose={() => openSecretGame('')} /> : <QuestionForYou roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : quizFocus ? <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
                 <MeetingDisplay
                   activeReadingId={roomState?.activeReadingId || null}
                   isHost={true}
@@ -467,7 +470,9 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
             </div>
 
             {/* Right */}
-            <div className="space-y-6">
+            <div className={isSecret && secretGameView === 'lovopoly' ? 'lovo-room-tools' : 'space-y-6'}>
+              {isSecret && secretGameView === 'lovopoly' && <button type="button" className="lovo-tools-toggle" aria-expanded={lovoToolsOpen} aria-controls="lovo-room-tool-content" onClick={() => setLovoToolsOpen(value => !value)}>{lovoToolsOpen ? '→ Close' : '← Games · Queue · Search'}</button>}
+              <div id="lovo-room-tool-content" className={isSecret && secretGameView === 'lovopoly' && !lovoToolsOpen ? 'hidden' : 'space-y-6'}>
               {isMeeting && (
                 <MeetingReadingsList
                   activeReadingId={roomState?.activeReadingId || null}
@@ -504,6 +509,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
                 </div>
               )}
 
+              </div>
             </div>
           </div>
         </div>

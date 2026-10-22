@@ -1,8 +1,9 @@
-import { ChevronRight, MessageCircle, Ship, CircleDashed, LockKeyhole, WholeWord, Disc3, MonitorPlay } from 'lucide-react';
+import { ChevronRight, MessageCircle, Ship, CircleDashed, LockKeyhole, WholeWord, Disc3, MonitorPlay, Heart } from 'lucide-react';
 import { pendingQuestions } from '../utils/questionsForYou';
 import { visibleReveals } from './RevealGame';
 
 const games = [
+  { id: 'lovopoly', title: 'Lovopoly', Icon: Heart },
   { id: 'stream', title: 'Stream', Icon: MonitorPlay },
   { id: 'music-quiz', title: 'Music Quiz', Icon: Disc3 },
   { id: 'question', title: 'A question for you', Icon: MessageCircle },
@@ -21,6 +22,7 @@ export default function SecretGames({ currentUser, roomState, onOpen, activeGame
       {games.map(({ id, title, Icon }) => <button type="button" key={id} onClick={() => onOpen(id)} aria-current={activeGame === id ? 'page' : undefined} className={`lounge-game-row group flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left ${activeGame === id ? 'lounge-game-active' : ''}`}>
         <Icon aria-hidden="true" className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} />
         <span className="min-w-0 flex-1"><span className="block text-xs font-medium">{title}</span>{id === 'reveal' && waiting.length > 0 && <span className="mt-1 block text-[10px] text-white/50">{waiting[0].senderName || 'Your person'} left you a Reveal</span>}</span>
+        {id === 'lovopoly' && roomState?.lovopolyGame && roomState.lovopolyGame.status !== 'cancelled' && <span className="rounded-full border border-white/10 px-1.5 text-[9px] text-pink-200">{!roomState.lovopolyGame.players?.[currentUser?.id] && roomState.lovopolyGame.status === 'setup' ? 'Join' : ['ready','playing'].includes(roomState.lovopolyGame.status) && roomState.lovopolyGame.turn===currentUser?.id ? 'Your turn' : 'Saved'}</span>}
         {id === 'question' && questions.length > 0 && <span className="rounded-full border border-white/10 px-1.5 text-[10px]">{questions.length}</span>}
         {id === 'reveal' && waiting.length > 0 && <span className="rounded-full border border-white/10 px-1.5 text-[10px]">{waiting.length}</span>}
         <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 opacity-50 transition group-hover:translate-x-0.5" />

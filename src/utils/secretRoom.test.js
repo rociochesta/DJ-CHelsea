@@ -10,6 +10,8 @@ test('password profile restores legacy host and game identities without changing
   const room = { hostName: 'Rocio', hostId: 'old', wordGame: game, secretProfiles: { rocio: profile } };
   assert.equal(restoreLegacyProfile(room, profile).id, 'old');
   assert.equal(restoreLegacyProfile({ wordGame: game }, profile).id, 'old');
+  assert.equal(restoreLegacyProfile({ lovopolyGame: game }, profile).id, 'old');
+  assert.equal(restoreLegacyProfile({ lovopolyGame: game, secretProfiles: { other: { name: 'Other', id: 'old' } } }, profile).id, 'new');
   assert.equal(game.turn, 'old');
   assert.equal(game.players.old.score, 26);
   assert.equal(restoreLegacyProfile({ ...room, secretProfiles: { other: { name: 'Other', id: 'old' } } }, profile).id, 'new');

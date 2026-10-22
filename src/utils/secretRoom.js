@@ -46,7 +46,7 @@ export function restoreLegacyProfile(room, profile) {
   const claimed = new Set(Object.values(room.secretProfiles || {}).filter(other => other !== profile && !matches(other.name)).map(other => other.id));
   if (matches(room.hostName) && room.hostId && !claimed.has(room.hostId)) return { ...profile, id: room.hostId };
   const gameIds = new Set();
-  for (const game of [room.wordGame, room.wheelGame, room.battleshipGame]) {
+  for (const game of [room.wordGame, room.wheelGame, room.battleshipGame, room.lovopolyGame]) {
     for (const [id, player] of Object.entries(game?.players || {})) {
       if (matches(player.name) && !claimed.has(id)) gameIds.add(id);
     }
