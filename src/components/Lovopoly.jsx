@@ -7,7 +7,7 @@ export default function Lovopoly({ roomCode, currentUser, game, onClose }) {
     const action = {
       ...extra, type, user: currentUser, id: crypto.randomUUID(), now: Date.now(),
       expectedGameId: game?.id || null, expectedRevision: game?.revision,
-      ...(['opening-roll', 'roll'].includes(type) ? { dice: rollLovopolyDice() } : {}),
+      ...(['opening-roll', 'roll', 'dice-preview', 'heart-reroll'].includes(type) ? { dice: rollLovopolyDice() } : {}),
     };
     const result = await runTransaction(
       ref(database, `karaoke-rooms/${roomCode}/lovopolyGame`),

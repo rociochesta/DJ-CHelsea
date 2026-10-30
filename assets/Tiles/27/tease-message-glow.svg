@@ -1,0 +1,2 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1658" viewBox="0 0 949 1658"><defs><filter id="glow" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="14"/></filter></defs>
+<path d="M430 1142 Q435 1126 458 1121 L578 1097 Q602 1091 615 1110 L656 1176 Q669 1197 649 1206 L500 1241 Q461 1249 439 1226 L404 1181 Q393 1157 430 1142Z" fill="none" stroke="#ff69ad" stroke-width="18" opacity="0" filter="url(#glow)"><animate attributeName="opacity" values="0;0;0.65;0.15;0" keyTimes="0;0.4;0.56;0.72;1" dur="2.5s" fill="freeze"/></path></svg>

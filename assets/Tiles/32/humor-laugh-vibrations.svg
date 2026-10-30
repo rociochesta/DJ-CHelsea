@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1658" viewBox="0 0 949 1658">
+<g fill="none" stroke="#FFD12B" stroke-width="9" stroke-linecap="round">
+<path d="M87 833 Q97 848 107 863" transform="rotate(-35 97 848)" opacity="0"><animate attributeName="opacity" values="0;0.95;0;0.85;0" keyTimes="0;0.12;0.25;0.4;1" begin="0s" dur="0.8s" fill="freeze"/></path>
+<path d="M173 720 Q183 735 193 750" transform="rotate(-20 183 735)" opacity="0"><animate attributeName="opacity" values="0;0.95;0;0.85;0" keyTimes="0;0.12;0.25;0.4;1" begin="0.12s" dur="0.8s" fill="freeze"/></path>
+<path d="M555 775 Q565 790 575 805" transform="rotate(22 565 790)" opacity="0"><animate attributeName="opacity" values="0;0.95;0;0.85;0" keyTimes="0;0.12;0.25;0.4;1" begin="0.2s" dur="0.8s" fill="freeze"/></path>
+<path d="M77 1153 Q87 1168 97 1183" transform="rotate(-20 87 1168)" opacity="0"><animate attributeName="opacity" values="0;0.95;0;0.85;0" keyTimes="0;0.12;0.25;0.4;1" begin="0.3s" dur="0.8s" fill="freeze"/></path>
+<path d="M360 1305 Q370 1320 380 1335" transform="rotate(70 370 1320)" opacity="0"><animate attributeName="opacity" values="0;0.95;0;0.85;0" keyTimes="0;0.12;0.25;0.4;1" begin="0.4s" dur="0.8s" fill="freeze"/></path>
+</g>
+</svg>

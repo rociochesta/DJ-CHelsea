@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1657" viewBox="0 0 949 1657"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 949 1657" fill="none" id="layer-bae43a41-34bd-4090-ba00-d3cda7ecef0b" preserveAspectRatio="none" opacity="0">
+<title>Long Distance Tax — airplane overlay</title>
+<desc>Transparent overlay aligned to the full tile. Plane follows the right-hand dotted route once on landing, finishing in its original position. Reinsert to replay.</desc>
+<style>@media (prefers-reduced-motion: reduce) {
+  #layer-bae43a41-34bd-4090-ba00-d3cda7ecef0b #layer-bae43a41-34bd-4090-ba00-d3cda7ecef0b-flight { display: none; }
+}</style>
+<g id="layer-bae43a41-34bd-4090-ba00-d3cda7ecef0b-flight">
+<animateMotion path="M530 850 C650 925 655 755 823 660" dur="2s" fill="freeze" calcMode="spline" keyTimes="0;1" keyPoints="0;1" keySplines=".3 0 .2 1" begin="0s" repeatCount="indefinite"/>
+<g transform="rotate(-35) scale(1.1)" stroke="#101514" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+<path d="M-52 -8 L-31 -5 L-42 -43 L-27 -43 L6 -8 L39 -8 Q64 -7 66 0 Q63 9 39 10 L6 10 L-27 45 L-42 45 L-31 7 L-52 10 L-62 24 L-72 23 L-64 1 L-73 -18 L-62 -20Z" fill="#76a4b5"/>
+<path d="M-28 0 L45 0" stroke="#3c7088" stroke-width="3"/>
+<path d="M39 -4 L51 -3" stroke="#d6e6e8" stroke-width="3"/>
+</g></g><set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg></svg>

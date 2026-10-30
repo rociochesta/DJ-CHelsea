@@ -19,6 +19,16 @@ export function romanticAction(game,action) {
   }
   const item=game.romanticInbox?.[action.invitationId];
   if(!item || ![item.from,item.to].includes(user.id)) throw new Error('This invitation does not belong to you.');
+  const rewardsActive=item.heartReward && item.matchId===game.id && ['ready','playing'].includes(game.status);
+  if(type==='romance-alternative') {
+    if(item.from!==user.id || !item.heartReward || !['pending','accepted'].includes(item.status))throw new Error('Choose the lighter prompt before submitting.');
+    item.text=item.alternativeText;item.alternativeChosen=true;recordRomanticActivity(item,action);return;
+  }
+  if(type==='romance-bonus') {
+    if(!rewardsActive || item.to!==user.id || !item.baseHeartAwarded || item.bonusHeartAwarded || !['submitted','completed'].includes(item.status))throw new Error('This bonus is not available.');
+    game.players[item.from].hearts=(game.players[item.from].hearts || 0)+1;
+    item.bonusHeartAwarded=true;recordRomanticActivity(item,action);return;
+  }
   if(type==='romance-hide' || type==='romance-restore'){item.hiddenBy ||= {};item.hiddenBy[user.id]=type==='romance-hide';return;}
   if(type.startsWith('romance-delete-')){
     if(type==='romance-delete-request'){
@@ -72,7 +82,10 @@ export function romanticAction(game,action) {
     if(type==='romance-submit' && (item.from!==user.id || !['pending','accepted'].includes(item.status))) throw new Error('Only the person doing this gesture can submit it, before confirmation.');
     item.messages ||= {};
     item.messages[id]={id,userId:user.id,text,at:now,kind:type==='romance-submit'?'submission':'message',...(media?{media}:{}),...(blocks?{blocks}:{})};
-    if(type==='romance-submit'){item.status='submitted';item.submittedAt=now;}
+    if(type==='romance-submit'){
+      item.status='submitted';item.submittedAt=now;
+      if(rewardsActive && !item.baseHeartAwarded){player.hearts=(player.hearts || 0)+1;item.baseHeartAwarded=true;}
+    }
   } else if(type==='romance-confirm') {
     if(item.to!==user.id || item.status!=='submitted') throw new Error('Your person must submit their response before you confirm completion.');
     item.status='completed';item.completedAt=now;item.confirmedBy=user.id;

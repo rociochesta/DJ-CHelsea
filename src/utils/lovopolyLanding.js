@@ -1,3 +1,4 @@
+import {getLovopolyTiles} from './lovopolyCatalog.js';
 import { LOVOPOLY_TILES as tiles } from './lovopolyBoard.js';
 import { drawCard } from './lovopolyCards.js';
 import { enterDetention } from './lovopolyRomance.js';
@@ -12,6 +13,7 @@ export function propertyRent(game,tile,diceTotal) {
   return level ? tile.rents[level] : tile.rent*(tile.group && tiles.filter(t=>t.group===tile.group).every(t=>game.owners[t.id]===owner)?2:1);
 }
 export function resolveLanding(game,action,total) {
+  const tiles=getLovopolyTiles(game);
   const player=game.players[action.user.id], other=Object.values(game.players).find(p=>p.id!==player.id);
   const messages=[], visits=[], cards=[];
   const pay=(amount,creditorId=null)=>{
@@ -41,8 +43,8 @@ export function resolveLanding(game,action,total) {
     if(card.effect==='romance') {
       game.romanticInbox ||= {};
       const id=`${action.id}-${cards.length}`;
-      game.romanticInbox[id]={id,cardId:card.id,from:player.id,to:other.id,title:card.title,text:card.text,status:'pending',at:action.now};
-      messages.push('Optional invitation saved to the Romantic Inbox. No money or turn effects.');
+      game.romanticInbox[id]={id,cardId:card.id,matchId:game.id,heartReward:true,alternativeText:card.alternativeText || 'Choose a snack for your next movie or game night and explain your pick.',from:player.id,to:other.id,title:card.title,text:card.text,status:'pending',at:action.now};
+      messages.push('Answer in the Romantic Inbox for 1 heart; your person may award 1 bonus heart. A lighter prompt earns the same reward.');
     }
     if(card.effect==='detain'){enterDetention(player,action.id);game.extraRoll=false;}
     if(card.effect==='move' || card.effect==='back') {
@@ -53,6 +55,8 @@ export function resolveLanding(game,action,total) {
   }
   visit();
   if(player.detained)prepareEscapeChoices(game,player);
-  game.lastLanding={id:action.id,playerId:player.id,at:action.now,visits,cards,message:messages.join(' ')};
+  game.lastLanding={id:action.id,playerId:player.id,at:action.now,dice:game.lastDice || [],visits,cards,message:messages.join(' ')};
+  game.latestLandings ||= {};
+  game.latestLandings[player.id]=structuredClone(game.lastLanding);
   return game.lastLanding.message;
 }

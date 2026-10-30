@@ -170,7 +170,7 @@ test('rematch after surrender requires partner acceptance, archives result and s
   assert.equal(game.players.a.cash,1500);assert.equal(game.players.b.cash,1500);assert.equal(game.players.a.position,0);
   assert.equal(game.archives[oldId].winner,'b');assert.equal(game.archives[oldId].players.a.cash,350);assert.equal(game.archives[oldId].archives,null);
   assert.equal(game.romanticInbox.note.text,'A sweet note');
-  assert.equal(game.decks.chance.remaining.length,30);
+  assert.equal(game.decks.chance.remaining.length,60);
   game=act(game,'opening-roll',a,{dice:[5,6]});game=act(game,'opening-roll',b,{dice:[1,2]});assert.equal(game.status,'ready');
 });
 

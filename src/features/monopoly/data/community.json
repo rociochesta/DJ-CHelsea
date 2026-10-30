@@ -1,0 +1,56 @@
+[
+  {
+    "id": "community-welcome",
+    "title": "Welcome fund",
+    "text": "Receive $100 from the bank.",
+    "effect": "cash",
+    "amount": 100,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "community-coffee",
+    "title": "Coffee supplies",
+    "text": "Pay $50 to restock the coffee table.",
+    "effect": "cash",
+    "amount": -50,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "community-refund",
+    "title": "Venue refund",
+    "text": "Collect $50 from the bank.",
+    "effect": "cash",
+    "amount": 50,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "community-maintenance",
+    "title": "Room maintenance",
+    "text": "Pay $100 for room maintenance.",
+    "effect": "cash",
+    "amount": -100,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "community-unity",
+    "title": "Unity day",
+    "text": "Collect $200 from the bank.",
+    "effect": "cash",
+    "amount": 200,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "community-start",
+    "title": "Just for Today",
+    "text": "Advance to Start. Collect $200 when passing it.",
+    "effect": "move",
+    "destination": 0,
+    "art": null,
+    "animation": null
+  }
+]

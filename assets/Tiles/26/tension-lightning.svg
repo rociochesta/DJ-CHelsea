@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1658" viewBox="0 0 949 1658">
+<defs><filter id="glow" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="9"/></filter></defs>
+<path d="M480 882 L464 918 L478 918 L468 957 L492 924 L477 924 L486 890" fill="#ffcf46" filter="url(#glow)" opacity="0"><animate attributeName="opacity" values="0;0;0.85;0.15;1;0;0" keyTimes="0;0.10;0.18;0.25;0.35;0.43;1" dur="2.5s" repeatCount="1" fill="freeze"/></path>
+<path d="M480 882 L464 918 L478 918 L468 957 L492 924 L477 924 L486 890" fill="none" stroke="#fff4ad" stroke-width="3" stroke-linejoin="round" opacity="0"><animate attributeName="opacity" values="0;0;1;0;1;0;0" keyTimes="0;0.10;0.18;0.25;0.35;0.43;1" dur="2.5s" repeatCount="1" fill="freeze"/></path>
+</svg>

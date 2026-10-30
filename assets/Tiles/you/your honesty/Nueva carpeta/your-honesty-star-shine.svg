@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 946.48 1665.45" width="946.48" height="1665.45"><defs>
+    <style>
+      .cls-1 {
+        fill: #fcfaf2;
+      }
+
+      .cls-2 {
+        fill: #f05480;
+      }
+
+      .cls-3 {
+        fill: #fbf4e5;
+      }
+
+      .cls-4 {
+        fill: #fdf5e9;
+        stroke: #231f20;
+        stroke-miterlimit: 10;
+        stroke-width: 12px;
+      }
+
+      .cls-5 {
+        fill: #f6c32e;
+      }
+
+      .cls-6 {
+        fill: #fae1c8;
+      }
+
+      .cls-7 {
+        fill: #040404;
+      }
+    </style>
+  </defs>
+  <g opacity="0"><path d="M592 761 Q594 771 602 773 Q594 775 592 785 Q590 775 582 773 Q590 771 592 761" fill="#fffbe0"/><animate attributeName="opacity" values="0;0;0.95;0;0" keyTimes="0;0.12;0.23;0.4;1" begin="-0.0s" dur="6s" repeatCount="indefinite"/></g><g opacity="0"><path d="M163 954 Q165 964 173 966 Q165 968 163 978 Q161 968 153 966 Q161 964 163 954" fill="#fffbe0"/><animate attributeName="opacity" values="0;0;0.95;0;0" keyTimes="0;0.12;0.23;0.4;1" begin="-1.3s" dur="6s" repeatCount="indefinite"/></g><g opacity="0"><path d="M133 1185 Q135 1195 143 1197 Q135 1199 133 1209 Q131 1199 123 1197 Q131 1195 133 1185" fill="#fffbe0"/><animate attributeName="opacity" values="0;0;0.95;0;0" keyTimes="0;0.12;0.23;0.4;1" begin="-2.6s" dur="6s" repeatCount="indefinite"/></g><g opacity="0"><path d="M851 1234 Q853 1244 861 1246 Q853 1248 851 1258 Q849 1248 841 1246 Q849 1244 851 1234" fill="#fffbe0"/><animate attributeName="opacity" values="0;0;0.95;0;0" keyTimes="0;0.12;0.23;0.4;1" begin="-3.9000000000000004s" dur="6s" repeatCount="indefinite"/></g></svg>

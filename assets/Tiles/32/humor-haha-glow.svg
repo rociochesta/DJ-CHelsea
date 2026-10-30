@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1658" viewBox="0 0 949 1658">
+<defs><filter id="blur" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="14"/></filter></defs>
+<path d="M556 880 C748 853 895 994 882 1180 Q874 1273 819 1323 L846 1364 Q777 1371 725 1323 C607 1380 482 1342 429 1247" fill="none" stroke="#ff4d94" stroke-width="25" opacity="0" filter="url(#blur)"><animate attributeName="opacity" values="0;.6;0;.55;0" keyTimes="0;.25;.5;.75;1" begin="1s" dur="1s" fill="freeze"/></path>
+</svg>

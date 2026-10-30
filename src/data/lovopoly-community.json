@@ -1,0 +1,484 @@
+{
+  "version": 2,
+  "cards": [
+    {
+      "id": "community-money-0",
+      "category": "financial",
+      "title": "A little thank-you",
+      "effect": "cash",
+      "amount": 100,
+      "text": "You helped your friend untangle a difficult week with patient listening and an emergency snack run. Today they send a note saying the little things mattered more than you knew. There is a thank-you tucked inside, and you are allowed to accept it without arguing. Collect $100 from the bank."
+    },
+    {
+      "id": "community-money-1",
+      "category": "financial",
+      "title": "Birthday envelope",
+      "effect": "cash",
+      "amount": 200,
+      "text": "Your people somehow organize a birthday surprise without spoiling it in the group chat. The cake leans slightly, the singing is enthusiastic, and the envelope contains a contribution toward something you have been saving for. Being celebrated looks good on you. Collect $200 from the bank."
+    },
+    {
+      "id": "community-money-2",
+      "category": "financial",
+      "title": "Coffee money",
+      "effect": "cash",
+      "amount": 25,
+      "text": "Your favorite coffee companion remembers your order and the story you were halfway through telling last time. A small café prize lands in your lap while you are catching up. Apparently your commitment to friendship and warm drinks has finally been recognized. Collect $25 from the bank."
+    },
+    {
+      "id": "community-money-3",
+      "category": "financial",
+      "title": "Unexpected refund",
+      "effect": "cash",
+      "amount": 50,
+      "text": "The venue refunds a booking fee from an outing you organized for your friends. You had completely forgotten about it, but the group remembers your heroic spreadsheet. The refund arrives just as you start suggesting another adventure together. Collect $50 from the bank."
+    },
+    {
+      "id": "community-money-4",
+      "category": "financial",
+      "title": "Rainy-day repair",
+      "effect": "cash",
+      "amount": -50,
+      "text": "A sudden shower catches you and your person under an umbrella that is mostly decorative. You both make it home laughing, but your soaked bag needs repair. The weather provided the comedy and has thoughtfully left you with the bill. Pay $50 to the bank."
+    },
+    {
+      "id": "community-money-5",
+      "category": "financial",
+      "title": "Savings interest",
+      "effect": "cash",
+      "amount": 25,
+      "text": "Your little savings pot has been growing while you and your person debate your next visit. The latest interest payment will not buy a private jet, but it can certainly contribute to snacks. You celebrate the progress with appropriately modest fanfare. Collect $25 from the bank."
+    },
+    {
+      "id": "community-money-6",
+      "category": "financial",
+      "title": "A good week",
+      "effect": "cash",
+      "amount": 100,
+      "text": "You finish a demanding week, and a friend insists you acknowledge what went well. Between the encouraging messages and a small bonus arriving, the day begins to look brighter. Your unofficial cheering squad would like this recorded as a victory. Collect $100 from the bank."
+    },
+    {
+      "id": "community-money-7",
+      "category": "financial",
+      "title": "Shared memories print",
+      "effect": "cash",
+      "amount": -25,
+      "text": "Your phone holds hundreds of photos of the people you love, so you finally print a few. The blurry ones somehow tell the best stories. A small order of prints turns your wall into a gallery of excellent company and questionable camera skills. Pay $25 to the bank."
+    },
+    {
+      "id": "community-money-8",
+      "category": "financial",
+      "title": "Travel fund boost",
+      "effect": "cash",
+      "amount": 150,
+      "text": "Your travel savings receive a welcome boost after a project goes well. The first person you tell is already planning the reunion snacks. You are one step closer to exchanging video-call waves for the kind of hello that needs no screen. Collect $150 from the bank."
+    },
+    {
+      "id": "community-money-9",
+      "category": "financial",
+      "title": "Appointment fee",
+      "effect": "cash",
+      "amount": -100,
+      "text": "You stay up helping a friend prepare for an important day and muddle your own appointment time. The missed booking comes with a fee. Your friend appreciates the support, and both of you agree that next time the encouragement will include setting an alarm. Pay $100 to the bank."
+    },
+    {
+      "id": "community-money-10",
+      "category": "financial",
+      "title": "Lucky discovery",
+      "effect": "cash",
+      "amount": 50,
+      "text": "You open an old notebook and discover money beside a list of adventures you wanted to share with your favorite people. Some plans are still possible; others are delightfully ridiculous. The unexpected find gives your next little outing a head start. Collect $50 from the bank."
+    },
+    {
+      "id": "community-money-11",
+      "category": "financial",
+      "title": "Home comforts",
+      "effect": "cash",
+      "amount": -75,
+      "text": "You invite your person over for a quiet evening and realize your idea of cozy now includes extra cushions and better tea. A quick shopping trip becomes a small investment in future catch-ups. Your sofa has never felt so prepared for friendship. Pay $75 to the bank."
+    },
+    {
+      "id": "community-money-12",
+      "category": "financial",
+      "title": "Kindness returned",
+      "effect": "cash",
+      "amount": 75,
+      "text": "A friend remembers the time you showed up when they needed an extra pair of hands. Today they return the favor with a thoughtful surprise. Neither of you was keeping a ledger, but kindness has a lovely habit of finding its way back. Collect $75 from the bank."
+    },
+    {
+      "id": "community-money-13",
+      "category": "financial",
+      "title": "Celebration fund",
+      "effect": "cash",
+      "amount": 100,
+      "text": "Your friends decide that finishing a difficult project deserves a celebration, even if the rest of the world has not noticed. They put together a little fund for your next treat. You are officially forbidden from describing your achievement as nothing. Collect $100 from the bank."
+    },
+    {
+      "id": "community-escape",
+      "category": "financial",
+      "title": "A kiss and a key",
+      "text": "Your person has slipped you a tiny envelope marked for emergencies involving excessive charm. Inside is a key, a doodled heart, and a reminder that a good teammate always leaves you an escape route. Keep this Get Out of Kiss Detention Free card. You may trade it or use it before rolling.",
+      "effect": "keep"
+    },
+    {
+      "id": "community-gift-0",
+      "category": "gift",
+      "title": "Coffee on me",
+      "effect": "gift",
+      "amount": 25,
+      "text": "Your friend is trying something new and looks nervous enough to reconsider everything. You show up early, clap enthusiastically, and offer the kind of encouragement that makes even an imperfect first attempt feel worth celebrating. The bank gives your person $25. Your cash does not change."
+    },
+    {
+      "id": "community-gift-1",
+      "category": "gift",
+      "title": "Flowers from afar",
+      "effect": "gift",
+      "amount": 50,
+      "text": "There is no anniversary, apology, or milestone on the calendar. You simply think an ordinary Tuesday deserves a small surprise. Your person spends the rest of the day smiling at the unexpected evidence that somebody was thinking of them. The bank gives your person $50. Your cash does not change."
+    },
+    {
+      "id": "community-gift-2",
+      "category": "gift",
+      "title": "Lunch surprise",
+      "effect": "gift",
+      "amount": 75,
+      "text": "Packing the parcel becomes a miniature museum of things your person likes. Tea, postcards, and one delightfully impractical souvenir make the final cut. Distance has inconvenient postage fees, but it has yet to defeat your commitment to thoughtful nonsense. The bank gives your person $75. Your cash does not change."
+    },
+    {
+      "id": "community-gift-3",
+      "category": "gift",
+      "title": "A little treat",
+      "effect": "gift",
+      "amount": 25,
+      "text": "Your person mentions a class they would love to try, then immediately lists reasons to postpone it. You remind them that beginners are allowed to begin. A small boost helps turn the idea into something they can actually put on the calendar. The bank gives your person $25. Your cash does not change."
+    },
+    {
+      "id": "community-gift-4",
+      "category": "gift",
+      "title": "Date-night envelope",
+      "effect": "gift",
+      "amount": 100,
+      "text": "You both know every line of the film, but that has never stopped you from watching it again. Tonight your person gets to choose the snacks and recite their favorite scene with absolutely no complaints from the audience. The bank gives your person $100. Your cash does not change."
+    },
+    {
+      "id": "community-gift-5",
+      "category": "gift",
+      "title": "Playlist prize",
+      "effect": "gift",
+      "amount": 50,
+      "text": "Your friend achieved something that might not make the news but matters enormously to them. You notice. There is a toast, a heartfelt congratulations, and a wildly exaggerated announcement declaring them the champion of this particular Tuesday. The bank gives your person $50. Your cash does not change."
+    },
+    {
+      "id": "community-gift-6",
+      "category": "gift",
+      "title": "Travel wishes",
+      "effect": "gift",
+      "amount": 150,
+      "text": "You assemble songs for the walk home, the slow morning, and the moment your person needs to remember they have someone in their corner. Your musical choices may be questionable, but the dedication behind them is impossible to miss. The bank gives your person $150. Your cash does not change."
+    },
+    {
+      "id": "community-gift-7",
+      "category": "gift",
+      "title": "Something cozy",
+      "effect": "gift",
+      "amount": 75,
+      "text": "Your friend has had the sort of day that deserves a refund. You organize a little rescue package: their favorite snack, an absurd meme, and a reminder that they do not need to be cheerful to be good company. The bank gives your person $75. Your cash does not change."
+    },
+    {
+      "id": "community-gift-8",
+      "category": "gift",
+      "title": "Just because",
+      "effect": "gift",
+      "amount": 50,
+      "text": "You find a book your person would love and tuck little notes between the pages. Some are thoughtful, some are ridiculous, and one simply predicts the exact moment they will complain about a fictional character. The bank gives your person $50. Your cash does not change."
+    },
+    {
+      "id": "community-gift-9",
+      "category": "gift",
+      "title": "A generous surprise",
+      "effect": "gift",
+      "amount": 100,
+      "text": "A cold afternoon becomes an excuse to meet up, warm your hands, and compare the weeks you have survived. You nominate your person as the official whipped-cream inspector, a position they accept with impressive seriousness. The bank gives your person $100. Your cash does not change."
+    },
+    {
+      "id": "community-romance-0",
+      "category": "romantic",
+      "title": "One lovely memory",
+      "text": "Tell your person about a memory of the two of you that makes you smile. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-1",
+      "category": "romantic",
+      "title": "A note for later",
+      "text": "Send your person a kind message they can read whenever they want. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-2",
+      "category": "romantic",
+      "title": "Something I appreciate",
+      "text": "Name one small thing your person does that you appreciate. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-3",
+      "category": "romantic",
+      "title": "Our next little date",
+      "text": "Suggest a simple date you would enjoy together. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-4",
+      "category": "romantic",
+      "title": "A warm goodnight",
+      "text": "Send a sweet goodnight wish, whenever the time feels right. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-financial-extra-0",
+      "category": "financial",
+      "title": "The Neighborhood Quiz Heroes",
+      "effect": "cash",
+      "amount": 100,
+      "text": "Your friends recruit you for a community quiz and immediately assign you the obscure-facts department. Nobody agrees on the final answer, but your wild guess turns out to be correct. The prize committee congratulates you while your team rewrites history to claim it was confidence all along. Collect $100 from the bank."
+    },
+    {
+      "id": "community-financial-extra-1",
+      "category": "financial",
+      "title": "The Friendship Scrapbook Budget",
+      "effect": "cash",
+      "amount": -50,
+      "text": "You decide to collect photos, ticket stubs, and tiny notes from your adventures with your people. Unfortunately, the craft shop also sells stickers. By the time you reach the checkout, your modest scrapbook has acquired enough decorations to document several additional decades of friendship. Pay $50 to the bank."
+    },
+    {
+      "id": "community-financial-extra-2",
+      "category": "financial",
+      "title": "The Stationery Shop Detour",
+      "effect": "cash",
+      "amount": -25,
+      "text": "Your friend takes you past a shop selling tiny cards with messages that sound exactly like your inside jokes. You both insist you are only looking. Ten minutes later, your bag contains future birthday greetings, spontaneous encouragement, and proof that neither of you can be trusted near nice paper. Pay $25 to the bank."
+    },
+    {
+      "id": "community-financial-extra-3",
+      "category": "financial",
+      "title": "The Shared Garden Surprise",
+      "effect": "cash",
+      "amount": 75,
+      "text": "You and a neighbor planted a few herbs as an excuse to spend more time chatting outside. The little garden grows so enthusiastically that the neighborhood fair buys some of your spare plants. Your friendship now has roots, excellent basil, and a surprisingly respectable business model. Collect $75 from the bank."
+    },
+    {
+      "id": "community-financial-extra-4",
+      "category": "financial",
+      "title": "The Spare-Room Welcome",
+      "effect": "cash",
+      "amount": -100,
+      "text": "A friend is coming to stay, and you prepare the room with their favorite tea and a little welcome note. Then you realize the spare pillow has become a pancake. Fresh bedding turns a practical shopping trip into a promise that they will feel at home. Pay $100 to the bank."
+    },
+    {
+      "id": "community-financial-extra-5",
+      "category": "financial",
+      "title": "The Costume Contest Comeback",
+      "effect": "cash",
+      "amount": 150,
+      "text": "Your friends persuade you to enter the local costume contest wearing an outfit assembled from borrowed scarves and determination. The judges adore the creativity, and your group celebrates as if you have won an international championship. The prize makes the glitter in your shoes slightly easier to forgive. Collect $150 from the bank."
+    },
+    {
+      "id": "community-financial-extra-6",
+      "category": "financial",
+      "title": "The Soup Delivery Detour",
+      "effect": "cash",
+      "amount": -75,
+      "text": "You make soup for a friend who needs a quiet evening and discover that every container in your cupboard is missing its lid. A quick supply run becomes part of the kindness mission. Your delivery arrives warm, secure, and accompanied by a strongly worded complaint about container design. Pay $75 to the bank."
+    },
+    {
+      "id": "community-financial-extra-7",
+      "category": "financial",
+      "title": "An Unexpected Referral",
+      "effect": "cash",
+      "amount": 100,
+      "text": "A friend recommends your work because they have seen how much care you put into it. The new customer is delighted, and a referral bonus follows. You send your friend an excited thank-you message with so many exclamation marks it should probably require its own envelope. Collect $100 from the bank."
+    },
+    {
+      "id": "community-financial-extra-8",
+      "category": "financial",
+      "title": "The Duplicate Reservation Refund",
+      "effect": "cash",
+      "amount": 50,
+      "text": "Two thoughtful friends secretly book the same little surprise for you, each convinced the other has forgotten. When the mix-up is discovered, everyone laughs and one booking is refunded. You leave feeling doubly remembered and very grateful that somebody finally compared calendars. Collect $50 from the bank."
+    },
+    {
+      "id": "community-financial-extra-9",
+      "category": "financial",
+      "title": "The Farewell Breakfast Bill",
+      "effect": "cash",
+      "amount": -50,
+      "text": "Your friend is heading home, so you stretch the morning into one final breakfast together. There are extra pancakes, a second pot of coffee, and a firm agreement that this is see-you-soon. The bill arrives with far less sentimentality than the rest of the table. Pay $50 to the bank."
+    },
+    {
+      "id": "community-gift-extra-0",
+      "category": "gift",
+      "title": "The Bad-Day Rescue Kit",
+      "effect": "gift",
+      "amount": 25,
+      "text": "Your friend has had the sort of day that deserves a refund. You organize a little rescue package: their favorite snack, an absurd meme, and a reminder that they do not need to be cheerful to be good company. The bank gives your person $25; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-1",
+      "category": "gift",
+      "title": "A Book With Notes Inside",
+      "effect": "gift",
+      "amount": 50,
+      "text": "You find a book your person would love and tuck little notes between the pages. Some are thoughtful, some are ridiculous, and one simply predicts the exact moment they will complain about a fictional character. The bank gives your person $50; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-2",
+      "category": "gift",
+      "title": "First Round of Hot Chocolate",
+      "effect": "gift",
+      "amount": 75,
+      "text": "A cold afternoon becomes an excuse to meet up, warm your hands, and compare the weeks you have survived. You nominate your person as the official whipped-cream inspector, a position they accept with impressive seriousness. The bank gives your person $75; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-3",
+      "category": "gift",
+      "title": "Cheering From the Front Row",
+      "effect": "gift",
+      "amount": 100,
+      "text": "Your friend is trying something new and looks nervous enough to reconsider everything. You show up early, clap enthusiastically, and offer the kind of encouragement that makes even an imperfect first attempt feel worth celebrating. The bank gives your person $100; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-4",
+      "category": "gift",
+      "title": "Flowers for an Ordinary Tuesday",
+      "effect": "gift",
+      "amount": 50,
+      "text": "There is no anniversary, apology, or milestone on the calendar. You simply think an ordinary Tuesday deserves a small surprise. Your person spends the rest of the day smiling at the unexpected evidence that somebody was thinking of them. The bank gives your person $50; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-5",
+      "category": "gift",
+      "title": "The Long-Distance Care Parcel",
+      "effect": "gift",
+      "amount": 75,
+      "text": "Packing the parcel becomes a miniature museum of things your person likes. Tea, postcards, and one delightfully impractical souvenir make the final cut. Distance has inconvenient postage fees, but it has yet to defeat your commitment to thoughtful nonsense. The bank gives your person $75; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-6",
+      "category": "gift",
+      "title": "A Little Courage Fund",
+      "effect": "gift",
+      "amount": 100,
+      "text": "Your person mentions a class they would love to try, then immediately lists reasons to postpone it. You remind them that beginners are allowed to begin. A small boost helps turn the idea into something they can actually put on the calendar. The bank gives your person $100; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-7",
+      "category": "gift",
+      "title": "The Comfort-Movie Ticket",
+      "effect": "gift",
+      "amount": 25,
+      "text": "You both know every line of the film, but that has never stopped you from watching it again. Tonight your person gets to choose the snacks and recite their favorite scene with absolutely no complaints from the audience. The bank gives your person $25; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-8",
+      "category": "gift",
+      "title": "Your Own Tiny Celebration",
+      "effect": "gift",
+      "amount": 150,
+      "text": "Your friend achieved something that might not make the news but matters enormously to them. You notice. There is a toast, a heartfelt congratulations, and a wildly exaggerated announcement declaring them the champion of this particular Tuesday. The bank gives your person $150; your own cash stays the same."
+    },
+    {
+      "id": "community-gift-extra-9",
+      "category": "gift",
+      "title": "The Playlist Delivery Service",
+      "effect": "gift",
+      "amount": 50,
+      "text": "You assemble songs for the walk home, the slow morning, and the moment your person needs to remember they have someone in their corner. Your musical choices may be questionable, but the dedication behind them is impossible to miss. The bank gives your person $50; your own cash stays the same."
+    },
+    {
+      "id": "community-romance-extra-0",
+      "category": "romantic",
+      "title": "A Soundtrack for Our Team",
+      "effect": "romance",
+      "text": "Pick a song, or invent a song title, that fits the two of you as a team. Describe the scene where it would play in your imaginary movie and explain which of you would absolutely miss the cue for the dramatic entrance. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-1",
+      "category": "romantic",
+      "title": "The Kindness Replay",
+      "effect": "romance",
+      "text": "Remember a small kindness your person showed you, or describe one you would enjoy doing for them. Tell the story with one detail that makes it personal. Grand gestures can take the evening off; this card belongs to ordinary thoughtfulness. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-2",
+      "category": "romantic",
+      "title": "Your Dream Day Off",
+      "effect": "romance",
+      "text": "Plan a relaxing day for your person based on what you know they enjoy. Include a place, a meal, and one thing they definitely would not have to do. Explain which detail you think would earn the biggest relieved smile. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-3",
+      "category": "romantic",
+      "title": "A Team Name Worth Wearing",
+      "effect": "romance",
+      "text": "Give the two of you a team name and invent your official motto. Explain what sort of challenge you would enter together and which wonderfully mismatched strengths would help you survive it. Matching capes are optional, but encouraged by the imaginary committee. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-4",
+      "category": "romantic",
+      "title": "The Tiny Tradition Proposal",
+      "effect": "romance",
+      "text": "Suggest a small tradition you could share without much money or planning. It could be a weekly photo, a silly greeting, or a monthly game night. Explain why you chose it and how you would keep it easy enough to actually enjoy. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-5",
+      "category": "romantic",
+      "title": "A Tour of Your Happy Place",
+      "effect": "romance",
+      "text": "Describe a place that makes you feel comfortable and tell your person what you would show them there. It can be real or imaginary. Include a sound, a snack, or a little detail that makes the invitation feel like it came from you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-6",
+      "category": "romantic",
+      "title": "The Friendly Fortune Teller",
+      "effect": "romance",
+      "text": "Predict three cheerful, low-stakes things in your person’s future. Perhaps they will discover a perfect pastry or finally win your next game. Give one prediction a wonderfully dramatic explanation, as if your crystal ball takes snack-related destiny very seriously. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-7",
+      "category": "romantic",
+      "title": "A Thank-You for Being You",
+      "effect": "romance",
+      "text": "Tell your person something their presence adds to your life. You can keep it light, sincere, or funny; the only requirement is that it sounds like something you mean. Imagine you are leaving a little note for them to find unexpectedly. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-8",
+      "category": "romantic",
+      "title": "Our Ridiculous Adventure Trailer",
+      "effect": "romance",
+      "text": "Narrate a short movie trailer for an everyday adventure you could share. Buying groceries can become an epic quest; finding a café can become a mystery. Include a dramatic title and one line your person would definitely say. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "community-romance-extra-9",
+      "category": "romantic",
+      "title": "The Next Time We Meet",
+      "effect": "romance",
+      "text": "Choose one small thing you would like to do the next time you spend time together, online or in person. Tell your person why you picked it and what would make it enjoyable for both of you. An uncomplicated plan is still a good plan. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    }
+  ]
+}

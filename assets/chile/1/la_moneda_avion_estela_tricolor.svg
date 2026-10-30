@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="938" height="1677" viewBox="0 0 938 1677">
+<defs>
+ <linearGradient id="smokeR"><stop stop-color="#e72f48" stop-opacity="0"/><stop offset=".25" stop-color="#e72f48" stop-opacity=".55"/><stop offset="1" stop-color="#ef394b" stop-opacity=".95"/></linearGradient>
+ <linearGradient id="smokeW"><stop stop-color="#fff7ee" stop-opacity="0"/><stop offset=".25" stop-color="#fff7ee" stop-opacity=".65"/><stop offset="1" stop-color="#ffffff" stop-opacity=".96"/></linearGradient>
+ <linearGradient id="smokeB"><stop stop-color="#235fcb" stop-opacity="0"/><stop offset=".25" stop-color="#235fcb" stop-opacity=".55"/><stop offset="1" stop-color="#2769d5" stop-opacity=".95"/></linearGradient>
+ <filter id="blur"><feGaussianBlur stdDeviation="3"/></filter>
+ <g id="jet" stroke="#101b2a" stroke-width="2" stroke-linejoin="round">
+  <path d="M-44 4 L-8 -3 L13 -33 L24 -32 L19 -4 L48 1 L53 7 L19 12 L8 30 L-2 30 L-6 12 L-42 12Z" fill="#f4f2ec"/>
+  <path d="M-14 1 L14 -2 L22 -25 L26 -24 L21 8 L-10 11Z" fill="#3070a9"/>
+  <path d="M-35 6 L-9 4 L-2 11 L-36 10Z" fill="#e83b4c"/>
+  <path d="M27 1 L47 4 L28 7Z" fill="#1d4f8b"/>
+  <ellipse cx="7" cy="4" rx="7" ry="3.4" fill="#253b52"/>
+ </g>
+</defs>
+<!-- Airplane flies from left to right across the open sky below the title. -->
+<g>
+ <animateTransform attributeName="transform" type="translate" values="-200 645; -200 645; 1110 540; 1110 540" keyTimes="0;.08;.78;1" dur="7s" repeatCount="indefinite"/>
+ <g opacity="0">
+  <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.12;.7;1" dur="7s" repeatCount="indefinite"/>
+  <g filter="url(#blur)" stroke-linecap="round" fill="none">
+   <path d="M-420 28 Q-230 24 -15 26" stroke="url(#smokeR)" stroke-width="15" stroke-dasharray="440" stroke-dashoffset="440"><animate attributeName="stroke-dashoffset" values="440;0;0" keyTimes="0;.4;1" dur="7s" repeatCount="indefinite"/></path>
+   <path d="M-420 43 Q-230 36 -15 39" stroke="url(#smokeW)" stroke-width="15" stroke-dasharray="440" stroke-dashoffset="440"><animate attributeName="stroke-dashoffset" values="440;0;0" keyTimes="0;.4;1" dur="7s" repeatCount="indefinite"/></path>
+   <path d="M-420 58 Q-230 48 -15 52" stroke="url(#smokeB)" stroke-width="15" stroke-dasharray="440" stroke-dashoffset="440"><animate attributeName="stroke-dashoffset" values="440;0;0" keyTimes="0;.4;1" dur="7s" repeatCount="indefinite"/></path>
+  </g>
+  <use href="#jet" transform="scale(.75)"/>
+ </g>
+</g>
+</svg>

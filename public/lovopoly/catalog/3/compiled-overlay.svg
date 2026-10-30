@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1670.89" viewBox="0 0 949 1670.89"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 949 1657" fill="none" id="layer-6cf3be3c-5298-426a-a4bd-fe67a9de04c7" preserveAspectRatio="none" opacity="0">
+<title>Cerro San Cristóbal — birds landing overlay</title>
+<desc>Transparent full-tile overlay. Align edge to edge with the Cerro tile. Two birds cross the sky once in two seconds. Reinsert the SVG to replay.</desc>
+<defs><clipPath id="layer-6cf3be3c-5298-426a-a4bd-fe67a9de04c7-tile-sky"><rect x="36" y="650" width="878" height="148"/></clipPath></defs>
+<style>@media (prefers-reduced-motion: reduce) {
+  #layer-6cf3be3c-5298-426a-a4bd-fe67a9de04c7 .birds { display: none; }
+}</style>
+<g class="birds" clip-path="url(#layer-6cf3be3c-5298-426a-a4bd-fe67a9de04c7-tile-sky)" stroke="#171716" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+<g>
+<animateTransform attributeName="transform" type="translate" values="-40 727;990 697;990 697" begin="0s" dur="2.2s" fill="freeze" keyTimes="0;0.9090909090909091;1" repeatCount="indefinite"/>
+<path d="M-14 -5 Q-7 -10 0 0 Q7 -10 14 -5">
+<animate attributeName="d" values="M-14 -5 Q-7 -10 0 0 Q7 -10 14 -5;M-14 5 Q-7 3 0 0 Q7 3 14 5;M-14 -5 Q-7 -10 0 0 Q7 -10 14 -5;M-14 -5 Q-7 -10 0 0 Q7 -10 14 -5" dur="2.2s" repeatCount="indefinite" keyTimes="0;0.0818181818181818;0.1636363636363636;1" begin="0s" fill="freeze"/>
+</path></g>
+<g>
+<animateTransform attributeName="transform" type="translate" values="-100 752;970 729" begin="0s" dur="2.2s" fill="freeze" keyTimes="0;1" repeatCount="indefinite"/>
+<path d="M-11 -4 Q-5 -8 0 0 Q5 -8 11 -4" stroke-width="3.5">
+<animate attributeName="d" values="M-11 4 Q-5 2 0 0 Q5 2 11 4;M-11 -4 Q-5 -8 0 0 Q5 -8 11 -4;M-11 4 Q-5 2 0 0 Q5 2 11 4;M-11 4 Q-5 2 0 0 Q5 2 11 4" dur="2.2s" repeatCount="indefinite" keyTimes="0;0.09090909090909091;0.18181818181818182;1" begin="0s" fill="freeze"/>
+</path></g>
+</g><set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg></svg>

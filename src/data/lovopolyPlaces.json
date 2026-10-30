@@ -1,0 +1,824 @@
+{
+  "version": 2,
+  "places": [
+    {
+      "id": "place-0",
+      "originalSlot": 0,
+      "name": "Hello, Beautiful",
+      "category": "go",
+      "description": "Every adventure together starts with a hello.",
+      "image": "/lovopoly/catalog/0/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/0/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "0"
+    },
+    {
+      "id": "place-1",
+      "originalSlot": 1,
+      "name": "Costanera Center",
+      "category": "chile",
+      "description": "City views, bright lights, and a little time together above Santiago.",
+      "image": "/lovopoly/catalog/1/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/1/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "1"
+    },
+    {
+      "id": "place-2",
+      "originalSlot": 2,
+      "name": "From Me to You",
+      "category": "community",
+      "description": "A little surprise from me to you. Open the envelope and see what is waiting.",
+      "image": "/lovopoly/catalog/2x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/2x/love-envelope.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "2x"
+    },
+    {
+      "id": "place-3",
+      "originalSlot": 3,
+      "name": "Cerro San Cristóbal",
+      "category": "chile",
+      "description": "A hilltop escape overlooking Santiago, made for a slow walk together.",
+      "image": "/lovopoly/catalog/3/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/3/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "3"
+    },
+    {
+      "id": "place-4",
+      "originalSlot": 4,
+      "name": "Long Distance Tax",
+      "category": "tax",
+      "description": "Even a love story has a few unexpected expenses.",
+      "image": "/lovopoly/catalog/4/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/4/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "4"
+    },
+    {
+      "id": "place-5",
+      "originalSlot": 5,
+      "name": "Santiago Airport",
+      "category": "station",
+      "description": "One journey closer to each other. Your next adventure starts here.",
+      "image": "/lovopoly/catalog/5/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/5/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "5"
+    },
+    {
+      "id": "place-6",
+      "originalSlot": 6,
+      "name": "Barrio Lastarria",
+      "category": "chile",
+      "description": "A colorful Santiago neighborhood for wandering, conversation, and a shared coffee.",
+      "image": "/lovopoly/catalog/6/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/6/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "6"
+    },
+    {
+      "id": "place-7",
+      "originalSlot": 7,
+      "name": "Love or Disaster",
+      "category": "chance",
+      "description": "A sweet surprise or a little trouble? Let fate choose your next moment.",
+      "image": "/lovopoly/catalog/7/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/7/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "7"
+    },
+    {
+      "id": "place-8",
+      "originalSlot": 8,
+      "name": "Eskimo Joe’s",
+      "category": "oklahoma",
+      "description": "A lively Oklahoma stop for comfort food and good company.",
+      "image": "/lovopoly/catalog/8/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/8/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "8"
+    },
+    {
+      "id": "place-9",
+      "originalSlot": 9,
+      "name": "Boomer Lake",
+      "category": "oklahoma",
+      "description": "A lakeside pause in Oklahoma, with room for a walk and an unhurried conversation.",
+      "image": "/lovopoly/catalog/9x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/9x/boomer-lake-shimmer.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "9x"
+    },
+    {
+      "id": "place-10",
+      "originalSlot": 10,
+      "name": "Kiss Detention",
+      "category": "detention",
+      "description": "Take a little break. A challenge, lucky doubles, or a little cash can set you free.",
+      "image": "/lovopoly/catalog/10/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/10/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "10"
+    },
+    {
+      "id": "place-11",
+      "originalSlot": 11,
+      "name": "Grey Snow Eagle House",
+      "category": "oklahoma",
+      "description": "An Oklahoma place to discover together, surrounded by nature and stories.",
+      "image": "/lovopoly/catalog/11x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/11x/grey-snow-chimney.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "11x"
+    },
+    {
+      "id": "place-12",
+      "originalSlot": 12,
+      "name": "Chemistry Generator",
+      "category": "utility",
+      "description": "A little spark that keeps your connection going.",
+      "image": "/lovopoly/catalog/12/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/12/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "12"
+    },
+    {
+      "id": "place-13",
+      "originalSlot": 13,
+      "name": "Sushi",
+      "category": "together",
+      "description": "Shared plans, familiar places, and another memory to make together.",
+      "image": "/lovopoly/catalog/13/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/13/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "13"
+    },
+    {
+      "id": "place-14",
+      "originalSlot": 14,
+      "name": "NA Meeting",
+      "category": "together",
+      "description": "Shared plans, familiar places, and another memory to make together.",
+      "image": "/lovopoly/catalog/14x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/14x/na-meeting-steam.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "14x"
+    },
+    {
+      "id": "place-15",
+      "originalSlot": 15,
+      "name": "WhatsApp Express",
+      "category": "station",
+      "description": "One journey closer to each other. Your next adventure starts here.",
+      "image": "/lovopoly/catalog/15x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/15x/whatsapp-express-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "15x"
+    },
+    {
+      "id": "place-16",
+      "originalSlot": 16,
+      "name": "Gay Bar",
+      "category": "together",
+      "description": "Shared plans, familiar places, and another memory to make together.",
+      "image": "/lovopoly/catalog/16x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/16x/gay-bar-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "16x"
+    },
+    {
+      "id": "place-17",
+      "originalSlot": 17,
+      "name": "From Me to You",
+      "category": "community",
+      "description": "A little surprise from me to you. Open the envelope and see what is waiting.",
+      "image": "/lovopoly/catalog/17x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/17x/love-envelope-animated.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/17x/love-envelope.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "17x"
+    },
+    {
+      "id": "place-18",
+      "originalSlot": 18,
+      "name": "Midnight Spicy",
+      "category": "distance",
+      "description": "A small reminder that being far apart does not mean feeling far away.",
+      "image": "/lovopoly/catalog/18x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/18x/midnight-spicy-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "18x"
+    },
+    {
+      "id": "place-19",
+      "originalSlot": 19,
+      "name": "Plane Ticket",
+      "category": "distance",
+      "description": "A small reminder that being far apart does not mean feeling far away.",
+      "image": "/lovopoly/catalog/19/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/19/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "19"
+    },
+    {
+      "id": "place-20",
+      "originalSlot": 20,
+      "name": "Netflix & Chill",
+      "category": "rest",
+      "description": "Netflix & Chill: another moment in your Lovopoly adventure.",
+      "image": "/lovopoly/catalog/20/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/20/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "20"
+    },
+    {
+      "id": "place-21",
+      "originalSlot": 21,
+      "name": "Good Morning Text",
+      "category": "distance",
+      "description": "A small reminder that being far apart does not mean feeling far away.",
+      "image": "/lovopoly/catalog/21/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/21/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "21"
+    },
+    {
+      "id": "place-22",
+      "originalSlot": 22,
+      "name": "Love or Disaster",
+      "category": "chance",
+      "description": "A sweet surprise or a little trouble? Let fate choose your next moment.",
+      "image": "/lovopoly/catalog/22/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/22/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "22"
+    },
+    {
+      "id": "place-23",
+      "originalSlot": 23,
+      "name": "Words With You",
+      "category": "games",
+      "description": "A little friendly competition, a lot of laughter, and one more round together.",
+      "image": "/lovopoly/catalog/23/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/23/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "23"
+    },
+    {
+      "id": "place-24",
+      "originalSlot": 24,
+      "name": "Music Quiz Battle",
+      "category": "games",
+      "description": "A little friendly competition, a lot of laughter, and one more round together.",
+      "image": "/lovopoly/catalog/24/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/24/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "24"
+    },
+    {
+      "id": "place-25",
+      "originalSlot": 25,
+      "name": "Love Airlines",
+      "category": "station",
+      "description": "One journey closer to each other. Your next adventure starts here.",
+      "image": "/lovopoly/catalog/25/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/25/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "25"
+    },
+    {
+      "id": "place-26",
+      "originalSlot": 26,
+      "name": "The Tension Is Real",
+      "category": "chemistry",
+      "description": "The spark, the teasing, and the moments that make it hard to say goodnight.",
+      "image": "/lovopoly/catalog/26/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/26/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "26"
+    },
+    {
+      "id": "place-27",
+      "originalSlot": 27,
+      "name": "Tease Me Again",
+      "category": "chemistry",
+      "description": "The spark, the teasing, and the moments that make it hard to say goodnight.",
+      "image": "/lovopoly/catalog/27/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/27/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "27"
+    },
+    {
+      "id": "place-28",
+      "originalSlot": 28,
+      "name": "Kiss Factory",
+      "category": "utility",
+      "description": "A little spark that keeps your connection going.",
+      "image": "/lovopoly/catalog/28/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/28/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "28"
+    },
+    {
+      "id": "place-29",
+      "originalSlot": 29,
+      "name": "One More Kiss",
+      "category": "chemistry",
+      "description": "The spark, the teasing, and the moments that make it hard to say goodnight.",
+      "image": "/lovopoly/catalog/29/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/29/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "29"
+    },
+    {
+      "id": "place-30",
+      "originalSlot": 30,
+      "name": "Can’t Behave",
+      "category": "go-to-detention",
+      "description": "Caught being a little too playful. Your next stop is Kiss Detention.",
+      "image": "/lovopoly/catalog/30/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/30/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "30"
+    },
+    {
+      "id": "place-31",
+      "originalSlot": 31,
+      "name": "Your Eyes",
+      "category": "you",
+      "description": "One of the little things about you that makes an ordinary day feel special.",
+      "image": "/lovopoly/catalog/31/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/31/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "31"
+    },
+    {
+      "id": "place-32",
+      "originalSlot": 32,
+      "name": "Your Sense of Humor",
+      "category": "you",
+      "description": "One of the little things about you that makes an ordinary day feel special.",
+      "image": "/lovopoly/catalog/32/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/32/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "32"
+    },
+    {
+      "id": "place-33",
+      "originalSlot": 33,
+      "name": "From Me to You",
+      "category": "community",
+      "description": "A little surprise from me to you. Open the envelope and see what is waiting.",
+      "image": "/lovopoly/catalog/33x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/33x/love-envelope-animated.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/33x/love-envelope.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "33x"
+    },
+    {
+      "id": "place-34",
+      "originalSlot": 34,
+      "name": "The Way You Think",
+      "category": "you",
+      "description": "One of the little things about you that makes an ordinary day feel special.",
+      "image": "/lovopoly/catalog/34/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/34/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "34"
+    },
+    {
+      "id": "place-35",
+      "originalSlot": 35,
+      "name": "Oklahoma City Airport",
+      "category": "station",
+      "description": "One journey closer to each other. Your next adventure starts here.",
+      "image": "/lovopoly/catalog/35/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/35/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "35"
+    },
+    {
+      "id": "place-36",
+      "originalSlot": 36,
+      "name": "Love or Disaster",
+      "category": "chance",
+      "description": "A sweet surprise or a little trouble? Let fate choose your next moment.",
+      "image": "/lovopoly/catalog/36/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/36/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "36"
+    },
+    {
+      "id": "place-37",
+      "originalSlot": 37,
+      "name": "All Yours",
+      "category": "us",
+      "description": "A place for the promises, the closeness, and everything that belongs to the two of you.",
+      "image": "/lovopoly/catalog/37/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/37/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "37"
+    },
+    {
+      "id": "place-38",
+      "originalSlot": 38,
+      "name": "Being Naughty Fine",
+      "category": "tax",
+      "description": "Even a love story has a few unexpected expenses.",
+      "image": "/lovopoly/catalog/38/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/38/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "38"
+    },
+    {
+      "id": "place-39",
+      "originalSlot": 39,
+      "name": "Completely Mine",
+      "category": "us",
+      "description": "A place for the promises, the closeness, and everything that belongs to the two of you.",
+      "image": "/lovopoly/catalog/39/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/39/compiled-overlay.svg"
+        }
+      ],
+      "enabled": true,
+      "sourceFolder": "39"
+    },
+    {
+      "id": "chile-1",
+      "name": "La Moneda",
+      "category": "chile",
+      "description": "Morning light over La Moneda, a walk through Santiago, and another memory together.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/chile/1/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/chile/1/compiled-overlay.svg"
+        }
+      ],
+      "sourceFolder": "chile/1"
+    },
+    {
+      "id": "chile-2",
+      "name": "Valle de la Luna",
+      "category": "chile",
+      "description": "Watch the sunset paint Valle de la Luna, with desert skies stretching out around us.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/chile/2x/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/chile/2x/valle_luna_destellos_animados.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/2x/valle_luna_nubes_animadas.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/2x/valle_luna_polvo_animado.svg"
+        }
+      ],
+      "sourceFolder": "chile/2x"
+    },
+    {
+      "id": "chile-3",
+      "name": "El Tatio",
+      "category": "chile",
+      "description": "An early morning at El Tatio, where rising steam meets the first light of the day.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/chile/3/El Tatio Geyser Sunrise Poster.png",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/chile/3/el_tatio_geysers_humo_animado.svg"
+        }
+      ],
+      "sourceFolder": "chile/3"
+    },
+    {
+      "id": "chile-4",
+      "name": "Valparaíso",
+      "category": "chile",
+      "description": "Colorful hills, ocean views, and a funicular ride through Valparaíso together.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/chile/4/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/chile/4/01_funicular_animado.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/4/02_nubes_animadas.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/4/03_barcos_animados.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/4/04_reflejos_mar_animados.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/4/05_flores_animadas.svg"
+        }
+      ],
+      "sourceFolder": "chile/4"
+    },
+    {
+      "id": "chile-5",
+      "name": "Torres del Paine",
+      "category": "chile",
+      "description": "Mountains, glaciers, and quiet lakes: a shared adventure in Torres del Paine.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/chile/5/Torres del Paine al Atardecer.png",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/chile/5/torres_01_glaciar_desprendimiento.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/5/torres_02_nubes_rosadas.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/5/torres_03_reflejos_lago.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/5/torres_04_icebergs_flotando.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/chile/5/torres_05_flores_patagonicas.svg"
+        }
+      ],
+      "sourceFolder": "chile/5"
+    },
+    {
+      "id": "oklahoma-1",
+      "name": "Downtown Stillwater",
+      "category": "oklahoma",
+      "description": "A sunset stroll through Downtown Stillwater, with time to stop and enjoy the town.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/oklahoma/1/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/oklahoma/1/stillwater_01_caballo_encabritado.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/1/stillwater_02_cowboy_latigo.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/1/stillwater_03_estatua_conjunta.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/1/stillwater_04_nubes_rosadas.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/1/stillwater_05_flores_arboles.svg"
+        }
+      ],
+      "sourceFolder": "oklahoma/1"
+    },
+    {
+      "id": "oklahoma-2",
+      "name": "Oklahoma State University",
+      "category": "oklahoma",
+      "description": "A walk around Oklahoma State University, past the fountain and familiar campus views.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/oklahoma/2/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/oklahoma/2/osu_01_fuente_animada.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/2/osu_02_nubes_animadas.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/2/osu_03_destellos_animados.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/2/osu_04_flores_animadas.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/2/osu_05_arboles_animados.svg"
+        }
+      ],
+      "sourceFolder": "oklahoma/2"
+    },
+    {
+      "id": "oklahoma-3",
+      "name": "Twin Transformers",
+      "category": "oklahoma",
+      "description": "Meet the Twin Transformers on campus and stop for a playful photo together.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/oklahoma/3/Asset 1.svg",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/oklahoma/3/00_todos_los_overlays.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/3/01_bumblebee_saludo.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/3/02_optimus_cabeza.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/3/03_movimiento_mecanico.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/3/04_luces_robots.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/3/05_nubes_rosadas.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/3/06_persona_sorprendida.svg"
+        }
+      ],
+      "sourceFolder": "oklahoma/3"
+    },
+    {
+      "id": "oklahoma-4",
+      "name": "First Sonic Drive-In",
+      "category": "oklahoma",
+      "description": "A stop at the First Sonic Drive-In for a shared treat and a little local history.",
+      "enabled": true,
+      "image": "/lovopoly/catalog/oklahoma/4/First Sonic Drive-In Sunset Scene.png",
+      "animations": [
+        {
+          "src": "/lovopoly/catalog/oklahoma/4/01_letrero_sonic.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/4/02_auto_clasico.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/4/03_estatua_bronce.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/4/04_nubes_rosadas.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/4/05_luces_drive_in.svg"
+        },
+        {
+          "src": "/lovopoly/catalog/oklahoma/4/06_arboles_arbustos.svg"
+        }
+      ],
+      "sourceFolder": "oklahoma/4"
+    }
+  ]
+}

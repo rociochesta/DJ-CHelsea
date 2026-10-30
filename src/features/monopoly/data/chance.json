@@ -1,0 +1,456 @@
+[
+  {
+    "id": "chance-go",
+    "title": "A fresh start",
+    "text": "Advance to Just for Today. Collect $200 when passing Start.",
+    "effect": "move",
+    "destination": 0,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "chance-travel",
+    "title": "Travel costs",
+    "text": "Pay $50 for the meeting bus.",
+    "effect": "cash",
+    "amount": -50,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "chance-refund",
+    "title": "Travel refund",
+    "text": "Collect $100 from the bank.",
+    "effect": "cash",
+    "amount": 100,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "chance-pause",
+    "title": "Take a pause",
+    "text": "Move directly to Ego without collecting Start money. Roll doubles to leave, or pay $50 after your third attempt.",
+    "effect": "detain",
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "chance-service",
+    "title": "Service visit",
+    "text": "Advance to The Amends Department. Collect $200 if you pass Start.",
+    "effect": "move",
+    "destination": 21,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "chance-supplies",
+    "title": "Extra supplies",
+    "text": "Pay $25 for meeting supplies.",
+    "effect": "cash",
+    "amount": -25,
+    "art": null,
+    "animation": null
+  },
+  {
+    "id": "chance-the-seventh-tradition-miracle",
+    "title": "The Seventh Tradition Miracle",
+    "text": "You reach into your pocket for a dollar to put in the Seventh Tradition basket and discover a forgotten $100 bill. Apparently, your past self was financially responsible for approximately eleven seconds. Collect $100. The meeting still gets its dollar.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 100
+  },
+  {
+    "id": "chance-the-coffee-commitment",
+    "title": "The Coffee Commitment",
+    "text": "You volunteered to make coffee for the meeting. Somehow, this escalated into buying gourmet beans, six kinds of creamer, cookies, and a coffee machine that looks like it belongs at NASA. Pay $75. The group has never been more caffeinated or less spiritually balanced.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -75
+  },
+  {
+    "id": "chance-your-sponsor-was-right-again",
+    "title": "Your Sponsor Was Right. Again.",
+    "text": "You ignored your sponsor's suggestion, did exactly what you wanted, and created a problem so spectacular that even your ego requested anonymity. Pay $50 for the consequences. Your sponsor says nothing. That somehow makes it worse.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -50
+  },
+  {
+    "id": "chance-the-gratitude-list-jackpot",
+    "title": "The Gratitude List Jackpot",
+    "text": "You were forced to write ten things you're grateful for. You started with coffee, Wi-Fi, and the fact that nobody called you before noon. Then you remembered an unclaimed refund from months ago. Collect $150. Gratitude apparently comes with occasional cash benefits.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 150
+  },
+  {
+    "id": "chance-the-resentment-subscription",
+    "title": "The Resentment Subscription",
+    "text": "Congratulations! You've been paying for a premium resentment subscription since 2014. It includes unlimited imaginary arguments, sleepless nights, and absolutely no customer support. Your annual renewal just processed. Pay $100. Cancellation requires letting go.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -100
+  },
+  {
+    "id": "chance-the-meeting-after-the-meeting",
+    "title": "The Meeting After the Meeting",
+    "text": "You said you'd stay for five minutes after the meeting. Three hours later, you've heard four life stories, solved zero problems, and bought pizza for half the fellowship. Pay $60. You also laughed harder than you have in months. Annoyingly, that part was free.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -60
+  },
+  {
+    "id": "chance-the-unexpected-amends",
+    "title": "The Unexpected Amends",
+    "text": "You finally made an amends you'd been rehearsing in your head for years. The other person listened, forgave you, and mentioned an old deposit they never returned. Collect $200. You prepared for emotional devastation and accidentally received financial compensation.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 200
+  },
+  {
+    "id": "chance-retail-therapy-is-not-a-step",
+    "title": "Retail Therapy Is Not a Step",
+    "text": "You had one uncomfortable feeling and decided the solution was a new wardrobe, expensive headphones, and seventeen things from an online cart you don't remember filling. Pay $125. Your feelings are still here. At least they have accessories.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -125
+  },
+  {
+    "id": "chance-the-clean-time-celebration",
+    "title": "The Clean-Time Celebration",
+    "text": "Your friends organize a surprise celebration for your clean-time anniversary. There's cake, terrible singing, a suspicious number of hugs, and a card containing $100 toward something you've always wanted to try. Collect $100. Turns out people actually remember you're alive.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 100
+  },
+  {
+    "id": "chance-the-control-freak-renovation",
+    "title": "The Control Freak Renovation",
+    "text": "You decided to improve one tiny thing in your life. Six hours later, you've reorganized the entire house, purchased twelve storage containers, and created a spreadsheet to manage your spreadsheets. Pay $150. Serenity remains unavailable in aisle seven.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -150
+  },
+  {
+    "id": "chance-the-service-position-nobody-wanted",
+    "title": "The Service Position Nobody Wanted",
+    "text": "You volunteered for a service commitment because nobody else raised their hand. After months of setting up chairs, somebody offers you a small paid job because they noticed how dependable you've become. Collect $75. Character development has finally become employable.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 75
+  },
+  {
+    "id": "chance-the-spiritual-emergency",
+    "title": "The Spiritual Emergency",
+    "text": "You interpreted a mildly inconvenient Tuesday as a full-scale spiritual emergency. There was emergency takeout, three coffees, a dramatic taxi ride, and forty-seven unanswered questions for your Higher Power. Pay $80. The emergency was mostly hunger.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -80
+  },
+  {
+    "id": "chance-the-lost-wallet-comes-home",
+    "title": "The Lost Wallet Comes Home",
+    "text": "You lose your wallet and immediately assume the universe is punishing you for something. A fellow member finds it, returns everything, and reminds you that not every inconvenience is a cosmic judgment. Collect $125 from a forgotten reimbursement tucked inside. Your paranoia receives nothing.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 125
+  },
+  {
+    "id": "chance-the-humility-tax",
+    "title": "The Humility Tax",
+    "text": "You announced, with tremendous confidence, that you had completely mastered acceptance. Twelve minutes later, you argued with a parking meter, a customer service chatbot, and the weather. Pay $200. The universe has attached an itemized invoice for your spiritual superiority.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -200
+  },
+  {
+    "id": "chance-a-life-beyond-survival",
+    "title": "A Life Beyond Survival",
+    "text": "You apply for an opportunity you once would have rejected because you were convinced you'd fail. This time you show up, tell the truth, and somehow get accepted. Collect $250 as your first payment. Apparently, staying clean doesn't just prevent disasters. Sometimes it lets good things happen too.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 250
+  },
+  {
+    "id": "chance-the-geographic-cure",
+    "title": "The Geographic Cure",
+    "text": "You decide your problems would disappear if you moved somewhere else. Different city, different weather, different people. Unfortunately, you packed your personality.\n\nEffect: Advance to GO and collect $200. Your emotional baggage travels free.",
+    "art": null,
+    "animation": null,
+    "effect": "move",
+    "destination": 0
+  },
+  {
+    "id": "chance-emergency-meeting-required",
+    "title": "Emergency Meeting Required",
+    "text": "Your brain has started negotiating with itself, your defects are holding a committee meeting, and the chairperson is apparently your ego. Time to find people who understand this nonsense.\n\nEffect: Advance to the nearest Fellowship Network station. Resolve the destination normally.",
+    "art": null,
+    "animation": null,
+    "effect": "nearest",
+    "target": "station"
+  },
+  {
+    "id": "chance-go-do-some-step-work",
+    "title": "Go Do Some Step Work",
+    "text": "You said, \"I don't have any resentments.\" Then you spent forty minutes explaining why seven people are terrible human beings. Your sponsor has heard enough.\n\nEffect: Go directly to The Ego Jail. Do not pass GO. Do not collect $200. Bring a notebook.",
+    "art": null,
+    "animation": null,
+    "effect": "detain"
+  },
+  {
+    "id": "chance-the-spiritual-u-turn",
+    "title": "The Spiritual U-Turn",
+    "text": "You were absolutely certain you were moving forward. Then an old character defect appeared wearing a fake mustache and introduced itself as personal growth. Nice try.\n\nEffect: Move back 3 spaces and resolve the destination normally. Progress is apparently not a straight line.",
+    "art": null,
+    "animation": null,
+    "effect": "back",
+    "spaces": 3
+  },
+  {
+    "id": "chance-the-higher-power-has-other-plans",
+    "title": "The Higher Power Has Other Plans",
+    "text": "You made a detailed five-year plan with color-coded goals, backup strategies, and a timeline. The universe looked at it, laughed politely, and handed you an entirely different itinerary.\n\nEffect: Advance to the nearest utility. Resolve the destination normally. Instructions remain unclear.",
+    "art": null,
+    "animation": null,
+    "effect": "nearest",
+    "target": "utility"
+  },
+  {
+    "id": "chance-the-sponsor-s-emergency-fund",
+    "title": "The Sponsor's Emergency Fund",
+    "text": "You called your sponsor because your life was falling apart. After forty minutes of explaining the catastrophe, they asked whether you'd eaten anything today. You hadn't. You also hadn't slept, drunk water, or left the house. Pay $100 for groceries, a decent meal, and the embarrassing discovery that not every spiritual crisis requires divine intervention. Sometimes it requires a sandwich.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -100
+  },
+  {
+    "id": "chance-the-clean-time-coin-conspiracy",
+    "title": "The Clean-Time Coin Conspiracy",
+    "text": "You show up to celebrate someone's clean time and discover that the group has secretly organized a fundraiser for a project you've been putting off for years. There's a handmade card, an unreasonable amount of hugging, and $150 inside an envelope. Collect $150. Apparently, being part of something means people notice when you matter. Disgusting.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 150
+  },
+  {
+    "id": "chance-the-amends-that-cost-extra",
+    "title": "The Amends That Cost Extra",
+    "text": "You finally gather the courage to make an overdue financial amends. You rehearse the conversation, prepare for rejection, and arrive with a heartfelt apology. The person accepts it and then produces a receipt you had conveniently forgotten existed. Pay $200. Your Higher Power appreciates the honesty. Your bank account would like to discuss alternative spiritual principles.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -200
+  },
+  {
+    "id": "chance-the-fellowship-moving-company",
+    "title": "The Fellowship Moving Company",
+    "text": "A member needs help moving apartments. You volunteer, expecting two boxes and a couch. Six hours later, you've carried a refrigerator up three flights of stairs and discovered muscles that haven't been used since active addiction. The grateful neighbor offers you $100 for helping with their furniture too. Collect $100. Service work accidentally became paid labor.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 100
+  },
+  {
+    "id": "chance-the-emotional-support-shopping-cart",
+    "title": "The Emotional Support Shopping Cart",
+    "text": "You went online to buy a notebook for step work. Forty minutes later, your cart contains scented candles, a weighted blanket, motivational stickers, and a fountain pen expensive enough to require its own insurance policy. Pay $75. The notebook is still missing. Your defects have excellent taste.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -75
+  },
+  {
+    "id": "chance-the-honest-job-interview",
+    "title": "The Honest Job Interview",
+    "text": "At a job interview, you're asked about a gap in your employment history. Instead of inventing an elaborate story involving international espionage, you answer honestly and focus on how your life has changed. They offer you the job and a $250 signing bonus. Collect $250. Apparently, honesty occasionally has better benefits than fiction.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 250
+  },
+  {
+    "id": "chance-the-group-conscience-marathon",
+    "title": "The Group Conscience Marathon",
+    "text": "Your home group spends two hours debating whether to move the coffee table three feet to the left. You survive six motions, four amendments, and a passionate speech about the spiritual significance of chair placement. Pay $50 for the extra room rental. Democracy is beautiful. Democracy is also exhausting.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -50
+  },
+  {
+    "id": "chance-the-forgotten-tax-refund",
+    "title": "The Forgotten Tax Refund",
+    "text": "While cleaning out a drawer, you find an unopened envelope from the government. Naturally, you assume it's a fine, a threat, or evidence of a crime you haven't committed yet. It's a $200 refund. Collect $200. For once, the universe sent paperwork without demanding an emotional breakdown.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 200
+  },
+  {
+    "id": "chance-the-spiritual-bypass-express",
+    "title": "The Spiritual Bypass Express",
+    "text": "You announce that you've completely surrendered a difficult situation. Then you send seventeen follow-up messages, check someone's online status forty times, and create a contingency plan with color-coded tabs. Pay $125 for the phone you dropped while obsessively refreshing your messages. Surrender apparently does not include surveillance.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -125
+  },
+  {
+    "id": "chance-the-service-commitment-upgrade",
+    "title": "The Service Commitment Upgrade",
+    "text": "You've been showing up early to set up chairs for months. A local community center notices your reliability and offers you paid weekend work. Collect $125. You thought you were just arranging furniture. Apparently, consistency has been quietly building a résumé behind your back.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 125
+  },
+  {
+    "id": "chance-the-recovery-road-trip",
+    "title": "The Recovery Road Trip",
+    "text": "You and three members decide to attend a convention in another city. Someone forgets the directions, someone brings fourteen bags of snacks, and the designated navigator insists that intuition is more reliable than GPS. Pay $150 for fuel, tolls, and an accidental scenic detour. You arrive late, laughing, and somehow exactly where you need to be.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -150
+  },
+  {
+    "id": "chance-the-step-work-side-hustle",
+    "title": "The Step Work Side Hustle",
+    "text": "Your sponsor suggests doing something useful instead of spending another afternoon mentally prosecuting people who annoyed you in 2019. You clean out the garage, discover old equipment you no longer need, and sell it for $100. Collect $100. Your resentments remain unsold due to lack of market demand.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 100
+  },
+  {
+    "id": "chance-the-boundary-enforcement-fee",
+    "title": "The Boundary Enforcement Fee",
+    "text": "You finally learn to say no without writing a twelve-page apology. Unfortunately, your first attempt comes after agreeing to organize an entire event, buy the supplies, and provide transportation. Pay $60 for the commitments you already made. Boundaries are free. Learning them retroactively is expensive.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -60
+  },
+  {
+    "id": "chance-the-unexpected-second-chance",
+    "title": "The Unexpected Second Chance",
+    "text": "Years ago, you abandoned a creative project because addiction had other plans. Today, someone discovers your old work and asks whether you'd be interested in finishing it. You say yes, despite your brain immediately presenting seventeen reasons you'll fail. Collect $300 as an advance. Your past doesn't get to write every chapter.",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": 300
+  },
+  {
+    "id": "chance-the-ego-s-public-relations-disaster",
+    "title": "The Ego's Public Relations Disaster",
+    "text": "You confidently volunteer to lead a workshop on patience, humility, and acceptance. Twenty minutes before it begins, the projector stops working, someone takes your parking space, and the coffee is cold. You handle all three situations with the emotional maturity of a furious raccoon. Pay $100 for replacement equipment. The workshop is now titled 'What Not to Do.'",
+    "art": null,
+    "animation": null,
+    "effect": "cash",
+    "amount": -100
+  },
+  {
+    "id": "chance-the-fellowship-gps",
+    "title": "The Fellowship GPS",
+    "text": "Advance to nearest Fellowship Network\n\nYou were driving home after a meeting when someone called and said, 'A few of us are getting coffee. Want to come?' You said you were tired. Your car apparently interpreted that as a suggestion rather than a decision. Advance to the nearest Fellowship Network station. Resolve the destination normally. Your social battery is protesting, but your recovery is making friends.",
+    "art": null,
+    "animation": null,
+    "effect": "nearest",
+    "target": "station"
+  },
+  {
+    "id": "chance-the-relapse-prevention-detour",
+    "title": "The Relapse Prevention Detour",
+    "text": "Move back 3 spaces\n\nYou recognize an old pattern before it turns into an actual disaster. Unfortunately, recognizing it involves retracing three emotional steps, calling someone, and admitting you were about to do something spectacularly stupid. Move back 3 spaces and resolve the destination normally. Going backward to avoid a cliff is still progress.",
+    "art": null,
+    "animation": null,
+    "effect": "back",
+    "spaces": 3
+  },
+  {
+    "id": "chance-the-sponsor-s-direct-order",
+    "title": "The Sponsor's Direct Order",
+    "text": "Go to The Ego Jail\n\nYou call your sponsor for advice, then spend twenty minutes explaining why every suggestion is impossible. They finally ask, 'Did you want help, or did you just want an audience?' Your ego requests legal representation. Go directly to The Ego Jail. Do not pass GO. Do not collect $200. Bring your Fourth Step notebook.",
+    "art": null,
+    "animation": null,
+    "effect": "detain"
+  },
+  {
+    "id": "chance-the-higher-power-connection",
+    "title": "The Higher Power Connection",
+    "text": "Advance to nearest utility\n\nYour carefully constructed plan collapses before breakfast. In a rare moment of wisdom, you decide not to rebuild it immediately. Instead, you ask for help and allow the day to unfold without supervising every molecule. Advance to the nearest utility and resolve the destination normally. The connection is working. The instructions remain unavailable.",
+    "art": null,
+    "animation": null,
+    "effect": "nearest",
+    "target": "utility"
+  },
+  {
+    "id": "chance-the-recovery-reset-button",
+    "title": "The Recovery Reset Button",
+    "text": "Advance to GO · Collect $200\n\nYou wake up convinced yesterday's mistakes have ruined your entire recovery. Then someone reminds you that you can begin again today without setting your whole life on fire. Advance to GO and collect $200. A fresh start doesn't erase the past, but it does give you somewhere better to stand.",
+    "art": null,
+    "animation": null,
+    "effect": "move",
+    "destination": 0
+  },
+  {
+    "id": "chance-the-meeting-you-almost-skipped",
+    "title": "The Meeting You Almost Skipped",
+    "text": "Advance to nearest Fellowship Network\n\nYou spend an hour inventing reasons not to attend a meeting. Too tired. Too busy. Wrong weather. Mercury probably in retrograde. You finally show up and hear exactly what you needed. Advance to the nearest Fellowship Network station. Resolve the destination normally. Your excuses have been placed on administrative leave.",
+    "art": null,
+    "animation": null,
+    "effect": "nearest",
+    "target": "station"
+  },
+  {
+    "id": "chance-the-emotional-time-machine",
+    "title": "The Emotional Time Machine",
+    "text": "Move back 5 spaces\n\nSomeone makes an innocent comment, and suddenly you're emotionally back in 2012, arguing with people who aren't even in the room. Your brain has opened a museum of unresolved grievances, complete with guided tours. Move back 5 spaces and resolve the destination normally. Admission is free. Leaving requires willingness.",
+    "art": null,
+    "animation": null,
+    "effect": "back",
+    "spaces": 5
+  },
+  {
+    "id": "chance-the-universe-has-reassigned-you",
+    "title": "The Universe Has Reassigned You",
+    "text": "Advance to the other utility\n\nYou were convinced your problem required more serenity. Turns out you actually needed to feel something you'd been avoiding. Or maybe you wanted to process your feelings when what you really needed was to surrender. Advance to the utility you are not currently closest to, as determined by the game's utility-selection rule, and resolve the destination normally. Management has changed your department without consulting you.",
+    "art": null,
+    "animation": null,
+    "effect": "other-utility"
+  },
+  {
+    "id": "chance-the-fourth-step-audit",
+    "title": "The Fourth Step Audit",
+    "text": "Go to The Ego Jail\n\nYou proudly announce that you've finished your inventory. Your sponsor asks about one particular resentment. You explain that it doesn't count because you were completely justified. Forty-five minutes later, you're still presenting evidence. Go directly to The Ego Jail. Do not pass GO. Do not collect $200. The audit has uncovered several undeclared character defects.",
+    "art": null,
+    "animation": null,
+    "effect": "detain"
+  },
+  {
+    "id": "chance-the-fellowship-express",
+    "title": "The Fellowship Express",
+    "text": "Advance to The Zoom Room\n\nIt's 3 AM. You're awake, your thoughts are getting loud, and your usual support system is asleep. Then you remember there's a meeting happening somewhere in the world right now. You log in, hear a familiar story, and remember you're not alone. Advance to The Zoom Room. Collect $200 if you pass GO. Resolve the destination normally. Recovery has surprisingly good international coverage.",
+    "art": null,
+    "animation": null,
+    "effect": "move",
+    "destination": 5
+  }
+]

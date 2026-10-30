@@ -1,0 +1,362 @@
+[
+  {
+    "id": 0,
+    "name": "Just for Today",
+    "type": "go",
+    "art": "/monopoly/tiles/tile-00.png",
+    "thumbnail": "/monopoly/tiles/board/tile-00.webp",
+    "animation": null,
+    "text": "A fresh start, one day at a time. Collect $200 when you pass Start."
+  },
+  {
+    "id": 1,
+    "name": "The First Meeting",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-01.png",
+    "thumbnail": "/monopoly/tiles/board/tile-01.webp",
+    "animation": null,
+    "text": "There is a seat waiting for you. Every journey begins somewhere."
+  },
+  {
+    "id": 2,
+    "name": "The Fellowship",
+    "type": "community",
+    "art": "/monopoly/tiles/tile-02.png",
+    "thumbnail": "/monopoly/tiles/board/tile-02.webp",
+    "animation": null,
+    "text": "You are not alone. Draw a Community card and see what the fellowship brings."
+  },
+  {
+    "id": 3,
+    "name": "The Awkward Hug",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-03.png",
+    "thumbnail": "/monopoly/tiles/board/tile-03.webp",
+    "animation": null,
+    "text": "A little awkwardness, a little courage, and a warm welcome."
+  },
+  {
+    "id": 4,
+    "name": "The Self-Will Tax",
+    "type": "tax",
+    "art": "/monopoly/tiles/tile-04.png",
+    "thumbnail": "/monopoly/tiles/board/tile-04.webp",
+    "animation": null,
+    "text": "Trying to run the whole universe gets expensive. Pay $200."
+  },
+  {
+    "id": 5,
+    "name": "The Zoom Room",
+    "type": "station",
+    "art": "/monopoly/tiles/tile-05.png",
+    "thumbnail": "/monopoly/tiles/board/tile-05.webp",
+    "animation": null,
+    "text": "Connection is only a click away. All aboard the fellowship express."
+  },
+  {
+    "id": 6,
+    "name": "Picking Up a White Keytag",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-06.png",
+    "thumbnail": "/monopoly/tiles/board/tile-06.webp",
+    "animation": null,
+    "text": "A small keytag, a big new beginning."
+  },
+  {
+    "id": 7,
+    "name": "Life on Life’s Terms",
+    "type": "chance",
+    "art": "/monopoly/tiles/tile-07.png",
+    "thumbnail": "/monopoly/tiles/board/tile-07.webp",
+    "animation": null,
+    "text": "Life has its own plans. Draw a Chance card and discover your next turn."
+  },
+  {
+    "id": 8,
+    "name": "The Never-Ending Share",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-08.png",
+    "thumbnail": "/monopoly/tiles/board/tile-08.webp",
+    "animation": null,
+    "text": "There is always one more story to share."
+  },
+  {
+    "id": 9,
+    "name": "You’re on Mute",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-09.png",
+    "thumbnail": "/monopoly/tiles/board/tile-09.webp",
+    "animation": null,
+    "text": "A familiar meeting moment: your words deserve to be heard."
+  },
+  {
+    "id": 10,
+    "name": "Ego",
+    "type": "detention",
+    "art": "/monopoly/tiles/tile-10.png",
+    "thumbnail": "/monopoly/tiles/board/tile-10.webp",
+    "animation": null,
+    "text": "Just visiting? Take a look around. Detained? Roll doubles to leave; after three failed attempts, pay $50."
+  },
+  {
+    "id": 11,
+    "name": "The Parking Lot Meeting",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-11.png",
+    "thumbnail": "/monopoly/tiles/board/tile-11.webp",
+    "animation": null,
+    "text": "The meeting after the meeting, under the stars."
+  },
+  {
+    "id": 12,
+    "name": "The Divine Power Plant",
+    "type": "utility",
+    "art": "/monopoly/tiles/tile-12.png",
+    "thumbnail": "/monopoly/tiles/board/tile-12.webp",
+    "animation": null,
+    "text": "A little willingness can light up the whole neighborhood."
+  },
+  {
+    "id": 13,
+    "name": "Resentment Palace",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-13.png",
+    "thumbnail": "/monopoly/tiles/board/tile-13.webp",
+    "animation": null,
+    "text": "A grand palace built from grudges. Perhaps it is time to redecorate."
+  },
+  {
+    "id": 14,
+    "name": "Control Freak Headquarters",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-14.png",
+    "thumbnail": "/monopoly/tiles/board/tile-14.webp",
+    "animation": null,
+    "text": "The control panel has a surprising setting: let go."
+  },
+  {
+    "id": 15,
+    "name": "The After-Meeting Chat",
+    "type": "station",
+    "art": "/monopoly/tiles/tile-15.png",
+    "thumbnail": "/monopoly/tiles/board/tile-15.webp",
+    "animation": null,
+    "text": "One last conversation before everyone heads home."
+  },
+  {
+    "id": 16,
+    "name": "Self-Sabotage Boulevard",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-16.png",
+    "thumbnail": "/monopoly/tiles/board/tile-16.webp",
+    "animation": null,
+    "text": "Things are going well. Resist the big red button."
+  },
+  {
+    "id": 17,
+    "name": "The Fellowship",
+    "type": "community",
+    "art": "/monopoly/tiles/tile-17.png",
+    "thumbnail": "/monopoly/tiles/board/tile-17.webp",
+    "animation": null,
+    "text": "The fellowship has something in store. Draw a Community card."
+  },
+  {
+    "id": 18,
+    "name": "The Fourth Step Inventory",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-18.png",
+    "thumbnail": "/monopoly/tiles/board/tile-18.webp",
+    "animation": null,
+    "text": "Put pen to paper and make room for something new."
+  },
+  {
+    "id": 19,
+    "name": "The Sponsor’s Phone",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-19.png",
+    "thumbnail": "/monopoly/tiles/board/tile-19.webp",
+    "animation": null,
+    "text": "A familiar voice is only a call away."
+  },
+  {
+    "id": 20,
+    "name": "The Serenity Zone",
+    "type": "rest",
+    "art": "/monopoly/tiles/tile-20.png",
+    "thumbnail": "/monopoly/tiles/board/tile-20.webp",
+    "animation": null,
+    "text": "Take a breath. Rest here without paying a fee."
+  },
+  {
+    "id": 21,
+    "name": "The Amends Department",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-21.png",
+    "thumbnail": "/monopoly/tiles/board/tile-21.webp",
+    "animation": null,
+    "text": "An opportunity to put things right, one action at a time."
+  },
+  {
+    "id": 22,
+    "name": "Life on Life’s Terms",
+    "type": "chance",
+    "art": "/monopoly/tiles/tile-22.png",
+    "thumbnail": "/monopoly/tiles/board/tile-22.webp",
+    "animation": null,
+    "text": "Expect the unexpected. Draw a Chance card."
+  },
+  {
+    "id": 23,
+    "name": "Overthinking Observatory",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-23.png",
+    "thumbnail": "/monopoly/tiles/board/tile-23.webp",
+    "animation": null,
+    "text": "A telescope for thoughts that have wandered a little too far."
+  },
+  {
+    "id": 24,
+    "name": "Feelings Without Anesthesia",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-24.png",
+    "thumbnail": "/monopoly/tiles/board/tile-24.webp",
+    "animation": null,
+    "text": "Feelings come and go. Enjoy the ride without changing the rules."
+  },
+  {
+    "id": 25,
+    "name": "The Group Chat",
+    "type": "station",
+    "art": "/monopoly/tiles/tile-25.png",
+    "thumbnail": "/monopoly/tiles/board/tile-25.webp",
+    "animation": null,
+    "text": "Someone is typing. The fellowship never runs out of messages."
+  },
+  {
+    "id": 26,
+    "name": "One Day at a Time",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-26.png",
+    "thumbnail": "/monopoly/tiles/board/tile-26.webp",
+    "animation": null,
+    "text": "Twenty-four hours is enough to work with today."
+  },
+  {
+    "id": 27,
+    "name": "Call Before You Spiral",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-27.png",
+    "thumbnail": "/monopoly/tiles/board/tile-27.webp",
+    "animation": null,
+    "text": "Pause the spiral and pick up the phone."
+  },
+  {
+    "id": 28,
+    "name": "The Feelings Processing Plant",
+    "type": "utility",
+    "art": "/monopoly/tiles/tile-28.png",
+    "thumbnail": "/monopoly/tiles/board/tile-28.webp",
+    "animation": null,
+    "text": "Let the feelings flow through the machinery."
+  },
+  {
+    "id": 29,
+    "name": "The HALT Checkpoint",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-29.png",
+    "thumbnail": "/monopoly/tiles/board/tile-29.webp",
+    "animation": null,
+    "text": "Hungry, angry, lonely, tired? Time for a check-in."
+  },
+  {
+    "id": 30,
+    "name": "Mandatory Step Work",
+    "type": "go-to-detention",
+    "art": "/monopoly/tiles/tile-30.png",
+    "thumbnail": "/monopoly/tiles/board/tile-30.webp",
+    "animation": null,
+    "text": "A detour to Ego. Move directly there without collecting Start money."
+  },
+  {
+    "id": 31,
+    "name": "Healthy Boundaries",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-31.png",
+    "thumbnail": "/monopoly/tiles/board/tile-31.webp",
+    "animation": null,
+    "text": "Make room for a well-placed no and a wholehearted yes."
+  },
+  {
+    "id": 32,
+    "name": "The First Real Friendship",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-32.png",
+    "thumbnail": "/monopoly/tiles/board/tile-32.webp",
+    "animation": null,
+    "text": "Someone who understands makes the journey brighter."
+  },
+  {
+    "id": 33,
+    "name": "The Fellowship",
+    "type": "community",
+    "art": "/monopoly/tiles/tile-33.png",
+    "thumbnail": "/monopoly/tiles/board/tile-33.webp",
+    "animation": null,
+    "text": "A surprise from the fellowship. Draw a Community card."
+  },
+  {
+    "id": 34,
+    "name": "Learning to Have Fun Clean",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-34.png",
+    "thumbnail": "/monopoly/tiles/board/tile-34.webp",
+    "animation": null,
+    "text": "There is a whole world of fun to rediscover."
+  },
+  {
+    "id": 35,
+    "name": "The 3 AM Call",
+    "type": "station",
+    "art": "/monopoly/tiles/tile-35.png",
+    "thumbnail": "/monopoly/tiles/board/tile-35.webp",
+    "animation": null,
+    "text": "Somewhere, someone is awake and ready to listen."
+  },
+  {
+    "id": 36,
+    "name": "Life on Life’s Terms",
+    "type": "chance",
+    "art": "/monopoly/tiles/tile-36.png",
+    "thumbnail": "/monopoly/tiles/board/tile-36.webp",
+    "animation": null,
+    "text": "The universe has another surprise. Draw a Chance card."
+  },
+  {
+    "id": 37,
+    "name": "Freedom from Active Addiction",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-37.png",
+    "thumbnail": "/monopoly/tiles/board/tile-37.webp",
+    "animation": null,
+    "text": "Open the gate to a different way of living."
+  },
+  {
+    "id": 38,
+    "name": "The Spiritual Maintenance Fee",
+    "type": "tax",
+    "art": "/monopoly/tiles/tile-38.png",
+    "thumbnail": "/monopoly/tiles/board/tile-38.webp",
+    "animation": null,
+    "text": "Even serenity needs a little upkeep. Pay $100."
+  },
+  {
+    "id": 39,
+    "name": "A Life Worth Staying Clean For",
+    "type": "property",
+    "art": "/monopoly/tiles/tile-39.png",
+    "thumbnail": "/monopoly/tiles/board/tile-39.webp",
+    "animation": null,
+    "text": "Keep building a life you want to show up for."
+  }
+]

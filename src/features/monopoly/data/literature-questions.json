@@ -1,0 +1,1004 @@
+[
+  {
+    "id": "na-membership",
+    "question": "Which Tradition addresses membership eligibility?",
+    "options": [
+      "Third",
+      "Seventh",
+      "Tenth"
+    ],
+    "answerIndex": 0,
+    "explanation": "Tradition Three covers membership.",
+    "source": "https://na.org/e-lit/the-twelve-traditions-of-na-group-reading/"
+  },
+  {
+    "id": "na-unity",
+    "question": "Which Tradition puts collective welfare first?",
+    "options": [
+      "Fourth",
+      "First",
+      "Ninth"
+    ],
+    "answerIndex": 1,
+    "explanation": "Tradition One emphasizes unity.",
+    "source": "https://na.org/e-lit/the-twelve-traditions-of-na-group-reading/"
+  },
+  {
+    "id": "na-funding",
+    "question": "Which Tradition addresses group self-funding?",
+    "options": [
+      "Second",
+      "Fifth",
+      "Seventh"
+    ],
+    "answerIndex": 2,
+    "explanation": "Tradition Seven addresses financial independence.",
+    "source": "https://na.org/e-lit/the-twelve-traditions-of-na-group-reading/"
+  },
+  {
+    "id": "na-purpose",
+    "question": "Which Tradition defines the group’s central purpose?",
+    "options": [
+      "Fifth",
+      "Eighth",
+      "Eleventh"
+    ],
+    "answerIndex": 0,
+    "explanation": "Tradition Five describes the group’s message-carrying purpose.",
+    "source": "https://na.org/e-lit/the-twelve-traditions-of-na-group-reading/"
+  },
+  {
+    "id": "na-anonymity",
+    "question": "Which Tradition identifies anonymity as a spiritual foundation?",
+    "options": [
+      "Sixth",
+      "Twelfth",
+      "Fourth"
+    ],
+    "answerIndex": 1,
+    "explanation": "Tradition Twelve connects anonymity with spiritual principles.",
+    "source": "https://na.org/e-lit/the-twelve-traditions-of-na-group-reading/"
+  },
+  {
+    "id": "na-outside",
+    "question": "Which Tradition addresses opinions on external controversies?",
+    "options": [
+      "First",
+      "Third",
+      "Tenth"
+    ],
+    "answerIndex": 2,
+    "explanation": "Tradition Ten addresses outside issues.",
+    "source": "https://na.org/e-lit/the-twelve-traditions-of-na-group-reading/"
+  },
+  {
+    "id": "na-open",
+    "question": "Who can attend an open NA meeting?",
+    "options": [
+      "Anyone interested",
+      "Only elected officers",
+      "Only invited members"
+    ],
+    "answerIndex": 0,
+    "explanation": "Open meetings welcome visitors.",
+    "source": "https://na.org/e-lit/the-group-booklet/"
+  },
+  {
+    "id": "na-closed",
+    "question": "Who are closed meetings intended for?",
+    "options": [
+      "Only sponsors",
+      "Addicts and people wondering about their own drug problem",
+      "Only long-standing members"
+    ],
+    "answerIndex": 1,
+    "explanation": "Closed meetings focus on people personally affected by addiction.",
+    "source": "https://na.org/e-lit/the-group-booklet/"
+  },
+  {
+    "id": "na-treasurer",
+    "question": "Which group role usually oversees group funds?",
+    "options": [
+      "Speaker",
+      "Literature helper",
+      "Treasurer"
+    ],
+    "answerIndex": 2,
+    "explanation": "The treasurer accounts for group money.",
+    "source": "https://na.org/e-lit/the-group-booklet/"
+  },
+  {
+    "id": "na-secretary",
+    "question": "Which role commonly coordinates meeting arrangements?",
+    "options": [
+      "Secretary",
+      "Guest speaker",
+      "Newcomer"
+    ],
+    "answerIndex": 0,
+    "explanation": "The secretary helps organize group affairs.",
+    "source": "https://na.org/e-lit/the-group-booklet/"
+  },
+  {
+    "id": "na-user-the-principle-of-step-one",
+    "title": "The Principle of Step One",
+    "question": "Which spiritual principle is most directly associated with admitting powerlessness in Step One?",
+    "options": [
+      "Willingness",
+      "Honesty",
+      "Humility"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Honesty",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-coming-to-believe",
+    "title": "Coming to Believe",
+    "question": "Which principle is especially associated with Step Two's process of coming to believe?",
+    "options": [
+      "Hope",
+      "Acceptance",
+      "Perseverance"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Hope",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-third-step-decision",
+    "title": "The Third Step Decision",
+    "question": "Which principle is most directly involved in making the decision described in Step Three?",
+    "options": [
+      "Self-discipline",
+      "Unity",
+      "Faith"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Faith",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-inventory",
+    "title": "The Inventory",
+    "question": "Which Step explicitly calls for a searching and fearless moral inventory?",
+    "options": [
+      "Step Four",
+      "Step Five",
+      "Step Ten"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Step Four",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-exact-nature",
+    "title": "The Exact Nature",
+    "question": "Which Step specifically refers to admitting the exact nature of our wrongs?",
+    "options": [
+      "Step Eight",
+      "Step Five",
+      "Step Nine"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Step Five",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-entirely-ready",
+    "title": "Entirely Ready",
+    "question": "What is the specific focus of Step Six?",
+    "options": [
+      "Humbly asking for shortcomings to be removed",
+      "Becoming willing to make amends",
+      "Becoming entirely ready to have defects removed"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Becoming entirely ready to have defects removed",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-willingness-list",
+    "title": "The Willingness List",
+    "question": "Which Step specifically includes becoming willing to make amends to all people harmed?",
+    "options": [
+      "Step Eight",
+      "Step Nine",
+      "Step Ten"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Step Eight",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-amends-exception",
+    "title": "The Amends Exception",
+    "question": "What specific condition does Step Nine place on making direct amends?",
+    "options": [
+      "Except when the person has already forgiven us",
+      "Except when doing so would injure them or others",
+      "Except when the harm happened before recovery"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Except when doing so would injure them or others",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-prompt-admission",
+    "title": "Prompt Admission",
+    "question": "Which Step specifically calls for promptly admitting when we are wrong?",
+    "options": [
+      "Step Five",
+      "Step Seven",
+      "Step Ten"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Step Ten",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-conscious-contact",
+    "title": "Conscious Contact",
+    "question": "What does Step Eleven specifically seek to improve through prayer and meditation?",
+    "options": [
+      "Conscious contact with God as we understood Him",
+      "The collective group conscience",
+      "Our willingness to make direct amends"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Conscious contact with God as we understood Him",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-spiritual-awakening",
+    "title": "The Spiritual Awakening",
+    "question": "According to Step Twelve, what is the stated result of practicing the preceding Steps?",
+    "options": [
+      "A complete removal of all character defects",
+      "A spiritual awakening",
+      "Permanent freedom from difficult emotions"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: A spiritual awakening",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-common-welfare",
+    "title": "Common Welfare",
+    "question": "According to Tradition One, personal recovery depends on what?",
+    "options": [
+      "Group autonomy",
+      "Individual service",
+      "NA unity"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: NA unity",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-ultimate-authority",
+    "title": "The Ultimate Authority",
+    "question": "In Tradition Two, how is a loving God expressed for the group's purpose?",
+    "options": [
+      "Through group conscience",
+      "Through trusted servants",
+      "Through group autonomy"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Through group conscience",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-membership-requirement",
+    "title": "The Membership Requirement",
+    "question": "What is the only requirement for NA membership under Tradition Three?",
+    "options": [
+      "Willingness to work the Steps",
+      "A desire to stop using",
+      "Acceptance of a Higher Power"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: A desire to stop using",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-limits-of-autonomy",
+    "title": "The Limits of Autonomy",
+    "question": "Under Tradition Four, group autonomy has an exception when actions affect whom?",
+    "options": [
+      "The group's trusted servants",
+      "The group's individual members",
+      "Other groups or NA as a whole"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Other groups or NA as a whole",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-primary-purpose",
+    "title": "The Primary Purpose",
+    "question": "According to Tradition Five, what is each NA group's primary purpose?",
+    "options": [
+      "To carry the message to the addict who still suffers",
+      "To maintain unity through group conscience",
+      "To provide opportunities for service"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: To carry the message to the addict who still suffers",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-outside-enterprises",
+    "title": "Outside Enterprises",
+    "question": "Which Tradition addresses endorsement, financing, or lending the NA name to related facilities or outside enterprises?",
+    "options": [
+      "Tradition Seven",
+      "Tradition Six",
+      "Tradition Ten"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Tradition Six",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-self-support",
+    "title": "Self-Support",
+    "question": "What does Tradition Seven specifically say NA groups should decline?",
+    "options": [
+      "Member contributions",
+      "Service contributions",
+      "Outside contributions"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Outside contributions",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-attraction-and-promotion",
+    "title": "Attraction and Promotion",
+    "question": "Which Tradition establishes NA's public relations policy of attraction rather than promotion?",
+    "options": [
+      "Tradition Eleven",
+      "Tradition Ten",
+      "Tradition Twelve"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Tradition Eleven",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-spiritual-foundation",
+    "title": "The Spiritual Foundation",
+    "question": "According to Tradition Twelve, what is the spiritual foundation of all NA Traditions?",
+    "options": [
+      "Unity",
+      "Anonymity",
+      "Service"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Anonymity",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-disease-has-a-destination",
+    "title": "The Disease Has a Destination",
+    "question": "In Who Is an Addict?, which three outcomes are identified as the recurring ends of untreated addiction?",
+    "options": [
+      "Jails, institutions, and death",
+      "Isolation, obsession, and compulsion",
+      "Denial, desperation, and relapse"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Jails, institutions, and death",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-who-can-answer",
+    "title": "Who Can Answer?",
+    "question": "In NA literature's Am I an Addict? reading, who can ultimately answer that question?",
+    "options": [
+      "An experienced sponsor",
+      "The individual themselves",
+      "The home group's conscience"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: The individual themselves",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-actual-problem",
+    "title": "The Actual Problem",
+    "question": "In Why Are We Here?, what did members put ahead of the welfare of their families and loved ones?",
+    "options": [
+      "Their need for independence",
+      "Their fear of intimacy",
+      "Their drug use"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Their drug use",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-no-known-cure",
+    "title": "No Known Cure",
+    "question": "According to Why Are We Here?, what makes recovery possible despite addiction having no known cure?",
+    "options": [
+      "The disease can be arrested",
+      "The obsession is permanently erased",
+      "The need for support eventually disappears"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: The disease can be arrested",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-purpose-of-living-clean",
+    "title": "The Purpose of Living Clean",
+    "question": "Which best describes the central scope of Living Clean: The Journey Continues?",
+    "options": [
+      "Applying recovery to the wider experience of living",
+      "Establishing new membership requirements",
+      "Replacing the Twelve Steps with daily reflections"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Applying recovery to the wider experience of living",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-learning-never-ends",
+    "title": "Learning Never Ends",
+    "question": "In the Living Clean passage referenced in NA's Cultivating Curiosity meditation, what remains true regardless of clean time?",
+    "options": [
+      "We eventually outgrow the need for others",
+      "There is always more to learn and share",
+      "Every member reaches the same understanding"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: There is always more to learn and share",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-sponsorship",
+    "title": "Sponsorship",
+    "question": "Which description best reflects sponsorship as presented in NA literature?",
+    "options": [
+      "A trusted servant who governs individual recovery",
+      "An experienced recovering addict who shares experience and guidance",
+      "A professional who diagnoses and directs treatment"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: An experienced recovering addict who shares experience and guidance",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-real-measure-of-addiction",
+    "title": "The Real Measure of Addiction",
+    "question": "According to Who Is an Addict?, what ultimately identifies an addict rather than the amount of drugs consumed?",
+    "options": [
+      "The frequency of drug use",
+      "The individual's reaction to drugs",
+      "The severity of physical withdrawal"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: The individual's reaction to drugs",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-selective-memory",
+    "title": "Selective Memory",
+    "question": "What pattern of thinking does Who Is an Addict? describe as helping addicts avoid the reality of their addiction?",
+    "options": [
+      "Remembering only the positive drug experiences",
+      "Confusing emotional pain with physical withdrawal",
+      "Believing that every relapse was caused by someone else"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Remembering only the positive drug experiences",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-two-admissions",
+    "title": "The Two Admissions",
+    "question": "According to the discussion of Step One, what must be admitted in addition to powerlessness over addiction?",
+    "options": [
+      "That recovery requires a religious belief",
+      "That every past relationship was unhealthy",
+      "That our lives had become unmanageable"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: That our lives had become unmanageable",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-meeting-minimum",
+    "title": "The Meeting Minimum",
+    "question": "According to What Is the Narcotics Anonymous Program?, what is sufficient to constitute an NA meeting?",
+    "options": [
+      "A chairperson, a secretary, and a newcomer",
+      "Two addicts gathering to help each other stay clean",
+      "A registered group with elected trusted servants"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Two addicts gathering to help each other stay clean",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-recovery-paradox",
+    "title": "The Recovery Paradox",
+    "question": "Why does the Basic Text describe the newcomer as especially important at meetings?",
+    "options": [
+      "Because members preserve their recovery by sharing it with others",
+      "Because newcomers determine the group's conscience",
+      "Because newcomers are responsible for keeping the message unchanged"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Because members preserve their recovery by sharing it with others",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-responsibility-without-blame",
+    "title": "Responsibility Without Blame",
+    "question": "Which distinction is made explicitly in Why Are We Here??",
+    "options": [
+      "We are responsible for our addiction but not our circumstances",
+      "We are responsible for neither our disease nor our recovery",
+      "We are not responsible for our disease, but we are responsible for our recovery"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: We are not responsible for our disease, but we are responsible for our recovery",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-three-essentials",
+    "title": "The Three Essentials",
+    "question": "Which three spiritual principles are described as indispensable in How It Works?",
+    "options": [
+      "Faith, humility, and surrender",
+      "Honesty, open-mindedness, and willingness",
+      "Acceptance, service, and perseverance"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Honesty, open-mindedness, and willingness",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-three-dimensions",
+    "title": "The Three Dimensions",
+    "question": "In the Step One discussion, which aspect of addiction is identified with total self-centeredness?",
+    "options": [
+      "The spiritual aspect",
+      "The mental aspect",
+      "The physical aspect"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: The spiritual aspect",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-mental-obsession",
+    "title": "The Mental Obsession",
+    "question": "Which description corresponds to the mental aspect of addiction in the Step One discussion?",
+    "options": [
+      "Inability to stop after taking the first drug",
+      "Loss of the ability to maintain relationships",
+      "An overpowering desire to use despite destructive consequences"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: An overpowering desire to use despite destructive consequences",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-social-acceptability-trap",
+    "title": "The Social Acceptability Trap",
+    "question": "What does the Step One discussion say about becoming employed, socially accepted, and reunited with family?",
+    "options": [
+      "These changes demonstrate that unmanageability has ended",
+      "These changes do not, by themselves, establish recovery",
+      "These changes must occur before Step Two can begin"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: These changes do not, by themselves, establish recovery",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-higher-power-guidelines",
+    "title": "The Higher Power Guidelines",
+    "question": "According to the Step Two discussion, which qualities are suggested for a Higher Power?",
+    "options": [
+      "Omnipotent, omniscient, and eternal",
+      "Consistent, forgiving, and universal",
+      "Loving, caring, and greater than ourselves"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Loving, caring, and greater than ourselves",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-third-step-distinction",
+    "title": "The Third Step Distinction",
+    "question": "What distinction does the Basic Text emphasize about Step Three?",
+    "options": [
+      "It is a decision to turn over our will and lives, rather than a claim that the process is already complete",
+      "It requires us to turn over our lives before developing any personal understanding of a Higher Power",
+      "It means surrendering responsibility for our decisions to another person"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: It is a decision to turn over our will and lives, rather than a claim that the process is already complete",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-inventory-nobody-wants-to-write",
+    "title": "The Inventory Nobody Wants to Write",
+    "question": "According to the Step Four discussion, why must an inventory include personal assets as well as liabilities?",
+    "options": [
+      "To balance each resentment with a positive experience",
+      "To develop an accurate and complete picture of ourselves",
+      "To identify which character defects have already been removed"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: To develop an accurate and complete picture of ourselves",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-fourth-step-preparation",
+    "title": "The Fourth Step Preparation",
+    "question": "Which Steps does the Basic Text identify as necessary preparation for writing a searching and fearless inventory?",
+    "options": [
+      "Steps Two, Three, and Five",
+      "Steps One, Three, and Six",
+      "Steps One, Two, and Three"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Steps One, Two, and Three",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-fifth-step-listener",
+    "title": "The Fifth Step Listener",
+    "question": "What does the Basic Text emphasize most when choosing someone to hear a Fifth Step?",
+    "options": [
+      "Trust in their integrity and discretion",
+      "Their length of clean time and service experience",
+      "Their familiarity with every detail of our addiction"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Trust in their integrity and discretion",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-principle-of-step-six",
+    "title": "The Principle of Step Six",
+    "question": "Which spiritual principle is explicitly identified with Step Six in the Basic Text?",
+    "options": [
+      "Humility",
+      "Willingness",
+      "Acceptance"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Willingness",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-main-ingredient",
+    "title": "The Main Ingredient",
+    "question": "According to the Step Seven discussion, what is identified as its main ingredient?",
+    "options": [
+      "Faith",
+      "Acceptance",
+      "Humility"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Humility",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-when-amends-cannot-be-made",
+    "title": "When Amends Cannot Be Made",
+    "question": "According to the Step Nine discussion, what can take the place of action when contacting someone we've harmed is genuinely impossible?",
+    "options": [
+      "Willingness",
+      "Forgiveness",
+      "A personal inventory"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Willingness",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-present-day-inventory",
+    "title": "The Present-Day Inventory",
+    "question": "According to the Step Ten discussion, what is a central purpose of continuing personal inventory?",
+    "options": [
+      "To complete unfinished Fourth Step inventories",
+      "To correct current problems and help prevent them from recurring",
+      "To eliminate the need for future amends"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: To correct current problems and help prevent them from recurring",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-message-beyond-words",
+    "title": "The Message Beyond Words",
+    "question": "According to the Step Twelve discussion, what gives the recovery message greater meaning than words or literature alone?",
+    "options": [
+      "The length of time someone has remained clean",
+      "The number of addicts who attend a meeting",
+      "Living the message through our actions"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Living the message through our actions",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-recovery-is-more-than-abstinence",
+    "title": "Recovery Is More Than Abstinence",
+    "question": "According to What Can I Do?, what makes recovery different from simply not using drugs?",
+    "options": [
+      "Developing a consistent meeting routine",
+      "Actively changing our ideas and attitudes",
+      "Learning to manage our emotions independently"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Actively changing our ideas and attitudes",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-enemy-within",
+    "title": "The Enemy Within",
+    "question": "Which combination does the chapter identify as three of our greatest enemies?",
+    "options": [
+      "Dishonesty, close-mindedness, and unwillingness",
+      "Fear, resentment, and self-pity",
+      "Isolation, denial, and self-obsession"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Dishonesty, close-mindedness, and unwillingness",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-core-of-the-disease",
+    "title": "The Core of the Disease",
+    "question": "According to What Can I Do?, what lies at the core of the disease of addiction?",
+    "options": [
+      "Fear",
+      "Dishonesty",
+      "Self-obsession"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Self-obsession",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-sponsorship-paradox",
+    "title": "The Sponsorship Paradox",
+    "question": "How does the chapter describe sponsorship?",
+    "options": [
+      "A relationship primarily intended to guide newcomers through the Steps",
+      "A two-way relationship that benefits both the newcomer and the sponsor",
+      "A form of service that becomes effective only after completing the Steps"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: A two-way relationship that benefits both the newcomer and the sponsor",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-program-doesn-t-adapt-to-you",
+    "title": "The Program Doesn't Adapt to You",
+    "question": "According to the chapter, which change must take place for the NA program to work?",
+    "options": [
+      "We must adapt our lives to the program",
+      "We must adapt the program to our personal circumstances",
+      "We must develop our own interpretation before practicing its principles"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: We must adapt our lives to the program",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-group-conscience-or-group-opinion",
+    "title": "Group Conscience or Group Opinion?",
+    "question": "According to Tradition Two, what distinguishes genuine group conscience from ordinary group opinion?",
+    "options": [
+      "It reflects the agreement of the majority",
+      "It is guided by the members with the most service experience",
+      "It expresses spiritual principles rather than popularity or powerful personalities"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: It expresses spiritual principles rather than popularity or powerful personalities",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-leadership-trap",
+    "title": "The Leadership Trap",
+    "question": "Which approach to leadership does the discussion of Tradition Two describe as effective?",
+    "options": [
+      "Clear direction and collective accountability",
+      "Example and selfless service",
+      "Experience and consistent supervision"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Example and selfless service",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-membership-decision",
+    "title": "The Membership Decision",
+    "question": "According to the discussion of Tradition Three, who decides whether an addict becomes an NA member?",
+    "options": [
+      "The individual addict",
+      "The group's conscience",
+      "The members who welcome the newcomer"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: The individual addict",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-autonomy-exception",
+    "title": "The Autonomy Exception",
+    "question": "Under Tradition Four, when does a group's autonomy become limited?",
+    "options": [
+      "When its decisions conflict with the majority of local groups",
+      "When its actions affect other groups or NA as a whole",
+      "When its members disagree with recommendations from service committees"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: When its actions affect other groups or NA as a whole",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-groups-don-t-recover",
+    "title": "Groups Don't Recover",
+    "question": "Why does the discussion of Tradition Five distinguish an individual's purpose from a group's primary purpose?",
+    "options": [
+      "Because groups provide the environment for recovery, while individuals experience recovery",
+      "Because groups are responsible for unity, while individuals are responsible for carrying the message",
+      "Because groups maintain the Traditions, while individuals practice the Steps"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Because groups provide the environment for recovery, while individuals experience recovery",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-implied-endorsement",
+    "title": "The Implied Endorsement",
+    "question": "According to Tradition Six, which situation can constitute an implied endorsement of an outside enterprise?",
+    "options": [
+      "Holding an NA meeting inside a treatment facility",
+      "Cooperating with a hospital to reach addicts",
+      "Using another fellowship's literature or speakers in an NA meeting"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Using another fellowship's literature or speakers in an NA meeting",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-price-of-outside-contributions",
+    "title": "The Price of Outside Contributions",
+    "question": "According to the discussion of Tradition Seven, why should NA refuse outside contributions even when there are no apparent conditions attached?",
+    "options": [
+      "Because outside funding would make groups financially unequal",
+      "Because accepting such support could compromise freedom and create disunity",
+      "Because service committees must fund all group expenses"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: Because accepting such support could compromise freedom and create disunity",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-professionalism-vs-special-workers",
+    "title": "Professionalism vs. Special Workers",
+    "question": "What is the key distinction made in the discussion of Tradition Eight?",
+    "options": [
+      "Special workers perform services within NA's Traditions and are accountable to those they serve",
+      "Special workers must be NA members, while professionals must be outsiders",
+      "Special workers may receive reimbursement, while professionals receive salaries"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Special workers perform services within NA's Traditions and are accountable to those they serve",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-organization-paradox",
+    "title": "The Organization Paradox",
+    "question": "According to Tradition Nine, what does the word organized refer to in the kind of organization NA avoids?",
+    "options": [
+      "Establishing structured service committees",
+      "Maintaining a consistent order of Steps and Traditions",
+      "Exercising management and control over the Fellowship"
+    ],
+    "answerIndex": 2,
+    "explanation": "Correct answer: Exercising management and control over the Fellowship",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-abstinence-is-not-the-whole-story",
+    "title": "Abstinence Is Not the Whole Story",
+    "question": "According to Recovery and Relapse, which statement best reflects the distinction between abstinence and recovery?",
+    "options": [
+      "Long-term abstinence is the most reliable measure of spiritual growth",
+      "A person may remain abstinent while dishonesty and self-deception obstruct deeper recovery",
+      "A relapse necessarily means that no meaningful recovery has occurred"
+    ],
+    "answerIndex": 1,
+    "explanation": "Correct answer: A person may remain abstinent while dishonesty and self-deception obstruct deeper recovery",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  },
+  {
+    "id": "na-user-the-warning-sign",
+    "title": "The Warning Sign",
+    "question": "According to Recovery and Relapse, what does the text identify as a particular danger for members with substantial clean time?",
+    "options": [
+      "Complacency",
+      "Emotional dependency",
+      "Excessive involvement in service"
+    ],
+    "answerIndex": 0,
+    "explanation": "Correct answer: Complacency",
+    "source": null,
+    "provenance": "User-provided NA Literature Challenge questions"
+  }
+]

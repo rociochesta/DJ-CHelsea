@@ -12,11 +12,13 @@ import ChatPanel from "./ChatPanel";
 import EmojiReactions from "./EmojiReactions";
 import MeetingDisplay from "./MeetingDisplay";
 import JamGames from "./JamGames";
+import MonopolyRoomLayout from "../features/monopoly/MonopolyRoomLayout";
 import JFTModal from "./JFTModal";
 
 import { Mic, MonitorPlay, Headphones, User, BookOpen, Maximize, Zap } from "lucide-react";
 
 function ParticipantView({ roomCode, currentUser, roomState }) {
+  const [monopolyOpen, setMonopolyOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -173,9 +175,10 @@ const ONE_SONG_MESSAGES = [
             </div>
           </div>
 
+          <MonopolyRoomLayout active={isDJ && !isSecret && monopolyOpen} onClose={() => setMonopolyOpen(false)} roomCode={roomCode} currentUser={currentUser} roomState={roomState}>
           {/* Video / Meeting Display */}
           <div ref={videoContainerRef} className="relative">
-            {quizFocus ? <div className="space-y-4"><JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /></div> : isMeeting ? (
+            {quizFocus ? <div className="space-y-4"><JamGames onOpenMonopoly={() => setMonopolyOpen(true)} roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /></div> : isMeeting ? (
               <MeetingDisplay
                 activeReadingId={roomState?.activeReadingId || null}
                 isHost={false}
@@ -261,7 +264,7 @@ const ONE_SONG_MESSAGES = [
               </div>}
 
               <div className="space-y-6">
-                {isDJ && !quizFocus && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
+                {isDJ && !quizFocus && <JamGames onOpenMonopoly={() => setMonopolyOpen(true)} roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
                 <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
               </div>
             </div>
@@ -270,6 +273,7 @@ const ONE_SONG_MESSAGES = [
           {isMeeting && (
             <ChatPanel roomCode={roomCode} currentUser={memoizedUser} currentSong={currentSong} inline={true} />
           )}
+          </MonopolyRoomLayout>
         </div>
       </div>
 

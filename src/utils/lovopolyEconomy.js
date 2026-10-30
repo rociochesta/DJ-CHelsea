@@ -1,3 +1,4 @@
+import {getLovopolyTiles} from './lovopolyCatalog.js';
 import { LOVOPOLY_TILES as tiles } from './lovopolyBoard.js';
 import { transferHeldCards, returnHeldCard } from './lovopolyCards.js';
 
@@ -10,12 +11,14 @@ const cashAmount = n => Number.isSafeInteger(n) && n >= 0;
 // Restore only that omitted field; malformed terms must still fail validation.
 export const normalizeTradeSide = side => side && typeof side === 'object' && !Array.isArray(side)
   ? { ...side, properties: side.properties ?? [] } : side;
-export function describeTradeSide(raw) {
+export function describeTradeSide(raw,game) {
+  const tiles=getLovopolyTiles(game);
   const side=normalizeTradeSide(raw);
   if(!side || !cashAmount(side.cash) || !cashAmount(side.cards) || !Array.isArray(side.properties)) return 'Offer details unavailable';
   return `$${side.cash} · ${side.cards} cards${side.properties.map(id=>` · ${tiles[id]?.name || 'Unknown property'}`).join('')}`;
 }
 export function economyAction(game, action) {
+  const tiles=getLovopolyTiles(game);
   const { type, user, tileId } = action;
   if (!['ready', 'playing'].includes(game.status)) throw new Error('This match is not active.');
   game.owners ||= {}; game.mortgages ||= {}; game.buildings ||= {}; game.trades ||= {};

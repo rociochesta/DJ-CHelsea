@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1665.09" viewBox="0 0 949 1665.09"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 949 1657" id="layer-64205093-7a6c-4daf-9388-46641cebf075" preserveAspectRatio="none" opacity="0">
+<defs><radialGradient id="layer-64205093-7a6c-4daf-9388-46641cebf075-pink"><stop offset="0" stop-color="#ff9bc0" stop-opacity=".66"/><stop offset=".42" stop-color="#ff3c77" stop-opacity=".34"/><stop offset="1" stop-color="#ff3c77" stop-opacity="0"/></radialGradient></defs>
+<!-- heartbeat glow around heart at aircraft nose -->
+<g opacity="0" transform="translate(780 1090)">
+ <animate attributeName="opacity" values="0;0;0;1;.18;1;0;0" keyTimes="0;0.59;0.61;0.67;0.73;0.79;0.9;1" dur="2.5s" repeatCount="indefinite" fill="freeze" begin="0s"/>
+ <circle r="66" fill="url(#layer-64205093-7a6c-4daf-9388-46641cebf075-pink)"><animate attributeName="r" values="55;55;55;71;57;75;62;62" keyTimes="0;0.59;0.61;0.67;0.73;0.79;0.9;1" dur="2.5s" repeatCount="indefinite" fill="freeze" begin="0s"/></circle>
+</g>
+<set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 949 1657" id="layer-4311876b-7a24-468b-a1b1-887218f3b57b" preserveAspectRatio="none" opacity="0">
+<defs>
+ <filter id="layer-4311876b-7a24-468b-a1b1-887218f3b57b-blur"><feGaussianBlur stdDeviation="9"/></filter>
+ <radialGradient id="layer-4311876b-7a24-468b-a1b1-887218f3b57b-white"><stop stop-color="#fff" stop-opacity="1"/><stop offset=".3" stop-color="#fff7dd" stop-opacity=".8"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+ <radialGradient id="layer-4311876b-7a24-468b-a1b1-887218f3b57b-red"><stop stop-color="#fff"/><stop offset=".25" stop-color="#ff546b" stop-opacity=".9"/><stop offset="1" stop-color="#ff174b" stop-opacity="0"/></radialGradient>
+</defs>
+<!-- wingtip and wing edge flashes, placed in original full-size image coordinates -->
+<g opacity="0"><animate attributeName="opacity" values="0;0;1;0;0;1;0;0" keyTimes="0;0.19;0.25;0.32;0.49000000000000005;0.56;0.64;1" dur="2.5s" repeatCount="indefinite" fill="freeze" begin="0s"/>
+ <circle cx="47" cy="1132" r="34" fill="url(#layer-4311876b-7a24-468b-a1b1-887218f3b57b-red)"/><circle cx="47" cy="1132" r="5" fill="#fff2f3"/>
+ <path d="M47 1112v40M27 1132h40" stroke="#ff5470" stroke-width="3" stroke-linecap="round"/>
+</g>
+<g opacity="0"><animate attributeName="opacity" values="0;0;1;0;0;1;0;0" keyTimes="0;0.27;0.33;0.41;0.58;0.65;0.74;1" dur="2.5s" repeatCount="indefinite" fill="freeze" begin="0s"/>
+ <circle cx="390" cy="1137" r="31" fill="url(#layer-4311876b-7a24-468b-a1b1-887218f3b57b-white)"/><circle cx="390" cy="1137" r="4" fill="white"/>
+ <path d="M390 1119v36M372 1137h36" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+</g>
+<set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg></svg>

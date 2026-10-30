@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1657" viewBox="0 0 949 1657">
+<defs><radialGradient id="pink"><stop offset="0" stop-color="#ff9bc0" stop-opacity=".66"/><stop offset=".42" stop-color="#ff3c77" stop-opacity=".34"/><stop offset="1" stop-color="#ff3c77" stop-opacity="0"/></radialGradient></defs>
+<!-- heartbeat glow around heart at aircraft nose -->
+<g opacity="0" transform="translate(780 1090)">
+ <animate attributeName="opacity" values="0;0;0;1;.18;1;0;0" keyTimes="0;.59;.61;.67;.73;.79;.9;1" dur="2.5s" repeatCount="1" fill="freeze"/>
+ <circle r="66" fill="url(#pink)"><animate attributeName="r" values="55;55;55;71;57;75;62;62" keyTimes="0;.59;.61;.67;.73;.79;.9;1" dur="2.5s" repeatCount="1" fill="freeze"/></circle>
+</g>
+</svg>

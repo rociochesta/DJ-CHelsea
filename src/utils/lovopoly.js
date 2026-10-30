@@ -1,3 +1,4 @@
+import {createBoardLayout,getLovopolyTiles} from './lovopolyCatalog.js';
 import { ROMANCE_ACTIONS } from './lovopolyInbox.js';
 import { LOVOPOLY_TOKENS, LOVOPOLY_TILES } from './lovopolyBoard.js';
 import { economyAction, netWorth } from './lovopolyEconomy.js';
@@ -39,7 +40,7 @@ function ensureToken(token, players = {}, userId) {
 }
 
 function playerFor(user, token) {
-  return { id: user.id, name: String(user.name || 'Your person').slice(0, 80), token, cash: 1500, position: 0 };
+  return { id: user.id, name: String(user.name || 'Your person').slice(0, 80), token, cash: 1500, hearts: 0, position: 0 };
 }
 
 function log(game, action, text) {
@@ -54,6 +55,25 @@ export function updateLovopoly(game, action) {
   if (game?.lastCommandId === id) return game;
   if ((game?.id || null) !== action.expectedGameId || (game && game.revision !== action.expectedRevision)) throw new Error('Lovopoly changed on another screen. Please try again.');
 
+  if(type==='heart-reroll') {
+    const saved=game?.reroll;
+    if(!saved || game.turn!==user.id || saved.playerId!==user.id || saved.revision!==game.revision || !['ready','playing'].includes(game.status))throw new Error('Reroll immediately after rolling, before taking another action.');
+    if((saved.before.players[user.id].hearts || 0)<2)throw new Error('Not enough hearts.');
+    validateDice(action.dice);
+    const restored={...structuredClone(saved.before),events:game.events || {},archives:game.archives || {},revision:game.revision,lastCommandId:game.lastCommandId};
+    restored.players[user.id].hearts-=2;
+    const result=updateLovopoly(restored,{...action,type:'roll'});
+    result.events[id].text+=' Spent 2 hearts to replace the previous roll and its landing.';
+    return result;
+  }
+
+  if (type === 'new-game') {
+    if (game?.status !== 'finished' || !game.players?.[user.id]) throw new Error('Only a player of the completed match can start a new game.');
+    const fresh=updateLovopoly({...game,status:'cancelled'}, {...action,type:'create',mode:game.mode,roundLimit:game.roundLimit,token:game.players[user.id].token});
+    fresh.archives[game.id]={...game,archives:null};
+    return fresh;
+  }
+
   if (type === 'create') {
     if (game && game.status !== 'cancelled') throw new Error('There is already a saved match. Open it to continue.');
     if (game && !game.players?.[user.id]) throw new Error('Only the players in this match can start its replacement.');
@@ -61,7 +81,7 @@ export function updateLovopoly(game, action) {
     if (action.mode === 'quick' && !QUICK_ROUNDS.includes(action.roundLimit)) throw new Error('Choose 10, 20, 30, or 50 rounds.');
     ensureToken(action.token);
     const next = {
-      schemaVersion: 1, id, revision: 0, status: 'setup', createdAt: now,
+      boardLayout:createBoardLayout(id), schemaVersion: 1, id, revision: 0, status: 'setup', createdAt: now,
       creatorId: user.id, mode: action.mode, roundLimit: action.mode === 'quick' ? action.roundLimit : 0,
       players: { [user.id]: playerFor(user, action.token) },
       romanticInbox: game?.romanticInbox || {}, escapeProgress: game?.escapeProgress || {},
@@ -84,7 +104,7 @@ export function updateLovopoly(game, action) {
     } else {
       if(!next.rematch || (type==='rematch-withdraw' ? next.rematch.requestedBy!==user.id : next.rematch.requestedBy===user.id)) throw new Error('Only your partner can answer the rematch request; only its sender can withdraw it.');
       if(type==='rematch-accept') {
-        const fresh={schemaVersion:1,id,revision:0,status:'opening',createdAt:now,creatorId:next.rematch.requestedBy,
+        const fresh={boardLayout:createBoardLayout(id),schemaVersion:1,id,revision:0,status:'opening',createdAt:now,creatorId:next.rematch.requestedBy,
           mode:next.mode,roundLimit:next.roundLimit,players:Object.fromEntries(Object.values(next.players).map(p=>[p.id,playerFor(p,p.token)])),
           openingRound:1,openingRolls:{},events:{},lastCommandId:id,
           romanticInbox:next.romanticInbox || {},
@@ -134,6 +154,33 @@ export function updateLovopoly(game, action) {
         }
         log(next,action,message);
       }
+    } else if (['dice-preview','heart-escape','heart-rent'].includes(type)) {
+      if(!['ready','playing'].includes(next.status) || next.turn!==user.id)throw new Error('Wait for your turn.');
+      const cost={'dice-preview':0,'heart-reroll':2,'heart-escape':3,'heart-rent':4}[type];
+      if((player.hearts || 0)<cost)throw new Error('Not enough hearts.');
+      if(type==='dice-preview' || type==='heart-reroll') {
+        if((next.phase || 'roll')!=='roll' || next.debt || player.detained)throw new Error('Preview dice before moving, outside detention.');
+        if(type==='dice-preview' && next.pendingDice)throw new Error('Use your saved dice or spend hearts to reroll.');
+        if(type==='heart-reroll' && !next.pendingDice)throw new Error('Roll a preview first.');
+        validateDice(action.dice);next.pendingDice=[...action.dice];
+      } else if(type==='heart-escape') {
+        if(!player.detained || !['roll','detention-release'].includes(next.phase || 'roll') || (next.debt && next.debt.reason!=='detention'))throw new Error('Use hearts at an available detention escape.');
+        if(next.debt?.reason==='detention')next.debt=null;
+        if(next.phase==='detention-release')log(next,action,finishDetentionMove(next,action));
+        else {releaseDetention(player);next.doubles=0;}
+      } else {
+        const rent=next.lastRent;
+        if(!rent || rent.payerId!==user.id || rent.covered || !['paid','owed'].includes(rent.status) || !['end','purchase'].includes(next.phase))throw new Error('Cover rent once, during the turn it was charged.');
+        const coverage=Math.min(100,rent.amount);
+        if(rent.status==='owed') {
+          if(next.debt?.playerId!==user.id || next.debt.creditorId!==rent.ownerId || next.debt.amount!==rent.amount)throw new Error('This rent debt is no longer available.');
+          next.players[rent.ownerId].cash+=coverage;next.debt.amount-=coverage;
+          if(next.debt.amount===0){next.debt=null;rent.status='paid';}
+        } else player.cash+=coverage;
+        rent.covered=coverage;
+      }
+      player.hearts=(player.hearts || 0)-cost;
+      if(type!=='dice-preview')log(next,action,`${player.name} spent ${cost} hearts: ${type==='heart-reroll'?'rerolled the preview dice':type==='heart-escape'?'escaped Kiss Detention':'bank covered up to $100 of rent'}.`);
     } else if (type === 'surrender') {
       const opponent = Object.values(next.players).find(other => other.id !== user.id);
       if (!opponent || !['opening', 'ready', 'playing'].includes(next.status)) throw new Error('Both players must join before you can surrender.');
@@ -203,6 +250,11 @@ export function updateLovopoly(game, action) {
         log(next, action, message);
       } else if (type === 'roll') {
         if (next.phase !== 'roll') throw new Error('Resolve this landing and end your turn first.');
+        const before=structuredClone(next);
+        delete before.reroll;delete before.archives;delete before.events;
+        next.reroll=player.detained?null:{playerId:user.id,revision:next.revision+1,before};
+        if(next.pendingDice){action={...action,dice:next.pendingDice};next.pendingDice=null;}
+        if(next.reroll)delete next.reroll.before.pendingDice;
         validateDice(action.dice);
         next.lastDice = [...action.dice];
         next.lastRent = null;
@@ -235,7 +287,7 @@ export function updateLovopoly(game, action) {
         log(next, action, message);
       } else if (type === 'buy' || type === 'pass') {
         if (next.phase !== 'purchase') throw new Error('There is no property to buy.');
-        const tile = LOVOPOLY_TILES[player.position];
+        const tile = getLovopolyTiles(next)[player.position];
         if (type === 'buy') {
           if (next.owners[tile.id] || !tile.price || player.cash < tile.price) throw new Error('You cannot afford this property. You can pass.');
           player.cash -= tile.price; next.owners[tile.id] = user.id;
@@ -257,6 +309,7 @@ export function updateLovopoly(game, action) {
           next.result = 'Round limit reached. Net worth includes cash, properties (mortgaged at half value), and building purchase costs.';
         } else {
           next.turn = opponent.id; next.phase = 'roll';
+          next.lastRent=null;
           if(opponent.detained && opponent.romanticReleaseId && opponent.romanticReleaseId===opponent.detentionId){releaseDetention(opponent);log(next,{...action,id:`${id}-romantic-release`},`${opponent.name} leaves Kiss Detention for free after their partner confirmed the escape gesture.`);}
         }
         const previousEnd=Math.max(0,...Object.values(next.events || {}).filter(e=>e.text.includes('ended their turn.')).map(e=>e.at));

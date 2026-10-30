@@ -1,0 +1,36 @@
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+import {mkdirSync} from 'node:fs';
+import {updateLovopoly} from '../src/utils/lovopoly.js';
+import {ensureDecks} from '../src/utils/lovopolyCards.js';
+const require=createRequire('C:/Users/rocio/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/package.json');
+const {chromium}=require('playwright');
+const browser=await chromium.launch({headless:true,channel:'msedge'});
+try {
+ const page=await browser.newPage({viewport:{width:1280,height:900},reducedMotion:'reduce'}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:5173/lovopoly-local');
+ const a={id:'local-rocio',name:'Rocio',cash:1500,hearts:5,position:4,token:'heart'},b={id:'local-chelsea',name:'Chelsea',cash:1500,position:0,token:'kiss'};
+ const fixture=()=>({id:'heart-ui',revision:0,status:'playing',mode:'classic',turn:a.id,phase:'roll',players:{[a.id]:{...a},[b.id]:{...b}},owners:{},events:{}});
+ const load=async g=>{await page.evaluate(g=>localStorage.setItem('lovopoly-local-v1',JSON.stringify(g)),g);await page.reload();};
+ const saved=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('lovopoly-local-v1')));
+ await load(fixture());await page.getByRole('button',{name:'Roll dice',exact:true}).click();
+ await page.getByRole('dialog').getByRole('button',{name:'Reroll · 2 ❤️',exact:true}).click();
+ assert.equal((await saved()).players[a.id].hearts,3);
+ assert.equal(await page.getByRole('button',{name:/^Move with/}).count(),0);
+ let g=fixture();ensureDecks(g);g.decks.chance.remaining=['chance-romance-0'];
+ g=updateLovopoly(g,{type:'roll',user:a,id:'romance-ui',now:Date.now()-60000,expectedGameId:g.id,expectedRevision:g.revision,dice:[1,2]});
+ await load(g);await page.getByRole('button',{name:'Close landing'}).click();
+ await page.locator('.lovo-romance-preview').first().click();
+ await page.getByRole('button',{name:'Choose a lighter prompt · same reward'}).click();
+ await page.getByRole('textbox',{name:'Your message or response'}).fill('Popcorn and a comedy for our next movie night.');
+ await page.getByLabel('Submit gesture for partner confirmation').check();
+ await page.getByRole('button',{name:'Submit gesture for confirmation',exact:true}).click();
+ assert.equal((await saved()).players[a.id].hearts,6);
+ await page.getByLabel('Play as').selectOption(b.id);
+ await page.getByRole('button',{name:'Close landing'}).click();
+ await page.getByRole('button',{name:'You made me melt · +1 heart'}).click();assert.equal((await saved()).players[a.id].hearts,7);
+ await page.setViewportSize({width:390,height:844});await page.getByLabel('Romantic Inbox').scrollIntoViewIfNeeded();
+ mkdirSync('outputs/lovopoly',{recursive:true});await page.screenshot({path:'outputs/lovopoly/hearts-mobile.png'});
+ assert.deepEqual(errors,[]);console.log('PASS: automatic roll, post-roll reroll, movement, lighter prompt, submission reward, partner bonus, mobile rendering; no browser errors.');
+} finally {await browser.close();}

@@ -1,3 +1,4 @@
+import {getLovopolyTiles,getLovopolyGroups} from '../utils/lovopolyCatalog';
 import {useEffect,useRef} from 'react';
 import {X, Landmark, Hammer, Coins, Crown} from 'lucide-react';
 import {LOVOPOLY_GROUPS, LOVOPOLY_TILES as tiles, LOVOPOLY_TOKENS} from '../utils/lovopolyBoard';
@@ -9,6 +10,8 @@ function LoveNest({size}) {
 }
 
 export default function LovopolyDeed({tile, game, userId, act, busy, onClose}) {
+ const tiles=getLovopolyTiles(game);
+ const LOVOPOLY_GROUPS=getLovopolyGroups(game);
   const dialog=useRef(null);
   useEffect(()=>{const element=dialog.current;element.showModal();return ()=>element.close();},[]);
   const ownerId=game?.owners?.[tile.id],owner=game?.players?.[ownerId];

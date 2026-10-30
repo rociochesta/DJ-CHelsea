@@ -1,3 +1,4 @@
+import {getLovopolyTiles,getLovopolyGroups} from '../utils/lovopolyCatalog';
 import LovopolyProperties from './LovopolyProperties';
 import LovopolyTradePopup, {TradeOffer} from './LovopolyTradePopup';
 import { useEffect, useState, useRef } from 'react';
@@ -20,6 +21,8 @@ export function LovopolyNetWorth({ game, userId }) {
 }
 
 export default function LovopolyEconomy({ game, me, act, busy, tab = 'Properties', onDeed, onTrade, error }) {
+ const tiles=getLovopolyTiles(game);
+ const LOVOPOLY_GROUPS=getLovopolyGroups(game);
 
   const [filter,setFilter]=useState('All');
   const empty = () => ({ cash: 0, cards: 0, properties: [] });

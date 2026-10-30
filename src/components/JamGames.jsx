@@ -6,7 +6,7 @@ import { createTrivia } from "../utils/musicTrivia";
 import MusicQuiz from "./MusicQuiz";
 import { createMusicQuiz, loadMusicQuizCatalog, musicQuizCategories, musicQuizSong, finishMusicQuiz } from "../utils/musicQuiz";
 
-export default function JamGames({ roomCode, currentUser, roomState, featured = false }) {
+export default function JamGames({ roomCode, currentUser, roomState, featured = false, onOpenMonopoly }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [catalog, setCatalog] = useState(null);
@@ -67,6 +67,9 @@ export default function JamGames({ roomCode, currentUser, roomState, featured = 
 
   return (
     <section className="space-y-3">
+      <button type="button" onClick={onOpenMonopoly} className="w-full rounded-3xl border border-cyan-400/30 bg-slate-950/50 p-5 text-left font-bold text-lg hover:border-cyan-300">
+        NA Monopoly · 2–8 online players
+      </button>
       {pending && (
         <div role="status" className="rounded-2xl border border-fuchsia-400/40 bg-fuchsia-500/10 p-5">
           <h3 className="font-bold">Want to play {gameTitle}?</h3>

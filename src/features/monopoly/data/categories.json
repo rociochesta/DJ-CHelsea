@@ -1,0 +1,34 @@
+{
+  "chile": {
+    "name": "The Newcomer Chronicles",
+    "color": "#8b5e3c"
+  },
+  "oklahoma": {
+    "name": "Meeting Madness",
+    "color": "#38bdf8"
+  },
+  "together": {
+    "name": "Character Defects Resort",
+    "color": "#d946ef"
+  },
+  "distance": {
+    "name": "Sponsor & Step Work",
+    "color": "#f97316"
+  },
+  "games": {
+    "name": "Emotional Damage",
+    "color": "#ef4444"
+  },
+  "chemistry": {
+    "name": "Recovery Survival Kit",
+    "color": "#eab308"
+  },
+  "you": {
+    "name": "Clean Life, Same Circus",
+    "color": "#22c55e"
+  },
+  "us": {
+    "name": "The Promises & Miracles",
+    "color": "#6366f1"
+  }
+}

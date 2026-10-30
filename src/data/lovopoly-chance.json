@@ -1,0 +1,479 @@
+{
+  "version": 2,
+  "cards": [
+    {
+      "id": "chance-money-0",
+      "category": "financial",
+      "title": "Love Looks Good on You",
+      "effect": "cash",
+      "amount": 100,
+      "text": "Apparently, being ridiculously happy is contagious. You've been smiling at your phone like an idiot, and the universe has decided to reward your embarrassing behavior. Collect $100 for spreading the love."
+    },
+    {
+      "id": "chance-money-1",
+      "category": "financial",
+      "title": "Love Is Patient. Airlines Aren't",
+      "effect": "cash",
+      "amount": -50,
+      "text": "You packed your favorite outfit, a little surprise, and enough excitement to power an entire airport. Unfortunately, your suitcase decided to explore a different country. Pay $50 for emergency shopping."
+    },
+    {
+      "id": "chance-money-2",
+      "category": "financial",
+      "title": "Dinner Is on the Universe",
+      "effect": "cash",
+      "amount": 50,
+      "text": "You went out for a romantic dinner, ordered dessert, laughed way too loudly, and somehow the restaurant accidentally charged you twice. They finally noticed! Collect your $50 refund. Love is sweet, but free dessert money is sweeter."
+    },
+    {
+      "id": "chance-money-3",
+      "category": "financial",
+      "title": "Butterflies Are Expensive",
+      "effect": "cash",
+      "amount": -100,
+      "text": "Your favorite person sent you a message that made your heart skip a beat. Unfortunately, your phone skipped straight out of your hands and onto the pavement. The screen is shattered, but at least your love life isn't. Pay $100 for repairs."
+    },
+    {
+      "id": "chance-money-4",
+      "category": "financial",
+      "title": "Your Biggest Fan",
+      "effect": "cash",
+      "amount": 150,
+      "text": "Someone has been secretly cheering you on through every little victory, every terrible day, and every questionable life decision. Today, they surprise you with a gift just because you exist. Collect $150. Apparently, being someone's favorite human has benefits."
+    },
+    {
+      "id": "chance-money-5",
+      "category": "financial",
+      "title": "The Screenshot Incident",
+      "effect": "cash",
+      "amount": -75,
+      "text": "You were showing your best friend a ridiculously cute message from your favorite person. Unfortunately, you accidentally sent the screenshot to the very person you were talking about. Panic. Chaos. Emotional damage. Pay $75 for an emergency delivery of chocolates and an apology."
+    },
+    {
+      "id": "chance-money-6",
+      "category": "financial",
+      "title": "Found in your pocket",
+      "effect": "cash",
+      "amount": 25,
+      "text": "You borrow the jacket you wore on a wonderful day out with your person and find a forgotten note in the pocket. Behind it is a little cash you thought you had already spent. The jacket has delivered both a happy memory and excellent financial news. Collect $25 from the bank."
+    },
+    {
+      "id": "chance-money-7",
+      "category": "financial",
+      "title": "Five More Minutes",
+      "effect": "cash",
+      "amount": -50,
+      "text": "You stayed up talking until 4 AM because neither of you wanted to say goodnight. Three hours later, you slept through your alarm, missed an appointment, and needed enough coffee to resurrect a small village. Pay $50. Worth it? Absolutely."
+    },
+    {
+      "id": "chance-money-8",
+      "category": "financial",
+      "title": "Our Song, Our Moment",
+      "effect": "cash",
+      "amount": 200,
+      "text": "Your favorite song comes on unexpectedly, and suddenly you're both dancing in the kitchen like nobody's watching. Someone records the moment, and the video wins a local feel-good contest. Collect $200 for being disgustingly adorable.."
+    },
+    {
+      "id": "chance-money-9",
+      "category": "financial",
+      "title": "I Saw This and Thought of You",
+      "effect": "cash",
+      "amount": -100,
+      "text": "You went shopping for toothpaste. Somehow, you came home with a stuffed animal, matching mugs, three ridiculous souvenirs, and absolutely no toothpaste. But everything reminded you of your favorite person! Pay $100. Financial responsibility has officially left the relationship."
+    },
+    {
+      "id": "chance-money-10",
+      "category": "financial",
+      "title": "Partners in Crime",
+      "effect": "cash",
+      "amount": 100,
+      "text": "You and your favorite person entered a trivia competition with absolutely no preparation and an unreasonable amount of confidence. Somehow, your combined useless knowledge turned out to be a superpower. Collect $100. Who knew knowing every 90s song lyric would finally pay off?"
+    },
+    {
+      "id": "chance-money-11",
+      "category": "financial",
+      "title": "The Perfect Picture",
+      "effect": "cash",
+      "amount": -75,
+      "text": "You wanted one cute picture together. Just one. Forty-seven attempts later, someone blinked, someone made a ridiculous face, and your phone fell into a fountain while you were trying to get the perfect angle. Pay $75 for repairs. The only surviving photo is blurry, chaotic, and somehow your favorite."
+    },
+    {
+      "id": "chance-money-12",
+      "category": "financial",
+      "title": "Too Hot to Cook",
+      "effect": "cash",
+      "amount": -75,
+      "text": "You were supposed to make a romantic homemade dinner. Unfortunately, someone started flirting, someone forgot the oven, and the smoke alarm became the evening's third wheel. Pay $75 for takeout. Dinner was a disaster. The chemistry? Excellent.."
+    },
+    {
+      "id": "chance-money-13",
+      "category": "financial",
+      "title": "One More Hug",
+      "effect": "cash",
+      "amount": -150,
+      "text": "You promised you'd say goodbye at the airport like two emotionally stable adults. Instead, there were seventeen hugs, six almost-goodbyes, and one dramatic sprint back for a final kiss. You missed your flight. Pay $150. Nobody regrets the kiss. Your wallet has filed a complaint."
+    },
+    {
+      "id": "chance-money-14",
+      "category": "financial",
+      "title": "A little windfall",
+      "effect": "cash",
+      "amount": 75,
+      "text": "Your friends throw you a surprise party. It's not your birthday, you haven't achieved anything spectacular, and nobody has an explanation beyond: We just really like you. There's cake, terrible singing, and a mysterious envelope with $75 inside. Being loved is wonderfully weird."
+    },
+    {
+      "id": "chance-move-0",
+      "category": "mischief",
+      "title": "Meet me at the start",
+      "effect": "move",
+      "destination": 0,
+      "text": "Your friends have made a welcome-home banner with more glitter than structural integrity. Follow the trail of sparkles back to where everything began; someone is waiting with a hug, a terrible pun, and several stories they refused to tell over text. Advance to space 0. Collect $200 if you pass or reach Hello, Beautiful. Resolve the destination normally."
+    },
+    {
+      "id": "chance-move-1",
+      "category": "mischief",
+      "title": "Fly to Santiago",
+      "effect": "move",
+      "destination": 5,
+      "text": "Your travel companion has packed snacks for six people, despite there being only two of you. They insist this is responsible planning. Head toward your next adventure together, where even the boarding queue becomes an opportunity to invent biographies for imaginary fellow travelers. Advance to space 5. Collect $200 if you pass or reach Hello, Beautiful. Resolve the destination normally."
+    },
+    {
+      "id": "chance-move-2",
+      "category": "mischief",
+      "title": "Lake-side detour",
+      "effect": "move",
+      "destination": 9,
+      "text": "Your person knows exactly when you need a quieter afternoon. They suggest fresh air, an unhurried walk, and the bench where conversations never seem to run out. Take the scenic route toward a little breathing room and exceptionally good company. Advance to space 9. Collect $200 if you pass or reach Hello, Beautiful. Resolve the destination normally."
+    },
+    {
+      "id": "chance-move-3",
+      "category": "mischief",
+      "title": "Sushi date",
+      "effect": "move",
+      "destination": 13,
+      "text": "After forty messages saying you are happy with anything, somebody finally makes a decision. A table is waiting, the menu looks promising, and your only remaining responsibility is to show up hungry and pretend this was a straightforward plan. Advance to space 13. Collect $200 if you pass or reach Hello, Beautiful. Resolve the destination normally."
+    },
+    {
+      "id": "chance-move-4",
+      "category": "mischief",
+      "title": "A midnight invitation",
+      "effect": "move",
+      "destination": 18,
+      "text": "One quick catch-up has become a full evening of stories, impressions, and laughter that starts again every time you try to leave. Your favorite conversational detour is calling. Follow the invitation and see where tonight takes you. Advance to space 18. Collect $200 if you pass or reach Hello, Beautiful. Resolve the destination normally."
+    },
+    {
+      "id": "chance-move-5",
+      "category": "mischief",
+      "title": "Love takes flight",
+      "effect": "move",
+      "destination": 25,
+      "text": "The suitcase contains clothes, gifts, and a handwritten note carefully hidden between the socks. Whether you are visiting a partner or a lifelong friend, the best part of the journey is knowing exactly whose face you want to see at arrivals. Advance to space 25. Collect $200 if you pass or reach Hello, Beautiful. Resolve the destination normally."
+    },
+    {
+      "id": "chance-move-6",
+      "category": "mischief",
+      "title": "All yours tonight",
+      "effect": "move",
+      "destination": 37,
+      "text": "Someone has cleared their schedule and chosen your favorite snacks. There is no grand performance planned, just a whole evening to share stories, play something silly, and enjoy the rare luxury of neither person needing to rush away. Advance to space 37. Collect $200 if you pass or reach Hello, Beautiful. Resolve the destination normally."
+    },
+    {
+      "id": "chance-back",
+      "category": "mischief",
+      "title": "Three steps back",
+      "effect": "back",
+      "text": "Your friend calls you back because you left without the snack they packed for you. Refusing would require more determination than either of you possesses, so you retrace your steps for the world’s least dramatic rescue mission. Move back three spaces. Do not collect GO money. Resolve the destination normally."
+    },
+    {
+      "id": "chance-detain",
+      "category": "mischief",
+      "title": "Caught being cute",
+      "effect": "detain",
+      "text": "You and your person exchange one look and immediately dissolve into giggles at the worst possible moment. The board’s imaginary authorities consider this suspiciously adorable behavior and have prepared a special place for you to compose yourself. Go directly to Kiss Detention. Do not collect GO money."
+    },
+    {
+      "id": "chance-escape",
+      "category": "mischief",
+      "title": "A kiss and a key",
+      "text": "Your person has slipped you a tiny envelope marked for emergencies involving excessive charm. Inside is a key, a doodled heart, and a reminder that a good teammate always leaves you an escape route. Keep this Get Out of Kiss Detention Free card. You may trade it or use it before rolling.",
+      "effect": "keep"
+    },
+    {
+      "id": "chance-romance-0",
+      "category": "romantic",
+      "title": "A daring compliment",
+      "text": "Tell your person one thing about them you find irresistible. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-1",
+      "category": "romantic",
+      "title": "Our imaginary escape",
+      "text": "Invent a playful getaway for the two of you. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-2",
+      "category": "romantic",
+      "title": "Flirty soundtrack",
+      "text": "Share a song that makes you think of your person. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-3",
+      "category": "romantic",
+      "title": "A tiny confession",
+      "text": "Share a sweet or flirty thought, only if you feel like it. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-4",
+      "category": "romantic",
+      "title": "Your choice of kiss",
+      "text": "Describe the kiss you would send across the distance. Take a moment to add a personal detail: a memory, a reason, or something that would make your person smile. This can be affectionate, playful, or friendly, whichever feels right for the two of you. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "effect": "romance",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-financial-extra-0",
+      "category": "financial",
+      "title": "The Emergency Snack Committee",
+      "effect": "cash",
+      "amount": -50,
+      "text": "Your person says they are fine, but you recognize the dangerous combination of a long day and an empty stomach. You arrive with snacks, a ridiculous story, and absolutely no intention of letting them tackle the evening hungry. Pay $50 to the bank."
+    },
+    {
+      "id": "chance-financial-extra-1",
+      "category": "financial",
+      "title": "Two Tickets, One Lucky Draw",
+      "effect": "cash",
+      "amount": 100,
+      "text": "You entered a neighborhood raffle because your friend liked the handwritten poster. Neither of you expected to win anything, so now you are celebrating with the enthusiasm of lottery winners and planning an unnecessarily elaborate victory handshake. Collect $100 from the bank."
+    },
+    {
+      "id": "chance-financial-extra-2",
+      "category": "financial",
+      "title": "Matching Socks, Different Cities",
+      "effect": "cash",
+      "amount": -25,
+      "text": "You discover socks so wonderfully silly that buying only one pair feels like abandoning a tiny friendship mission. One pair goes in the post, the other goes on your feet, and your next video call suddenly has a very specific dress code. Pay $25 to the bank."
+    },
+    {
+      "id": "chance-financial-extra-3",
+      "category": "financial",
+      "title": "The Great Picnic Rescue",
+      "effect": "cash",
+      "amount": 75,
+      "text": "Rain interrupts your carefully planned picnic, but your favorite teammate transforms the living room into a blanket-covered paradise. The outdoor booking is refunded, the sandwiches survive, and the weather receives exactly zero invitations to your next gathering. Collect $75 from the bank."
+    },
+    {
+      "id": "chance-financial-extra-4",
+      "category": "financial",
+      "title": "A Very Dramatic Birthday Cake",
+      "effect": "cash",
+      "amount": -100,
+      "text": "You promised a simple birthday cake and somehow commissioned a masterpiece with three layers and an edible inside joke. Your friend laughs so hard they cannot blow out the candles. The bakery deserves payment; your planning skills deserve supervision. Pay $100 to the bank."
+    },
+    {
+      "id": "chance-financial-extra-5",
+      "category": "financial",
+      "title": "The Friendship Flea Market",
+      "effect": "cash",
+      "amount": 150,
+      "text": "You and a friend finally sell the boxes you have both been calling useful someday. Between terrible bargaining accents and sentimental goodbyes to old mugs, the afternoon becomes an unexpected success. Your shared talent for turning chores into adventures pays off. Collect $150 from the bank."
+    },
+    {
+      "id": "chance-financial-extra-6",
+      "category": "financial",
+      "title": "Wrong Train, Right Company",
+      "effect": "cash",
+      "amount": -75,
+      "text": "You are so busy debating which of you would survive a cooking show that you both miss the station announcement. The conversation is excellent, the scenery is unfamiliar, and getting back requires tickets that were definitely not in the original budget. Pay $75 to the bank."
+    },
+    {
+      "id": "chance-financial-extra-7",
+      "category": "financial",
+      "title": "Your Secret Talent Has Customers",
+      "effect": "cash",
+      "amount": 100,
+      "text": "Your person convinces you to offer your handmade cards at the local fair. You expect polite encouragement and perhaps one pity purchase. Instead, strangers love them, and your unofficial manager spends the afternoon saying they told you so. Collect $100 from the bank."
+    },
+    {
+      "id": "chance-financial-extra-8",
+      "category": "financial",
+      "title": "The Blanket Fort Upgrade",
+      "effect": "cash",
+      "amount": -50,
+      "text": "Movie night begins with one blanket and ends with a structure that could qualify for its own postal address. Fairy lights and extra cushions complete the masterpiece. You have created a luxury retreat whose main attraction is being comfortably ridiculous together. Pay $50 to the bank."
+    },
+    {
+      "id": "chance-financial-extra-9",
+      "category": "financial",
+      "title": "A Thank-You That Found You",
+      "effect": "cash",
+      "amount": 50,
+      "text": "Weeks ago, you helped a friend move without keeping score or mentioning the endless stairs. Today an envelope arrives with a note remembering every trip. Apparently kindness has an excellent memory, even when you have already forgotten the sore muscles. Collect $50 from the bank."
+    },
+    {
+      "id": "chance-mischief-extra-0",
+      "category": "mischief",
+      "title": "The Reunion Banner",
+      "effect": "move",
+      "destination": 0,
+      "text": "Your friends have made a welcome-home banner with more glitter than structural integrity. Follow the trail of sparkles back to where everything began; someone is waiting with a hug, a terrible pun, and several stories they refused to tell over text. Advance to space 0. Collect $200 if you pass or reach Hello, Beautiful. Resolve your destination normally."
+    },
+    {
+      "id": "chance-mischief-extra-1",
+      "category": "mischief",
+      "title": "Airport Besties",
+      "effect": "move",
+      "destination": 5,
+      "text": "Your travel companion has packed snacks for six people, despite there being only two of you. They insist this is responsible planning. Head toward your next adventure together, where even the boarding queue becomes an opportunity to invent biographies for imaginary fellow travelers. Advance to space 5. Collect $200 if you pass or reach Hello, Beautiful. Resolve your destination normally."
+    },
+    {
+      "id": "chance-mischief-extra-2",
+      "category": "mischief",
+      "title": "A Bench for Two",
+      "effect": "move",
+      "destination": 9,
+      "text": "Your person knows exactly when you need a quieter afternoon. They suggest fresh air, an unhurried walk, and the bench where conversations never seem to run out. Take the scenic route toward a little breathing room and exceptionally good company. Advance to space 9. Collect $200 if you pass or reach Hello, Beautiful. Resolve your destination normally."
+    },
+    {
+      "id": "chance-mischief-extra-3",
+      "category": "mischief",
+      "title": "The Dinner Debate Is Over",
+      "effect": "move",
+      "destination": 13,
+      "text": "After forty messages saying you are happy with anything, somebody finally makes a decision. A table is waiting, the menu looks promising, and your only remaining responsibility is to show up hungry and pretend this was a straightforward plan. Advance to space 13. Collect $200 if you pass or reach Hello, Beautiful. Resolve your destination normally."
+    },
+    {
+      "id": "chance-mischief-extra-4",
+      "category": "mischief",
+      "title": "The Late-Night Story Club",
+      "effect": "move",
+      "destination": 18,
+      "text": "One quick catch-up has become a full evening of stories, impressions, and laughter that starts again every time you try to leave. Your favorite conversational detour is calling. Follow the invitation and see where tonight takes you. Advance to space 18. Collect $200 if you pass or reach Hello, Beautiful. Resolve your destination normally."
+    },
+    {
+      "id": "chance-mischief-extra-5",
+      "category": "mischief",
+      "title": "Carry-On Full of Affection",
+      "effect": "move",
+      "destination": 25,
+      "text": "The suitcase contains clothes, gifts, and a handwritten note carefully hidden between the socks. Whether you are visiting a partner or a lifelong friend, the best part of the journey is knowing exactly whose face you want to see at arrivals. Advance to space 25. Collect $200 if you pass or reach Hello, Beautiful. Resolve your destination normally."
+    },
+    {
+      "id": "chance-mischief-extra-6",
+      "category": "mischief",
+      "title": "An Evening With Your Name on It",
+      "effect": "move",
+      "destination": 37,
+      "text": "Someone has cleared their schedule and chosen your favorite snacks. There is no grand performance planned, just a whole evening to share stories, play something silly, and enjoy the rare luxury of neither person needing to rush away. Advance to space 37. Collect $200 if you pass or reach Hello, Beautiful. Resolve your destination normally."
+    },
+    {
+      "id": "chance-mischief-extra-7",
+      "category": "mischief",
+      "title": "You Forgot the Friendship Bracelet",
+      "effect": "back",
+      "text": "You are halfway down the street when you notice the little bracelet your friend made is still on the table. Naturally, a dramatic rescue mission is required. Retrace your steps while your companion provides an entirely unnecessary action-movie soundtrack. Move back three spaces without collecting GO money, then resolve the destination normally."
+    },
+    {
+      "id": "chance-mischief-extra-8",
+      "category": "mischief",
+      "title": "Caught Laughing After Lights Out",
+      "effect": "detain",
+      "text": "You promised to be quiet, but one whispered inside joke has started a chain reaction neither of you can stop. The imaginary sleepover authorities have finally intervened. Your defense that laughter counts as whispering has been firmly rejected. Go directly to Kiss Detention without collecting GO money."
+    },
+    {
+      "id": "chance-mischief-extra-9",
+      "category": "mischief",
+      "title": "The Goodbye That Restarted",
+      "effect": "back",
+      "text": "You finish saying goodbye, remember one more story, finish again, and discover another thing you absolutely must mention. Your friend has accepted that leaving is now a collaborative project. Take a few steps back for the final installment of this very affectionate farewell. Move back three spaces without collecting GO money, then resolve the destination normally."
+    },
+    {
+      "id": "chance-romance-extra-0",
+      "category": "romantic",
+      "title": "Our Completely Unnecessary Award",
+      "effect": "romance",
+      "text": "Invent an award your person deserves for a wonderfully specific everyday talent. Give it an official title, explain the winning achievement, and deliver a tiny acceptance-ceremony introduction. Being the best at finding snacks absolutely counts. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-1",
+      "category": "romantic",
+      "title": "A Postcard From Someday",
+      "effect": "romance",
+      "text": "Imagine a future afternoon you would enjoy sharing, whether it is across the world or five minutes from home. Write your person a postcard from that day, including one small detail that would make it unmistakably yours. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-2",
+      "category": "romantic",
+      "title": "The Inside-Joke Museum",
+      "effect": "romance",
+      "text": "Choose a funny moment or harmless inside joke you share. Describe how a museum would display it, what the little information plaque would say, and why you suspect visitors would need both of you there to explain the laughter. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-3",
+      "category": "romantic",
+      "title": "Your Friendship Superpower",
+      "effect": "romance",
+      "text": "Tell your person which everyday superpower you think they have. It might be making unfamiliar places feel welcoming or knowing when to listen. Describe a moment that shows the power in action, with a heroic nickname if inspiration strikes. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-4",
+      "category": "romantic",
+      "title": "The Perfect Ordinary Hour",
+      "effect": "romance",
+      "text": "You have one free hour together and no obligation to make it impressive. Describe how you would spend it, from the first small choice to the final goodbye. A walk, a game, or sitting comfortably in silence are all excellent candidates. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-5",
+      "category": "romantic",
+      "title": "Three Things in the Care Package",
+      "effect": "romance",
+      "text": "You can send your person a magical care package containing three things, including imaginary things if needed. Name the contents and explain each choice. A spare peaceful afternoon or a pocket-sized cheering section will fit perfectly. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-6",
+      "category": "romantic",
+      "title": "Our Imaginary Little Business",
+      "effect": "romance",
+      "text": "Imagine opening a tiny shop with your person. What would you sell, what would you each be surprisingly good at, and what ridiculous rule would customers discover on the door? Give your joint adventure a name worthy of its questionable business plan. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-7",
+      "category": "romantic",
+      "title": "A Compliment Without the Obvious",
+      "effect": "romance",
+      "text": "Pick something you admire about your person that has nothing to do with appearance. Tell them what you have noticed and why it matters to you. Small qualities count, especially the thoughtful habits they may not realize anyone sees. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-8",
+      "category": "romantic",
+      "title": "The Two-Person Festival",
+      "effect": "romance",
+      "text": "Design a miniature festival celebrating your friendship or relationship. Choose its name, its signature snack, and its main activity. Explain the one tradition you would insist on repeating every year, even if nobody else understands it. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    },
+    {
+      "id": "chance-romance-extra-9",
+      "category": "romantic",
+      "title": "The Message You Can Keep",
+      "effect": "romance",
+      "text": "Write a short message your person could return to on a difficult day. Make it sound like you, with warmth, humor, or a specific reminder of something they do well. It does not need to solve anything to be worth keeping. Submit your response in the Romantic Inbox to earn 1 heart. Your person may add 1 bonus heart. You may choose a lighter prompt for the same reward.",
+      "alternativeText": "Plan a relaxed movie or game night with your person. Choose a snack and something fun to watch or play, then explain your choices. Keep it light: this alternative earns exactly the same heart reward."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="948" height="1659" viewBox="0 0 948 1659"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 948 1659" id="layer-dc8ef2aa-a232-446e-8337-67a4335a4aa9" preserveAspectRatio="none" opacity="0">
+ <defs>
+  <filter id="layer-dc8ef2aa-a232-446e-8337-67a4335a4aa9-blur"><feGaussianBlur stdDeviation="15"/></filter>
+  <filter id="layer-dc8ef2aa-a232-446e-8337-67a4335a4aa9-soft"><feGaussianBlur stdDeviation="7"/></filter>
+ </defs>
+ <!-- Full-canvas transparent overlay, aligned with edited Music Quiz Battle tile. -->
+ <!-- Answer lights: A, B, C, D, each 0.3s, one pass. -->
+ <g fill="none" stroke-width="13" filter="url(#layer-dc8ef2aa-a232-446e-8337-67a4335a4aa9-soft)">
+  <rect x="257" y="1013" width="191" height="65" rx="25" stroke="#46dfff" opacity="0"><animate attributeName="opacity" values="0;0;0.95;0;0" keyTimes="0;0.10067114093959732;0.2181208053691275;0.3355704697986578;1" begin="0s" dur="2s" fill="freeze" repeatCount="indefinite"/></rect>
+  <rect x="457" y="1013" width="195" height="65" rx="25" stroke="#ff719f" opacity="0"><animate attributeName="opacity" values="0;0;0.95;0;0" keyTimes="0;0.32214765100671144;0.4395973154362417;0.5570469798657719;1" begin="0s" dur="2s" fill="freeze" repeatCount="indefinite"/></rect>
+  <rect x="253" y="1084" width="195" height="66" rx="25" stroke="#ffe279" opacity="0"><animate attributeName="opacity" values="0;0;0.95;0;0" keyTimes="0;0.5436241610738256;0.6610738255033559;0.7785234899328861;1" begin="0s" dur="2s" fill="freeze" repeatCount="indefinite"/></rect>
+  <rect x="457" y="1084" width="197" height="66" rx="25" stroke="#c7a1ff" opacity="0"><animate attributeName="opacity" values="0;0;0.95;0" keyTimes="0;0.7651006711409396;0.8825503355704699;1" begin="0s" dur="2s" fill="freeze" repeatCount="indefinite"/></rect>
+ </g>
+ <!-- Alternate buzzer lights -->
+ <g opacity="0">
+  <ellipse cx="242" cy="1272" rx="125" ry="56" fill="#ff386f" filter="url(#layer-dc8ef2aa-a232-446e-8337-67a4335a4aa9-blur)" opacity=".7"/>
+  <ellipse cx="242" cy="1272" rx="110" ry="48" fill="#ffb5d1" opacity=".24"/>
+  <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.06711409395973156;0.2335570469798658;0.4832214765100672;1" begin="0s" dur="2s" fill="freeze" repeatCount="indefinite"/>
+ </g>
+ <g opacity="0">
+  <ellipse cx="687" cy="1272" rx="124" ry="55" fill="#22bfff" filter="url(#layer-dc8ef2aa-a232-446e-8337-67a4335a4aa9-blur)" opacity=".75"/>
+  <ellipse cx="687" cy="1272" rx="109" ry="47" fill="#9beaff" opacity=".24"/>
+  <animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;0.516778523489933;0.6832214765100673;0.9328859060402687;1" begin="0s" dur="2s" fill="freeze" repeatCount="indefinite"/>
+ </g>
+<set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg></svg>

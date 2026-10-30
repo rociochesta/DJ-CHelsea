@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1657" viewBox="0 0 949 1657"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 949 1657" fill="none" id="layer-0a1e166d-c884-438d-8810-70186b1f3824" preserveAspectRatio="none" opacity="0">
+  <title>Costanera Center glass reflection</title>
+  <desc>Transparent full-tile overlay. Align edge to edge with the original 949 by 1657 tile. Remount to replay the 1.2 second upward reflection.</desc>
+  <defs>
+    <clipPath id="layer-0a1e166d-c884-438d-8810-70186b1f3824-costanera-glass-clip">
+      <path d="M542 645 L579 645 L598 1450 L478 1450 Z"/>
+    </clipPath>
+    <linearGradient id="layer-0a1e166d-c884-438d-8810-70186b1f3824-costanera-shine-gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff7e5" stop-opacity="0"/>
+      <stop offset="0.42" stop-color="#fff7e5" stop-opacity="0.08"/>
+      <stop offset="0.54" stop-color="#ffffff" stop-opacity="0.36"/>
+      <stop offset="0.65" stop-color="#ffffff" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#fff7e5" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g clip-path="url(#layer-0a1e166d-c884-438d-8810-70186b1f3824-costanera-glass-clip)">
+    <g>
+      <animateTransform attributeName="transform" type="translate" dur="1.2s" begin="0s" fill="freeze" calcMode="spline" keySplines="0.25 0.1 0.25 1" values="0 0;0 -1210" keyTimes="0;1" repeatCount="indefinite"/>
+      <path d="M440 1510 L645 1420 L645 1660 L440 1750 Z" fill="url(#layer-0a1e166d-c884-438d-8810-70186b1f3824-costanera-shine-gradient)"/>
+    </g>
+  </g>
+<set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg></svg>

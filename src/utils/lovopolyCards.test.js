@@ -11,11 +11,11 @@ const act=(g,type,user=a,extra={})=>updateLovopoly(g,{type,user,id:`card-action-
 function top(g,deck,id){ensureDecks(g);g.decks[deck].remaining=[id,...g.decks[deck].remaining.filter(x=>x!==id)];}
 function land(card,deck='chance',g=play()) {g.players.a.position=deck==='chance'?4:39;top(g,deck,card);return act(g,'roll',a,{dice:[1,2]});}
 
-test('two unique 30-card decks with exact category counts and one keepable each',()=>{
+test('two unique 60-card decks with exact category counts and one keepable each',()=>{
   for(const [name,deck] of Object.entries(CARD_DECKS)){
-    assert.equal(deck.length,30);assert.equal(new Set(deck.map(c=>c.id)).size,30);
+    assert.equal(deck.length,60);assert.equal(new Set(deck.map(c=>c.id)).size,60);
     const counts={};deck.forEach(c=>{counts[c.category]=(counts[c.category]||0)+1;assert.ok(c.text && c.title);});
-    assert.deepEqual(counts,name==='chance'?{financial:15,mischief:10,romantic:5}:{financial:15,gift:10,romantic:5});
+    assert.deepEqual(counts,name==='chance'?{financial:25,mischief:20,romantic:15}:{financial:25,gift:20,romantic:15});
     assert.equal(deck.filter(c=>c.effect==='keep').length,1);
   }
 });
@@ -24,10 +24,10 @@ test('decks survive reload, draw without repeats, cycle excluding held cards, an
   const duplicate=play();ensureDecks(duplicate);assert.deepEqual(duplicate.decks,g.decks);
   const different=play();different.id='another-match';ensureDecks(different);assert.notDeepEqual(different.decks.chance.remaining,original);
   const drawn=[];
-  for(let i=0;i<30;i++){drawn.push(drawCard(g,'chance','a').id);g=JSON.parse(JSON.stringify(g));}
-  assert.deepEqual(drawn,original);assert.equal(new Set(drawn).size,30);
-  const cycle=Array.from({length:29},()=>drawCard(g,'chance','b').id);
-  assert.equal(new Set(cycle).size,29);assert.ok(!cycle.includes('chance-escape'));
+  for(let i=0;i<60;i++){drawn.push(drawCard(g,'chance','a').id);g=JSON.parse(JSON.stringify(g));}
+  assert.deepEqual(drawn,original);assert.equal(new Set(drawn).size,60);
+  const cycle=Array.from({length:59},()=>drawCard(g,'chance','b').id);
+  assert.equal(new Set(cycle).size,59);assert.ok(!cycle.includes('chance-escape'));
   returnHeldCard(g,'a');assert.equal(drawCard(g,'chance','b').id,'chance-escape');
   assert.equal(g.decks.chance.held['chance-escape'],'b');
 });
@@ -79,3 +79,44 @@ test('roll retry is deterministic and old saves initialize decks without resetti
   const next=updateLovopoly(g,command);assert.deepEqual(updateLovopoly(g,command),next);assert.deepEqual(updateLovopoly(next,command),next);
   assert.equal(next.owners[1],'b');assert.equal(next.lastLanding.cards.length,1);assert.equal(g.decks,undefined);
 });
+
+test('hearts reward submission and partner bonus once, including lighter prompts',()=>{
+ let g=land('chance-romance-0');const invitationId=Object.keys(g.romanticInbox)[0];
+ g=act(g,'romance-alternative',a,{invitationId});assert.equal(g.romanticInbox[invitationId].alternativeChosen,true);
+ g=act(g,'romance-submit',a,{invitationId,text:'Popcorn and a cozy movie, please.'});assert.equal(g.players.a.hearts,1);
+ assert.throws(()=>act(g,'romance-submit',a,{invitationId,text:'Again'}));
+ assert.throws(()=>act(g,'romance-bonus',a,{invitationId}));
+ g=act(g,'romance-bonus',b,{invitationId});assert.equal(g.players.a.hearts,2);
+ assert.throws(()=>act(g,'romance-bonus',b,{invitationId}));
+ g=act(g,'romance-confirm',b,{invitationId});assert.equal(g.players.a.hearts,2);
+});
+test('old and finished invitations cannot mint hearts in another match',()=>{
+ let g=land('chance-romance-0');const invitationId=Object.keys(g.romanticInbox)[0];
+ g.romanticInbox[invitationId].matchId='previous';g=act(g,'romance-submit',a,{invitationId,text:'A friendly hello'});assert.equal(g.players.a.hearts,undefined);
+ g=land('chance-romance-0');const id=Object.keys(g.romanticInbox)[0];g=act(g,'surrender');g=act(g,'romance-submit',a,{invitationId:id,text:'Still happy to answer'});assert.equal(g.players.a.hearts,undefined);
+});
+test('post-roll reroll replaces movement and rent, charges hearts, and locks after actions',()=>{
+ let g=play();g.players.a.hearts=4;g.players.a.position=0;g.owners={3:'b'};
+ g=act(g,'roll',a,{dice:[1,2]});assert.equal(g.players.a.position,3);assert.equal(g.players.b.cash,1502);
+ g=act(g,'heart-reroll',a,{dice:[2,3]});assert.equal(g.players.a.position,5);assert.equal(g.players.a.hearts,2);assert.equal(g.players.b.cash,1500);assert.equal(g.players.a.cash,1500);
+ assert.throws(()=>act(g,'heart-reroll',b,{dice:[1,2]}));
+ g=act(g,'pass');assert.throws(()=>act(g,'heart-reroll',a,{dice:[1,2]}));
+});
+test('reroll removes the replaced card invitation and restores its deck',()=>{
+ let g=play();g.players.a.hearts=2;top(g,'chance','chance-romance-0');const deck=[...g.decks.chance.remaining];
+ g=act(g,'roll',a,{dice:[1,2]});assert.equal(Object.keys(g.romanticInbox).length,1);
+ g=act(g,'heart-reroll',a,{dice:[2,3]});assert.equal(g.players.a.position,9);assert.equal(g.players.a.hearts,0);assert.deepEqual(g.decks.chance.remaining,deck);assert.equal(Object.keys(g.romanticInbox || {}).length,0);
+ assert.throws(()=>act(g,'heart-reroll',a,{dice:[3,4]}));
+});
+test('heart escape handles the mandatory saved roll and debt',()=>{
+ let g=play();g.players.a.hearts=3;g.players.a.cash=0;g.players.a.position=10;g.players.a.detained=true;g.players.a.detentionAttempts=2;
+ g=act(g,'roll',a,{dice:[1,2]});assert.equal(g.phase,'detention-release');
+ g=act(g,'heart-escape');assert.equal(g.players.a.hearts,0);assert.equal(g.players.a.detained,false);assert.equal(g.players.a.position,13);assert.equal(g.debt,null);
+});
+test('bank covers rent once, including partial debt, and pays the owner',()=>{
+ let g=play();g.players.a.hearts=8;g.players.a.cash=0;g.phase='end';g.lastRent={payerId:'a',ownerId:'b',amount:150,status:'owed'};g.debt={playerId:'a',creditorId:'b',amount:150};
+ g=act(g,'heart-rent');assert.equal(g.debt.amount,50);assert.equal(g.players.b.cash,1600);assert.equal(g.players.a.hearts,4);assert.throws(()=>act(g,'heart-rent'));
+ g=play();g.players.a.hearts=4;g.phase='end';g.lastRent={payerId:'a',ownerId:'b',amount:25,status:'paid'};g=act(g,'heart-rent');assert.equal(g.players.a.cash,1525);assert.equal(g.players.b.cash,1500);
+ g=act(g,'end-turn');assert.throws(()=>act(g,'heart-rent',b));
+});
+

@@ -1,12 +1,18 @@
+import {getLovopolyTiles,getLovopolyGroups} from '../utils/lovopolyCatalog';
 import {useEffect,useRef} from 'react';
 import {updateLovopoly} from '../utils/lovopoly';
 import {LOVOPOLY_TILES as tiles, LOVOPOLY_GROUPS} from '../utils/lovopolyBoard';
 import {propertyRent} from '../utils/lovopolyLanding';
 const money=value=>`${value<0?'−':''}$${Math.abs(value).toLocaleString('en-US')}`;
-function TradeSide({title,side}) {
+function TradeSide({title,side,game}) {
+ const tiles=getLovopolyTiles(game);
  return <section className="lovo-confirm-side"><h4>{title}</h4><p>Cash: <strong>{money(side.cash)}</strong></p><p>Cards: <strong>{side.cards} {side.cards===1?'card':'cards'}</strong></p><div className="lovo-confirm-deeds">{(side.properties || []).map(id=><span key={id}><i style={{background:LOVOPOLY_GROUPS[tiles[id]?.group]?.color || '#bda9b8'}}/>{tiles[id]?.name || 'Property'}</span>)}</div></section>;
 }
-export default function LovopolyConfirm({game,user,request,onConfirm,onClose,busy,error}){
+export default function LovopolyConfirm({game:liveGame,user,request,onConfirm,onClose,busy,error}){
+ // Keep the reviewed proposal stable while the live subscription receives the purchase.
+ const game=request.previewGame || liveGame;
+ const tiles=getLovopolyTiles(game);
+ const LOVOPOLY_GROUPS=getLovopolyGroups(game);
  const dialog=useRef();useEffect(()=>{const el=dialog.current;el.showModal();return()=>el.close();},[]);
  let next,invalid='';try{next=updateLovopoly(game,{...request.extra,type:request.type,user,id:'preview-action',now:Date.now(),expectedGameId:game.id,expectedRevision:game.revision});if(request.type==='trade-offer'){const partner=Object.values(game.players).find(p=>p.id!==user.id);next=updateLovopoly(next,{type:'trade-accept',tradeId:'preview-action',user:partner,id:'preview-accept',now:Date.now(),expectedGameId:next.id,expectedRevision:next.revision});}}catch(e){invalid=e.message;}
  const sending=request.type==='trade-offer';
@@ -21,7 +27,7 @@ export default function LovopolyConfirm({game,user,request,onConfirm,onClose,bus
      <header className="lovo-confirm-heading"><div><h3 id="lovo-confirm-title">{sending?request.extra.counterTradeId?'Confirm counteroffer':'Confirm trade offer':'Accept trade'}</h3><p>{sending?'Nothing transfers until your partner accepts.':'This transfers the agreed items immediately.'}</p></div><span>{sending?'Partner acceptance required':'Ready to accept'}</span></header>
      {invalid?<p className="lovo-error" role="alert">{invalid}</p>:<>
        <dl className="lovo-confirm-balances"><div><dt>Your cash now</dt><dd>{money(before)}</dd></div><div><dt>{sending?'After acceptance':'After trade'}</dt><dd>{money(after)}</dd></div><div><dt>Change</dt><dd className={change>0?'lovo-confirm-gain':''}>{change>0?'+':''}{money(change)}</dd></div></dl>
-       <div className="lovo-confirm-sides"><TradeSide title="You give" side={give}/><TradeSide title="You receive" side={receive}/></div>
+       <div className="lovo-confirm-sides"><TradeSide title="You give" game={game} side={give}/><TradeSide title="You receive" game={game} side={receive}/></div>
        {affected.length>0 && <div className="lovo-confirm-table"><table><caption>Your rental income per landing</caption><thead><tr><th scope="col">Property</th><th scope="col">Before</th><th scope="col">After</th></tr></thead><tbody>{affected.map(tile=><tr key={tile.id}><th scope="row">{tile.name}</th><td>{money(income(game,tile))}</td><td className={income(next,tile)>income(game,tile)?'lovo-confirm-gain':''}>{money(income(next,tile))}</td></tr>)}</tbody></table>{affected.some(tile=>tile.type==='utility') && <p>Utility estimates use a dice total of {total}{game.lastDice?' (last roll)':' (before the first roll)'}.</p>}</div>}
      </>}
      {error && <p role="alert" className="lovo-error">{error}</p>}

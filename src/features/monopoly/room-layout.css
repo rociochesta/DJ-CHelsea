@@ -1,0 +1,19 @@
+.na-room-layout:not(.na-room-focused),
+.na-room-layout:not(.na-room-focused) > .na-room-tools,
+.na-room-layout:not(.na-room-focused) > .na-room-tools > .na-room-content{display:contents}
+.na-room-focused{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:14px;align-items:start}
+.na-room-focused.na-room-tools-open{grid-template-columns:minmax(0,1fr) 340px}
+.na-room-board,.na-room-tools,.na-room-content{min-width:0}
+.na-room-focused>.na-room-tools{position:sticky;top:16px;max-height:calc(100dvh - 32px);overflow:auto}
+.na-room-back,.na-room-toggle{border:1px solid #46637b;border-radius:14px;padding:14px 10px;background:#152d42;color:#e2e8f0;min-height:44px;margin-bottom:14px}
+.na-room-back{padding:10px 16px;scroll-margin-top:20px}
+.na-room-focused:not(.na-room-tools-open) .na-room-toggle{writing-mode:vertical-rl}
+.na-room-focused .na-room-content:not([hidden]){display:flex;flex-direction:column;gap:24px}
+.na-room-focused .na-room-content>.grid{display:flex;flex-direction:column}
+.na-room-focused .na-room-content>.grid>div{min-width:0;width:100%}
+.na-room-back:focus-visible,.na-room-toggle:focus-visible{outline:3px solid #67e8f9;outline-offset:2px}
+@media(max-width:900px){
+ .na-room-focused,.na-room-focused.na-room-tools-open{grid-template-columns:minmax(0,1fr)}
+ .na-room-focused>.na-room-tools{position:static;grid-row:1;max-height:none;overflow:visible}
+ .na-room-focused:not(.na-room-tools-open) .na-room-toggle{writing-mode:horizontal-tb;width:100%}
+}

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1658" viewBox="0 0 949 1658"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 949 1657" fill="none" id="layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784" preserveAspectRatio="none" opacity="0">
+<title>Words With You heart tile placement</title>
+<desc>Transparent full-tile overlay for the cleaned Words With You tile. Heart tile drops into the empty square beside YOU, bounces once, and remains. Remount to replay.</desc>
+<style>#layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784 .heart-tile { animation: 2s ease 0s infinite normal both running layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784_0_words-heart-drop; transform-origin: 690px 1208px; }
+#layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784 .tile-shadow { animation: 2s ease 0s infinite normal both running layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784_1_words-heart-shadow; transform-origin: 691px 1254px; }
+@keyframes words-heart-drop { 
+  0% { transform: translate(0px, -90px) rotate(-7deg); opacity: 0; }
+  12% { opacity: 1; }
+  62% { transform: translate(0px, 0px) rotate(0deg); }
+  77% { transform: translate(0px, -12px) rotate(1deg); }
+  90% { transform: translate(0px, 0px) rotate(0deg); }
+  96% { transform: translate(0px, -2px); }
+  100% { transform: translate(0px, 0px); opacity: 1; }
+}
+@keyframes words-heart-shadow { 
+  0% { opacity: 0; transform: scale(1.25); }
+  62% { opacity: 0.16; transform: scale(1); }
+  77% { opacity: 0.1; transform: scale(1.06); }
+  100% { opacity: 0.16; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784 .heart-tile, #layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784 .tile-shadow { animation: auto ease 0s 1 normal none running none; }
+  #layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784 .tile-shadow { opacity: 0.16; }
+}</style>
+<path class="tile-shadow" d="M638 1161L751 1184L732 1284L619 1254Z" fill="#8c431b" opacity=".16"/>
+<g class="heart-tile">
+<path d="M654 1143L743 1162Q757 1165 756 1179L732 1264Q729 1278 715 1275L631 1256Q618 1253 621 1240L641 1155Q644 1141 654 1143Z" fill="#be7b37" stroke="#080808" stroke-width="6" stroke-linejoin="round"/>
+<path d="M652 1143L742 1162Q754 1165 751 1176L729 1252Q727 1262 716 1259L633 1240Q623 1238 626 1227L645 1151Q647 1141 652 1143Z" fill="#ffcf89" stroke="#080808" stroke-width="5" stroke-linejoin="round"/>
+<path d="M650 1150L740 1169M634 1228Q632 1234 641 1236L717 1253" stroke="#fff0cb" stroke-width="4" stroke-linecap="round"/>
+<path d="M687 1180C677 1161 653 1172 662 1192C667 1205 682 1217 687 1224C704 1214 721 1205 721 1191C721 1173 700 1169 687 1180Z" fill="#ef2058"/>
+</g><style>@keyframes layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784_0_words-heart-drop{0%{transform: translate(0px, -90px) rotate(-7deg); opacity: 0;}12%{opacity: 1;}62%{transform: translate(0px, 0px) rotate(0deg);}77%{transform: translate(0px, -12px) rotate(1deg);}90%{transform: translate(0px, 0px) rotate(0deg);}96%{transform: translate(0px, -2px);}100%{transform: translate(0px, 0px); opacity: 1;}}
+@keyframes layer-26b9dd8d-816e-44f4-916d-5fb3a28c7784_1_words-heart-shadow{0%{opacity: 0; transform: scale(1.25);}62%{opacity: 0.16; transform: scale(1);}77%{opacity: 0.1; transform: scale(1.06);}100%{opacity: 0.16; transform: scale(1);}}</style><set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg></svg>

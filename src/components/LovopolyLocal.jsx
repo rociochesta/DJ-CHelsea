@@ -10,7 +10,7 @@ export default function LovopolyLocal() {
   async function onAction(type,extra) {
     const save = () => {
       const stored = JSON.parse(localStorage.getItem(KEY));
-      const next = updateLovopoly(stored, {...extra,type,user,id:crypto.randomUUID(),now:Date.now(),expectedGameId:game?.id || null,expectedRevision:game?.revision,...(['roll','opening-roll'].includes(type) ? {dice:rollLovopolyDice()} : {})});
+      const next = updateLovopoly(stored, {...extra,type,user,id:crypto.randomUUID(),now:Date.now(),expectedGameId:game?.id || null,expectedRevision:game?.revision,...(['roll','opening-roll','dice-preview','heart-reroll'].includes(type) ? {dice:rollLovopolyDice()} : {})});
       localStorage.setItem(KEY,JSON.stringify(next)); setGame(next);
     };
     if (navigator.locks) await navigator.locks.request(KEY,save); else save();

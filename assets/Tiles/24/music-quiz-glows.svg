@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="948" height="1659" viewBox="0 0 948 1659">
+ <defs>
+  <filter id="blur"><feGaussianBlur stdDeviation="15"/></filter>
+  <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
+ </defs>
+ <!-- Full-canvas transparent overlay, aligned with edited Music Quiz Battle tile. -->
+ <!-- Answer lights: A, B, C, D, each 0.3s, one pass. -->
+ <g fill="none" stroke-width="13" filter="url(#soft)">
+  <rect x="257" y="1013" width="191" height="65" rx="25" stroke="#46dfff" opacity="0"><animate attributeName="opacity" values="0;0.95;0" keyTimes="0;0.5;1" begin="0.15s" dur="0.35s" fill="freeze"/></rect>
+  <rect x="457" y="1013" width="195" height="65" rx="25" stroke="#ff719f" opacity="0"><animate attributeName="opacity" values="0;0.95;0" keyTimes="0;0.5;1" begin="0.48s" dur="0.35s" fill="freeze"/></rect>
+  <rect x="253" y="1084" width="195" height="66" rx="25" stroke="#ffe279" opacity="0"><animate attributeName="opacity" values="0;0.95;0" keyTimes="0;0.5;1" begin="0.81s" dur="0.35s" fill="freeze"/></rect>
+  <rect x="457" y="1084" width="197" height="66" rx="25" stroke="#c7a1ff" opacity="0"><animate attributeName="opacity" values="0;0.95;0" keyTimes="0;0.5;1" begin="1.14s" dur="0.35s" fill="freeze"/></rect>
+ </g>
+ <!-- Alternate buzzer lights -->
+ <g opacity="0">
+  <ellipse cx="242" cy="1272" rx="125" ry="56" fill="#ff386f" filter="url(#blur)" opacity=".7"/>
+  <ellipse cx="242" cy="1272" rx="110" ry="48" fill="#ffb5d1" opacity=".24"/>
+  <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.4;1" begin="0.1s" dur="0.62s" fill="freeze"/>
+ </g>
+ <g opacity="0">
+  <ellipse cx="687" cy="1272" rx="124" ry="55" fill="#22bfff" filter="url(#blur)" opacity=".75"/>
+  <ellipse cx="687" cy="1272" rx="109" ry="47" fill="#9beaff" opacity=".24"/>
+  <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.4;1" begin="0.77s" dur="0.62s" fill="freeze"/>
+ </g>
+</svg>

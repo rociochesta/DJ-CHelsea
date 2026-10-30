@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="949" height="1677.13" viewBox="0 0 949 1677.13"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 938 1677" id="layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6" preserveAspectRatio="none" opacity="0">
+<defs>
+ <linearGradient id="layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-smokeR"><stop stop-color="#e72f48" stop-opacity="0"/><stop offset=".25" stop-color="#e72f48" stop-opacity=".55"/><stop offset="1" stop-color="#ef394b" stop-opacity=".95"/></linearGradient>
+ <linearGradient id="layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-smokeW"><stop stop-color="#fff7ee" stop-opacity="0"/><stop offset=".25" stop-color="#fff7ee" stop-opacity=".65"/><stop offset="1" stop-color="#ffffff" stop-opacity=".96"/></linearGradient>
+ <linearGradient id="layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-smokeB"><stop stop-color="#235fcb" stop-opacity="0"/><stop offset=".25" stop-color="#235fcb" stop-opacity=".55"/><stop offset="1" stop-color="#2769d5" stop-opacity=".95"/></linearGradient>
+ <filter id="layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-blur"><feGaussianBlur stdDeviation="3"/></filter>
+ <g id="layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-jet" stroke="#101b2a" stroke-width="2" stroke-linejoin="round">
+  <path d="M-44 4 L-8 -3 L13 -33 L24 -32 L19 -4 L48 1 L53 7 L19 12 L8 30 L-2 30 L-6 12 L-42 12Z" fill="#f4f2ec"/>
+  <path d="M-14 1 L14 -2 L22 -25 L26 -24 L21 8 L-10 11Z" fill="#3070a9"/>
+  <path d="M-35 6 L-9 4 L-2 11 L-36 10Z" fill="#e83b4c"/>
+  <path d="M27 1 L47 4 L28 7Z" fill="#1d4f8b"/>
+  <ellipse cx="7" cy="4" rx="7" ry="3.4" fill="#253b52"/>
+ </g>
+</defs>
+<!-- Airplane flies from left to right across the open sky below the title. -->
+<g>
+ <animateTransform attributeName="transform" type="translate" values="-200 645; -200 645; 1110 540; 1110 540" keyTimes="0;0.08;0.78;1" dur="7s" repeatCount="1" begin="0s" fill="freeze"/>
+ <g opacity="0">
+  <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.7;1" dur="7s" repeatCount="1" begin="0s" fill="freeze"/>
+  <g filter="url(#layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-blur)" stroke-linecap="round" fill="none">
+   <path d="M-420 28 Q-230 24 -15 26" stroke="url(#layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-smokeR)" stroke-width="15" stroke-dasharray="440" stroke-dashoffset="440"><animate attributeName="stroke-dashoffset" values="440;0;0" keyTimes="0;0.4;1" dur="7s" repeatCount="1" begin="0s" fill="freeze"/></path>
+   <path d="M-420 43 Q-230 36 -15 39" stroke="url(#layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-smokeW)" stroke-width="15" stroke-dasharray="440" stroke-dashoffset="440"><animate attributeName="stroke-dashoffset" values="440;0;0" keyTimes="0;0.4;1" dur="7s" repeatCount="1" begin="0s" fill="freeze"/></path>
+   <path d="M-420 58 Q-230 48 -15 52" stroke="url(#layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-smokeB)" stroke-width="15" stroke-dasharray="440" stroke-dashoffset="440"><animate attributeName="stroke-dashoffset" values="440;0;0" keyTimes="0;0.4;1" dur="7s" repeatCount="1" begin="0s" fill="freeze"/></path>
+  </g>
+  <use href="#layer-e5a602b9-5d93-4ef7-83f5-157dfd6c41f6-jet" transform="scale(.75)"/>
+ </g>
+</g>
+<set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 938 1677" id="layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0" preserveAspectRatio="none" opacity="0">
+<defs>
+ <clipPath id="layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0-cloth"><path d="M0 0 C22 -12 42 13 69 2 L69 59 C42 68 22 44 0 58 Z"/></clipPath>
+ <g id="layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0-flag">
+  <g clip-path="url(#layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0-cloth)">
+   <rect x="0" y="0" width="69" height="30" fill="#fff7eb"/>
+   <rect x="0" y="29" width="69" height="33" fill="#e52b3e"/>
+   <rect x="0" y="0" width="30" height="30" fill="#174f9b"/>
+   <path d="M15 5 L17.7 11.5 L24.5 11.7 L19 16 L21 23 L15 19 L9 23 L11 16 L5.5 11.7 L12.3 11.5Z" fill="white"/>
+   <path d="M0 0 Q17 11 35 3 T69 2 L69 60 Q46 49 30 59 T0 58" fill="none" stroke="#101018" stroke-width="2.5"/>
+   <path d="M23 1 Q36 27 23 59 M49 3 Q60 32 47 62" fill="none" stroke="#1a2035" stroke-opacity=".14" stroke-width="7"/>
+  </g>
+  <path d="M0 0 C22 -12 42 13 69 2 L69 59 C42 68 22 44 0 58 Z" fill="none" stroke="#111018" stroke-width="2.7" stroke-linejoin="round"/>
+ </g>
+</defs>
+<!-- Same 938 x 1677 transparent canvas as the original card. Flags only; poles remain in background. -->
+<g transform="translate(120 924) scale(0.94)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5;-5" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.1811594202898551;0.3623188405797102;0.5434782608695653;0.7246376811594204;1" begin="0s" fill="freeze"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1;1 1" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.2173913043478261;0.4347826086956522;0.6521739130434784;1" begin="0s" fill="freeze"/><use href="#layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0-flag"/></g></g>
+<g transform="translate(246 923) scale(0.88)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5;-5" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.19836956521739132;0.39673913043478265;0.595108695652174;0.7934782608695653;1" begin="0s" fill="freeze"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1;1 1" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.23309178743961353;0.46618357487922707;0.6992753623188406;1" begin="0s" fill="freeze"/><use href="#layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0-flag"/></g></g>
+<g transform="translate(466 904) scale(0.78)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5;-5" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.21557971014492755;0.4311594202898551;0.6467391304347826;0.8623188405797102;1" begin="0s" fill="freeze"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1;1 1" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.248792270531401;0.497584541062802;0.746376811594203;1" begin="0s" fill="freeze"/><use href="#layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0-flag"/></g></g>
+<g transform="translate(690 928) scale(0.92)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5;-5" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.23278985507246377;0.46557971014492755;0.6983695652173912;0.9311594202898551;1" begin="0s" fill="freeze"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1;1 1" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.2644927536231884;0.5289855072463768;0.7934782608695653;1" begin="0s" fill="freeze"/><use href="#layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0-flag"/></g></g>
+<g transform="translate(792 935) scale(0.84)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.25;0.5;0.75;1" begin="0s" fill="freeze"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1;1 1" dur="2.76s" repeatCount="indefinite" keyTimes="0;0.2801932367149758;0.5603864734299516;0.8405797101449275;1" begin="0s" fill="freeze"/><use href="#layer-5b471b17-d970-40ac-8fbc-a36724bfbfb0-flag"/></g></g>
+<set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg></svg>

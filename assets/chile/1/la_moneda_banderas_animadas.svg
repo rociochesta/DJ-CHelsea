@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="938" height="1677" viewBox="0 0 938 1677">
+<defs>
+ <clipPath id="cloth"><path d="M0 0 C22 -12 42 13 69 2 L69 59 C42 68 22 44 0 58 Z"/></clipPath>
+ <g id="flag">
+  <g clip-path="url(#cloth)">
+   <rect x="0" y="0" width="69" height="30" fill="#fff7eb"/>
+   <rect x="0" y="29" width="69" height="33" fill="#e52b3e"/>
+   <rect x="0" y="0" width="30" height="30" fill="#174f9b"/>
+   <path d="M15 5 L17.7 11.5 L24.5 11.7 L19 16 L21 23 L15 19 L9 23 L11 16 L5.5 11.7 L12.3 11.5Z" fill="white"/>
+   <path d="M0 0 Q17 11 35 3 T69 2 L69 60 Q46 49 30 59 T0 58" fill="none" stroke="#101018" stroke-width="2.5"/>
+   <path d="M23 1 Q36 27 23 59 M49 3 Q60 32 47 62" fill="none" stroke="#1a2035" stroke-opacity=".14" stroke-width="7"/>
+  </g>
+  <path d="M0 0 C22 -12 42 13 69 2 L69 59 C42 68 22 44 0 58 Z" fill="none" stroke="#111018" stroke-width="2.7" stroke-linejoin="round"/>
+ </g>
+</defs>
+<!-- Same 938 x 1677 transparent canvas as the original card. Flags only; poles remain in background. -->
+<g transform="translate(120 924) scale(0.94)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5" dur="2.00s" repeatCount="indefinite"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1" dur="1.80s" repeatCount="indefinite"/><use href="#flag"/></g></g>
+<g transform="translate(246 923) scale(0.88)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5" dur="2.19s" repeatCount="indefinite"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1" dur="1.93s" repeatCount="indefinite"/><use href="#flag"/></g></g>
+<g transform="translate(466 904) scale(0.78)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5" dur="2.38s" repeatCount="indefinite"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1" dur="2.06s" repeatCount="indefinite"/><use href="#flag"/></g></g>
+<g transform="translate(690 928) scale(0.92)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5" dur="2.57s" repeatCount="indefinite"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1" dur="2.19s" repeatCount="indefinite"/><use href="#flag"/></g></g>
+<g transform="translate(792 935) scale(0.84)"><g><animateTransform attributeName="transform" type="skewY" values="-5;5;-3;4;-5" dur="2.76s" repeatCount="indefinite"/><animateTransform attributeName="transform" additive="sum" type="scale" values="1 1;0.86 1;1.07 1;1 1" dur="2.32s" repeatCount="indefinite"/><use href="#flag"/></g></g>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="946.48" height="1665.45" viewBox="0 0 946.48 1665.45" fill="none">
+<title>Your Weirdness — animated heart sunglasses shine</title>
+<defs><clipPath id="lensAreas"><path d="M355 974 Q391 932 442 970 Q483 929 516 980 Q541 1028 466 1107 Q440 1132 405 1090 Q345 1034 355 974Z"/><path d="M531 964 Q574 919 619 958 Q658 915 697 970 Q729 1020 663 1097 Q629 1130 591 1091 Q526 1032 531 964Z"/></clipPath></defs>
+<g clip-path="url(#lensAreas)" opacity="0">
+<g transform="rotate(25 470 1020)"><rect x="302" y="935" width="36" height="210" rx="18" fill="#fffdf1" opacity=".82"/><rect x="351" y="935" width="9" height="210" rx="4.5" fill="#fffdf1" opacity=".6"/></g>
+<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.15;.24;.34;.44;1" dur="6s" repeatCount="indefinite"/>
+<animateTransform attributeName="transform" type="translate" values="-120 0;-120 0;430 0;430 0" keyTimes="0;.15;.44;1" dur="6s" repeatCount="indefinite"/>
+</g>
+<g fill="#fffdf1" opacity="0"><path d="M403 952 l5 13 13 5 -13 5 -5 13 -5 -13 -13 -5 13 -5z"/><path d="M610 950 l4 10 10 4 -10 4 -4 10 -4 -10 -10 -4 10 -4z"/><animate attributeName="opacity" values="0;0;1;0;0" keyTimes="0;.32;.39;.48;1" dur="6s" repeatCount="indefinite"/></g>
+</svg>

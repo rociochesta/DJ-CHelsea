@@ -1,4 +1,4 @@
-export const ROMANCE_ACTIONS = ['romance-hide','romance-restore','romance-delete-request','romance-delete-accept','romance-delete-decline','romance-delete-withdraw','romance-respond','romance-submit','romance-confirm','romance-message','romance-read','romance-react','romance-edit','romance-delete'];
+export const ROMANCE_ACTIONS = ['romance-bonus','romance-alternative','romance-hide','romance-restore','romance-delete-request','romance-delete-accept','romance-delete-decline','romance-delete-withdraw','romance-respond','romance-submit','romance-confirm','romance-message','romance-read','romance-react','romance-edit','romance-delete'];
 export const REACTIONS = ['❤️','😘','😂','🔥'];
 export function unreadActivity(item,userId) {
   return Object.values(item.activity || {initial:{seq:1,userId:item.from}}).filter(e=>e.userId!==userId && e.seq>(item.readBy?.[userId] || 0)).length;

@@ -24,12 +24,14 @@ import EmojiReactions from "./EmojiReactions";
 
 import MeetingDisplay from "./MeetingDisplay";
 import JamGames from "./JamGames";
+import MonopolyRoomLayout from "../features/monopoly/MonopolyRoomLayout";
 import MeetingReadingsList from "./MeetingReadingsList";
 import { Mic, Radio, MonitorPlay, Headphones, LockKeyhole, BookOpen, DoorOpen, ListMusic, ArrowDownWideNarrow } from "lucide-react";
 
 const Lovopoly = lazy(() => import('./Lovopoly'));
 
 function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
+  const [monopolyOpen, setMonopolyOpen] = useState(false);
   const [lovoToolsOpen, setLovoToolsOpen] = useState(false);
   const [moodOpen, setMoodOpen] = useState(false);
   const [moodBusy, setMoodBusy] = useState(false);
@@ -386,11 +388,12 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
             {moodError && <p role="alert" className="mt-3 text-sm text-rose-300">{moodError}</p>}
           </div>}
 
+          <MonopolyRoomLayout active={isDJ && !isSecret && monopolyOpen} onClose={() => setMonopolyOpen(false)} roomCode={roomCode} currentUser={currentUser} roomState={roomState}>
           {/* Layout */}
           <div className={isSecret && secretGameView === 'lovopoly' ? `lovo-room-layout ${lovoToolsOpen ? 'lovo-tools-open' : ''}` : 'grid grid-cols-1 xl:grid-cols-3 gap-6'}>
             {/* Left */}
             <div className="xl:col-span-2 space-y-6">
-              {secretGameFocus ? secretGameView === 'lovopoly' ? <Suspense fallback={<p role="status" className="p-6 text-sm text-white/60">Opening Lovopoly…</p>}><Lovopoly roomCode={roomCode} currentUser={currentUser} game={roomState?.lovopolyGame} onClose={() => openSecretGame('')} /></Suspense> : secretGameView === 'stream' ? <SecretStream roomCode={roomCode} stream={roomState?.secretStream} onClose={() => openSecretGame('')} /> : secretGameView === 'music-quiz' ? <SecretMusicQuiz roomCode={roomCode} currentUser={currentUser} games={roomState?.secretMusicQuizzes} onClose={() => openSecretGame('')} /> : secretGameView === 'battleship' ? <Battleship roomCode={roomCode} currentUser={currentUser} game={roomState?.battleshipGame} featured onOpen={() => openSecretGame('battleship')} onClose={() => openSecretGame('')} /> : secretGameView === 'reveal' ? <RevealGame roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : secretGameView === 'words' ? <WordGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wordGame} featured onOpen={() => openSecretGame('words')} onClose={() => openSecretGame('')} /> : secretGameView === 'wheel' ? <WheelGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wheelGame} featured onOpen={() => openSecretGame('wheel')} onClose={() => openSecretGame('')} /> : <QuestionForYou roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : quizFocus ? <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
+              {secretGameFocus ? secretGameView === 'lovopoly' ? <Suspense fallback={<p role="status" className="p-6 text-sm text-white/60">Opening Lovopoly…</p>}><Lovopoly roomCode={roomCode} currentUser={currentUser} game={roomState?.lovopolyGame} onClose={() => openSecretGame('')} /></Suspense> : secretGameView === 'stream' ? <SecretStream roomCode={roomCode} stream={roomState?.secretStream} onClose={() => openSecretGame('')} /> : secretGameView === 'music-quiz' ? <SecretMusicQuiz roomCode={roomCode} currentUser={currentUser} games={roomState?.secretMusicQuizzes} onClose={() => openSecretGame('')} /> : secretGameView === 'battleship' ? <Battleship roomCode={roomCode} currentUser={currentUser} game={roomState?.battleshipGame} featured onOpen={() => openSecretGame('battleship')} onClose={() => openSecretGame('')} /> : secretGameView === 'reveal' ? <RevealGame roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : secretGameView === 'words' ? <WordGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wordGame} featured onOpen={() => openSecretGame('words')} onClose={() => openSecretGame('')} /> : secretGameView === 'wheel' ? <WheelGame roomCode={roomCode} currentUser={currentUser} game={roomState?.wheelGame} featured onOpen={() => openSecretGame('wheel')} onClose={() => openSecretGame('')} /> : <QuestionForYou roomCode={roomCode} currentUser={currentUser} roomState={roomState} onClose={() => openSecretGame('')} /> : quizFocus ? <JamGames onOpenMonopoly={() => setMonopolyOpen(true)} roomCode={roomCode} currentUser={currentUser} roomState={roomState} featured /> : isMeeting ? (
                 <MeetingDisplay
                   activeReadingId={roomState?.activeReadingId || null}
                   isHost={true}
@@ -481,7 +484,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
               )}
 
 
-              {isSecret ? <SecretGames activeGame={secretGameView} roomCode={roomCode} currentUser={currentUser} roomState={roomState} onOpen={openSecretGame} /> : isDJ && !quizFocus && <JamGames roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
+              {isSecret ? <SecretGames activeGame={secretGameView} roomCode={roomCode} currentUser={currentUser} roomState={roomState} onOpen={openSecretGame} /> : isDJ && !quizFocus && <JamGames onOpenMonopoly={() => setMonopolyOpen(true)} roomCode={roomCode} currentUser={currentUser} roomState={roomState} />}
 
               {isSecret ? <>
                 {currentSong && <div className="rounded-3xl border border-rose-300/20 bg-white/[0.03] p-5 space-y-3"><p className="text-xs uppercase tracking-widest text-rose-200/55">Now playing</p><p className="font-semibold text-sm">{currentSong.title}</p>{!secretVideoFocus && <button type="button" onClick={() => { setDismissedVideo(null); openSecretGame(''); }} className="rounded-xl border border-rose-300/30 px-4 py-2 text-sm text-rose-200">Open video</button>}</div>}
@@ -512,6 +515,7 @@ function HostView({ roomCode, currentUser, roomState, onCloseRoom }) {
               </div>
             </div>
           </div>
+          </MonopolyRoomLayout>
         </div>
       </div>
 

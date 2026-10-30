@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "cards": [
+    {
+      "id": "escape-b-1",
+      "tone": "B",
+      "title": "Three irresistible things",
+      "text": "Tell your person three little things you find irresistible about them."
+    },
+    {
+      "id": "escape-b-2",
+      "tone": "B",
+      "title": "Our tiny adventure",
+      "text": "Describe a playful mini-adventure you would love to share together."
+    },
+    {
+      "id": "escape-b-3",
+      "tone": "B",
+      "title": "The smile effect",
+      "text": "Tell them about a moment when their smile changed your day."
+    },
+    {
+      "id": "escape-b-4",
+      "tone": "B",
+      "title": "A stolen kiss",
+      "text": "Describe how you would steal a kiss if they were beside you and wanted one too."
+    },
+    {
+      "id": "escape-b-5",
+      "tone": "B",
+      "title": "Flirty weather report",
+      "text": "Write a silly weather forecast for your next date, with a chance of kisses."
+    },
+    {
+      "id": "escape-b-6",
+      "tone": "B",
+      "title": "Your personal theme song",
+      "text": "Choose a song that reminds you of them and explain your favorite connection."
+    },
+    {
+      "id": "escape-b-7",
+      "tone": "B",
+      "title": "A very serious award",
+      "text": "Invent a funny award for your person and write a tiny acceptance speech for them."
+    },
+    {
+      "id": "escape-b-8",
+      "tone": "B",
+      "title": "Meet-cute, take two",
+      "text": "Reimagine your first meeting as a sweet romantic-comedy scene."
+    },
+    {
+      "id": "escape-b-9",
+      "tone": "B",
+      "title": "A pocket-sized love note",
+      "text": "Write a love note short enough to hide in their pocket."
+    },
+    {
+      "id": "escape-b-10",
+      "tone": "B",
+      "title": "Dream breakfast",
+      "text": "Describe the breakfast you would make for them and the note you would leave."
+    },
+    {
+      "id": "escape-b-11",
+      "tone": "B",
+      "title": "Only we understand",
+      "text": "Share an inside joke or a funny memory that belongs to the two of you."
+    },
+    {
+      "id": "escape-b-12",
+      "tone": "B",
+      "title": "The compliment remix",
+      "text": "Compliment them without using the words beautiful, cute, or amazing."
+    },
+    {
+      "id": "escape-b-13",
+      "tone": "B",
+      "title": "Our next date title",
+      "text": "Give your next imaginary date a movie title and a playful one-sentence plot."
+    },
+    {
+      "id": "escape-b-14",
+      "tone": "B",
+      "title": "A little happy memory",
+      "text": "Describe one memory together you would happily relive."
+    },
+    {
+      "id": "escape-b-15",
+      "tone": "B",
+      "title": "A text from the future",
+      "text": "Write a sweet message from your imagined next holiday together."
+    },
+    {
+      "id": "escape-b-16",
+      "tone": "B",
+      "title": "Five-word flirting",
+      "text": "Write three flirty messages of exactly five words each."
+    },
+    {
+      "id": "escape-b-17",
+      "tone": "B",
+      "title": "You make ordinary special",
+      "text": "Tell them about an ordinary activity that would be better with them."
+    },
+    {
+      "id": "escape-b-18",
+      "tone": "B",
+      "title": "The perfect hug",
+      "text": "Describe the hug you would send them across the distance."
+    },
+    {
+      "id": "escape-b-19",
+      "tone": "B",
+      "title": "A playful invitation",
+      "text": "Invite them on an imaginary date using your most charmingly ridiculous line."
+    },
+    {
+      "id": "escape-b-20",
+      "tone": "B",
+      "title": "One thing I notice",
+      "text": "Share a small detail about them you notice and appreciate."
+    },
+    {
+      "id": "escape-c-1",
+      "tone": "C",
+      "title": "Where the next kiss lands",
+      "text": "Tell them where you would like your next kiss to happen, and why."
+    },
+    {
+      "id": "escape-c-2",
+      "tone": "C",
+      "title": "Closer, if you want",
+      "text": "Describe a moment when you would like to pull them a little closer, if they want it too."
+    },
+    {
+      "id": "escape-c-3",
+      "tone": "C",
+      "title": "A whispered confession",
+      "text": "Write one bolder, flirty thought you would whisper in their ear."
+    },
+    {
+      "id": "escape-c-4",
+      "tone": "C",
+      "title": "The slow kiss",
+      "text": "Describe an imaginary slow kiss, focusing on the anticipation and how you would feel."
+    },
+    {
+      "id": "escape-c-5",
+      "tone": "C",
+      "title": "A look across the room",
+      "text": "Describe the look you would give them across a room when you want a private moment together."
+    },
+    {
+      "id": "escape-c-6",
+      "tone": "C",
+      "title": "Our private date",
+      "text": "Imagine an intimate date for just the two of you: setting, mood, and one wish."
+    },
+    {
+      "id": "escape-c-7",
+      "tone": "C",
+      "title": "The butterflies confession",
+      "text": "Tell them something they do that gives you butterflies in a deliciously distracting way."
+    },
+    {
+      "id": "escape-c-8",
+      "tone": "C",
+      "title": "A daring invitation",
+      "text": "Write a teasing invitation for a romantic moment they are completely free to accept or decline."
+    },
+    {
+      "id": "escape-c-9",
+      "tone": "C",
+      "title": "Almost a kiss",
+      "text": "Describe the moment just before a kiss, when you both know what you want."
+    },
+    {
+      "id": "escape-c-10",
+      "tone": "C",
+      "title": "Your kind of chemistry",
+      "text": "Share what makes the chemistry between you feel special, and a romantic moment you would like to explore together."
+    }
+  ]
+}

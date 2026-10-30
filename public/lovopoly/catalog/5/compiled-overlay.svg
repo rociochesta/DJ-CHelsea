@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="954.64" height="1659" viewBox="0 0 954.64 1659"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 949 1657" fill="none" id="layer-92fafd55-e6e1-4333-8341-67d39cfe08d9" preserveAspectRatio="none" opacity="0">
+<title>Santiago Airport — takeoff overlay</title>
+<desc>Transparent full-tile overlay. Cream and blue passenger jet takes off toward the upper right in 2.4 seconds, then leaves the tile. Reinsert to replay on landing.</desc>
+<defs><clipPath id="layer-92fafd55-e6e1-4333-8341-67d39cfe08d9-tile"><rect x="38" y="35" width="872" height="1577"/></clipPath></defs>
+<style>@media (prefers-reduced-motion: reduce) {
+  #layer-92fafd55-e6e1-4333-8341-67d39cfe08d9 #layer-92fafd55-e6e1-4333-8341-67d39cfe08d9-flight { display: none; }
+}</style>
+<g id="layer-92fafd55-e6e1-4333-8341-67d39cfe08d9-flight" clip-path="url(#layer-92fafd55-e6e1-4333-8341-67d39cfe08d9-tile)">
+<g>
+<animateMotion path="M420 855 Q670 790 1110 620" dur="2.4s" fill="freeze" calcMode="spline" keyPoints="0;1" keyTimes="0;1" keySplines=".35 0 .7 1" begin="0s" repeatCount="indefinite"/>
+<g transform="rotate(-16)" stroke="#101514" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+<path d="M-85 -4 L-114 -52 L-92 -52 L-49 -4" fill="#6195ad"/>
+<path d="M-20 -9 L-80 -43 L-45 -46 L45 -7" fill="#7eacbc"/>
+<path d="M-110 -9 L68 -9 Q101 -8 118 2 Q125 8 112 13 Q84 24 46 24 L-83 24 Q-111 22 -121 9Z" fill="#fff0d8"/>
+<path d="M-112 11 Q-13 32 112 13 Q72 29 -83 24Z" fill="#78a5b8" stroke="none"/>
+<path d="M-5 13 L-51 58 L-20 58 L45 16" fill="#72a3b8"/>
+<path d="M-90 7 L-126 31 L-100 33 L-57 13" fill="#6092a8"/>
+<path d="M87 -4 L99 -1 L105 3 L84 3Z" fill="#294b5b" stroke-width="2"/>
+<path d="M-65 1 L66 1" stroke="#243e48" stroke-width="4" stroke-dasharray="1 9"/>
+<path d="M15 29 Q12 17 28 16 L43 18 Q53 29 42 37 L26 38 Q18 38 15 29Z" fill="#466e81" stroke-width="4"/>
+<ellipse cx="40" cy="27" rx="7" ry="10" fill="#182f3c" stroke-width="3"/>
+<path d="M-72 -4 L62 -4" stroke="#fffaf0" stroke-width="2"/>
+</g></g></g><set attributeName="opacity" to="1" begin="0s" fill="freeze"/></svg></svg>
