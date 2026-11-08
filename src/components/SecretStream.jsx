@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { database, ref, onValue, set, runTransaction } from '../utils/firebase';
-import { streamPosition, streamUrl } from '../utils/secretStream';
+import { streamPosition, streamUrl, srtToVtt } from '../utils/secretStream';
 
 export default function SecretStream({ roomCode, stream, onClose }) {
   const video = useRef(null);
@@ -14,6 +14,22 @@ export default function SecretStream({ roomCode, stream, onClose }) {
   const [busy, setBusy] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [captionsOn, setCaptionsOn] = useState(false);
+  const track = useRef(null);
+  const [trackUrl, setTrackUrl] = useState('');
+  useEffect(() => {
+    if (!stream?.captions) {
+      setTrackUrl('');
+      return;
+    }
+    const url = URL.createObjectURL(new Blob([stream.captions], { type: 'text/vtt' }));
+    setTrackUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [stream?.captions]);
+  useEffect(() => {
+    if (track.current) track.current.track.mode = captionsOn ? 'showing' : 'disabled';
+  }, [captionsOn, trackUrl, stream?.url]);
+
   const now = () => Date.now() + offset.current;
 
   useEffect(() => onValue(ref(database, '.info/serverTimeOffset'), snapshot => {
@@ -58,8 +74,11 @@ export default function SecretStream({ roomCode, stream, onClose }) {
     setBusy(true);
     try {
       const nextUrl = streamUrl(url);
+      const file = event.target.elements.subtitles.files[0];
+      if (file?.size > 1024 * 1024) throw new Error('Choose an SRT file of 1 MB or less.');
+      const captions = file ? srtToVtt(await file.text()) : null;
       await set(ref(database, `karaoke-rooms/${roomCode}/secretStream`), {
-        url: nextUrl, title: title.trim() || 'Watch together', position: 0, playing: false, updatedAt: now(),
+        url: nextUrl, captions, title: title.trim() || 'Watch together', position: 0, playing: false, updatedAt: now(),
       });
       setBlocked(false);
       setDuration(0);
@@ -73,13 +92,17 @@ export default function SecretStream({ roomCode, stream, onClose }) {
     <form onSubmit={load} className="space-y-3">
       <label className="block text-sm">Video URL<input required type="url" value={url} onChange={event => setUrl(event.target.value)} placeholder="https://…/video.mp4" className="mt-1 w-full rounded-lg border border-white/20 bg-black/40 p-3" /></label>
       <label className="block text-sm">Title (optional)<input value={title} onChange={event => setTitle(event.target.value)} className="mt-1 w-full rounded-lg border border-white/20 bg-black/40 p-3" /></label>
+      <label className="block text-sm">Subtitles (optional .srt)<input name="subtitles" type="file" accept=".srt" className="mt-1 block w-full" /></label>
       <p className="text-xs text-white/50">Use a direct video link, preferably MP4 (H.264 + AAC). Load it once for the whole room.</p>
       <button disabled={busy} className="rounded-lg border border-white/20 px-4 py-2 disabled:opacity-50">{busy ? 'Loading…' : 'Load for everyone'}</button>
     </form>
     {error && <p role="alert" className="text-sm text-rose-300">{error}</p>}
     {stream?.url ? <div className="space-y-3">
       <h3 className="font-medium">{stream.title}</h3>
-      <video key={stream.url} ref={video} src={stream.url} playsInline preload="metadata" className="w-full rounded-xl bg-black max-h-[65vh]" onLoadedMetadata={() => { setDuration(Number.isFinite(video.current.duration) ? video.current.duration : 0); synchronize(); }} onTimeUpdate={() => setTime(video.current?.currentTime || 0)} onError={() => setError('This video could not be loaded. Check the direct link, sharing permissions and video format.')} />
+      <video key={stream.url} ref={video} src={stream.url} playsInline preload="metadata" className="w-full rounded-xl bg-black max-h-[65vh]" onLoadedMetadata={() => { setDuration(Number.isFinite(video.current.duration) ? video.current.duration : 0); synchronize(); }} onTimeUpdate={() => setTime(video.current?.currentTime || 0)} onError={() => setError('This video could not be loaded. Check the direct link, sharing permissions and video format.')}>
+        {trackUrl && <track ref={track} kind="captions" label="Subtitles" src={trackUrl} />}
+      </video>
+      {stream.captions && <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={captionsOn} onChange={event => setCaptionsOn(event.target.checked)} />Subtitles on this device</label>}
       {blocked && <button type="button" onClick={() => { video.current?.play().then(() => setBlocked(false)).catch(() => setError('Your browser could not start this video.')); }} className="rounded-lg border border-white/20 px-4 py-2">Enable playback on this device</button>}
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={() => control('skip', -10)} className="rounded-lg border border-white/20 p-2">−10 s</button>
