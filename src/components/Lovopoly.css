@@ -128,3 +128,17 @@
 .lovo-landing-showcase .lovo-showcase-layout{min-height:100%;align-items:start}
 .lovo-landing-showcase .lovo-showcase-info{align-self:stretch}
 @media(max-width:699px){.lovo-landing-showcase{max-height:90dvh}.lovo-showcase-layout{grid-template-columns:minmax(0,1fr) minmax(0,.9fr)}}
+
+.lovo-token-picker .lovo-category-switch{display:flex;margin-bottom:10px}
+.lovo-category-switch button{flex:1}
+.lovo-token-picker>.lovo-premium-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.lovo-premium-icon{width:100%;height:76px;object-fit:contain;display:block}
+.lovo-piece{display:inline-flex;width:1.5em;height:1.5em;flex:none;border-radius:50%;align-items:center;justify-content:center;vertical-align:middle}
+.lovo-piece img{width:72%;height:72%;object-fit:contain}
+.lovo-board-tokens>span>.lovo-piece,.lovo-owner-badge>.lovo-piece{width:100%;height:100%}
+.lovo-piece-preview{display:flex;align-items:center;gap:10px;margin:14px 0 9px}
+.lovo-piece-preview>.lovo-piece{width:48px;height:48px}
+.lovo-piece-preview strong{display:block}
+.lovo-token-picker .lovo-swatches{display:flex;gap:6px;flex-wrap:wrap}
+.lovo-swatches button{width:27px;height:27px;padding:0;border-radius:50%;color:#332037}
+.lovo-swatches button[aria-pressed=true]{outline:2px solid white;outline-offset:1px}

@@ -1,8 +1,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
-// Filenames collected from the actual Supabase folder listings.
+// Filenames of the clips uploaded to the R2 category folders.
 const folders = JSON.parse(await readFile(new URL('./music-quiz-files.json', import.meta.url), 'utf8'));
-const base = 'https://lwjxwrbzvvteywewpmlu.supabase.co/storage/v1/object/public/songs/';
+const base = 'https://pub-082c7a4ec353488c8d34b6a1250cbee1.r2.dev/';
 const songs = Object.entries(folders).flatMap(([category, files]) => files.map(value => {
   const filename = value.replace(/ actions$/, '');
   const label = filename.replace(/\.(mp3|m4a)$/i, '');

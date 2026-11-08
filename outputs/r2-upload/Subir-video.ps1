@@ -1,8 +1,11 @@
+param([string]$Archivo = 'C:\Users\rocio\Videos\movie.mp4', [string]$Limite = '1M')
 $ErrorActionPreference = 'Stop'
 try {
     $uploader = Get-ChildItem -LiteralPath $PSScriptRoot -Filter rclone.exe -Recurse | Select-Object -First 1
     if (!$uploader) { throw 'No se encontro rclone.' }
-    Write-Host 'Subir movie.mp4 al bucket stream de Cloudflare R2'
+    $video = Get-Item -LiteralPath $Archivo
+    $destino = "roomvideo:stream/$($video.Name)"
+    Write-Host "Subir $($video.Name) al bucket stream de Cloudflare R2"
     Write-Host 'Los datos se usan solo durante esta carga y no se guardan.'
     $endpoint = (Read-Host 'Pega el endpoint S3 de R2 (https://...r2.cloudflarestorage.com)').Trim().TrimEnd('/')
     $parsed = [Uri]$endpoint
@@ -16,10 +19,10 @@ try {
     $env:RCLONE_CONFIG_ROOMVIDEO_ACCESS_KEY_ID = (Read-Host 'Access Key ID').Trim()
     $secret = Read-Host 'Secret Access Key (oculta)' -AsSecureString
     $env:RCLONE_CONFIG_ROOMVIDEO_SECRET_ACCESS_KEY = [System.Net.NetworkCredential]::new('', $secret).Password
-    Write-Host 'Carga limitada a 1 MiB/s para reducir el uso de la conexion.'
-    & $uploader.FullName copyto 'C:\Users\rocio\Videos\movie.mp4' 'roomvideo:stream/movie.mp4' --config NUL --progress --bwlimit 1M --s3-chunk-size 64M --s3-upload-concurrency 1 --s3-no-check-bucket
+    Write-Host "Limite de rclone: $Limite por segundo."
+    & $uploader.FullName copyto $video.FullName $destino --config NUL --progress --bwlimit $Limite --s3-chunk-size 64M --s3-upload-concurrency 1 --s3-no-check-bucket
     if ($LASTEXITCODE -ne 0) { throw 'La carga no termino correctamente. Puedes volver a ejecutar este asistente.' }
-    Write-Host 'Carga completada: stream/movie.mp4' -ForegroundColor Green
+    Write-Host "Carga completada: stream/$($video.Name)" -ForegroundColor Green
 } catch {
     Write-Host $_.Exception.Message -ForegroundColor Red
 } finally {
@@ -28,3 +31,4 @@ try {
     }
     Read-Host 'Pulsa Enter para cerrar'
 }
+

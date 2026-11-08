@@ -1,7 +1,8 @@
+import LovopolyToken from './LovopolyToken';
 import {getLovopolyTiles,getLovopolyGroups} from '../utils/lovopolyCatalog';
 import {useEffect,useRef} from 'react';
 import {X, Landmark, Hammer, Coins, Crown} from 'lucide-react';
-import {LOVOPOLY_GROUPS, LOVOPOLY_TILES as tiles, LOVOPOLY_TOKENS} from '../utils/lovopolyBoard';
+import {LOVOPOLY_GROUPS, LOVOPOLY_TILES as tiles} from '../utils/lovopolyBoard';
 import {propertyRent} from '../utils/lovopolyLanding';
 import {economyAction} from '../utils/lovopolyEconomy';
 
@@ -15,7 +16,6 @@ export default function LovopolyDeed({tile, game, userId, act, busy, onClose}) {
   const dialog=useRef(null);
   useEffect(()=>{const element=dialog.current;element.showModal();return ()=>element.close();},[]);
   const ownerId=game?.owners?.[tile.id],owner=game?.players?.[ownerId];
-  const token=LOVOPOLY_TOKENS.find(item=>item.id===owner?.token);
   const level=game?.buildings?.[tile.id] || 0;
   const mortgaged=!!game?.mortgages?.[tile.id];
   const group=LOVOPOLY_GROUPS[tile.group];
@@ -30,7 +30,7 @@ export default function LovopolyDeed({tile, game, userId, act, busy, onClose}) {
   const rows=tile.group?tile.rents.map((value,index)=>({label:index===0?'Base rent':index===5?'Love Castle':`${index} Love Nest${index===1?'':'s'}`,value:`$${value}`,level:index,current:!!ownerId && level===index})):tile.type==='station'?[1,2,3,4].map(count=>({label:`${count} station${count===1?'':'s'}`,value:`$${25*2**(count-1)}`,current:!!ownerId && ownedGroup.length===count})):[{label:'1 utility',value:'4× dice',current:!!ownerId && ownedGroup.length===1},{label:'Both utilities',value:'10× dice',current:!!ownerId && ownedGroup.length===2}];
   return <dialog ref={dialog} className="lovo-dialog lovo-deed" aria-labelledby="lovo-deed-title" onCancel={onClose}>
     <header className="lovo-deed-header"><div><small style={{color:group?.color}}>{group?.name || (tile.type==='station'?'Stations':'Utilities')}</small><h3 id="lovo-deed-title">{tile.name}</h3></div><button type="button" aria-label="Close deed" onClick={onClose}><X size={19}/></button></header>
-    <div className="lovo-deed-overview"><div className="lovo-deed-art"><img src={tile.image} alt={`${tile.name} title deed artwork`}/></div><dl><div><dt>Owner</dt><dd><span style={{color:token?.color}}>{token?.symbol}</span> {owner?.name || 'Bank · unowned'}</dd></div><div><dt>Purchase price</dt><dd>${tile.price}</dd></div><div className="lovo-deed-current-rent"><dt>Current rent</dt><dd>{tile.type==='utility' && ownerId && !mortgaged && !diceTotal?`${utilityMultiplier}× dice`:`$${rent}`}</dd>{tile.type==='utility' && !!diceTotal && !!ownerId && !mortgaged && <small>{utilityMultiplier} × last roll ({diceTotal})</small>}</div></dl></div>
+    <div className="lovo-deed-overview"><div className="lovo-deed-art"><img src={tile.image} alt={`${tile.name} title deed artwork`}/></div><dl><div><dt>Owner</dt><dd><LovopolyToken id={owner?.token} color={owner?.tokenColor} /> {owner?.name || 'Bank · unowned'}</dd></div><div><dt>Purchase price</dt><dd>${tile.price}</dd></div><div className="lovo-deed-current-rent"><dt>Current rent</dt><dd>{tile.type==='utility' && ownerId && !mortgaged && !diceTotal?`${utilityMultiplier}× dice`:`$${rent}`}</dd>{tile.type==='utility' && !!diceTotal && !!ownerId && !mortgaged && <small>{utilityMultiplier} × last roll ({diceTotal})</small>}</div></dl></div>
     {mortgaged && <p className="lovo-deed-note">Mortgaged · no rent is collected.</p>}
     {complete && !level && !mortgaged && <p className="lovo-deed-note">Complete color group · base rent is doubled.</p>}
     <section className="lovo-rent-ladder"><h4>Rent ladder</h4><ol>{rows.map((row,index)=><li key={row.label} className={row.current?'is-current':''} aria-current={row.current?'step':undefined}><span>{row.level===5?<Crown size={16} aria-hidden="true"/>:row.level>0?<span className="lovo-nest-icons" aria-hidden="true">{Array.from({length:row.level},(_,i)=><LoveNest key={i} size={13}/>)}</span>:null}{row.label}{row.current && <small> (Current{mortgaged?' · mortgaged':''})</small>}</span><strong>{row.value}</strong></li>)}</ol></section>

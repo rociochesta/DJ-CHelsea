@@ -6,9 +6,11 @@ Create a dedicated Web API key for the wall at https://developers.giphy.com/dash
 
 The wall's Search Giphy picker shows trending GIFs, search results, and more results on demand. Selecting a GIF adds it to the draft; the user still presses Post to publish it. Requests use a PG-13 maximum rating. GIF media stays hosted by Giphy, with Powered By GIPHY attribution. Without a configured key, uploads and direct image links remain available.
 
-## Music Quiz catalog (Supabase)
+## Music Quiz catalog (Cloudflare R2)
 
-Music Quiz uses `public/music-quiz-catalog.json` by default, with 1,897 audio files organized under category folders (`00s`, `10s`, `40s`, `50s`, `60s`, `70s`, `80s`, `90s`) in the public `songs` bucket in Supabase project `lwjxwrbzvvteywewpmlu`. Audio streams directly from Supabase. Update this catalog when adding or renaming files in the bucket. Update the folder filename lists in `scripts/music-quiz-files.json`, then run `node scripts/refresh-music-quiz-categories.mjs` to regenerate the catalog URLs, artists, titles, and categories. MP3 and M4A clips are supported. Before inviting the room, select one or more categories. Both clips and answer options come only from the checked categories, which must contain at least four distinct artists and titles combined.
+Music Quiz uses `public/music-quiz-catalog.json` by default, with 1,487 audio files organized under category folders (`00s`, `10s`, `40s`, `50s`, `60s`, `70s`, `80s`, `90s`) in the Cloudflare R2 `songs` bucket. Jam and Secret mode share this catalog. Audio streams directly from https://pub-082c7a4ec353488c8d34b6a1250cbee1.r2.dev. The uploaded local category folders are the source of the filename manifest. Update this catalog when adding or renaming files in the bucket. Update the folder filename lists in `scripts/music-quiz-files.json`, then run `node scripts/refresh-music-quiz-categories.mjs` to regenerate the catalog URLs, artists, titles, and categories. MP3 and M4A clips are supported. Before inviting the room, select one or more categories. Both clips and answer options come only from the checked categories, which must contain at least four distinct artists and titles combined.
+
+R2 must allow public reads and CORS with GET/HEAD, the Range request header, and the Content-Length, Content-Range, and Accept-Ranges response headers exposed. Both quiz audio elements use anonymous CORS so Web Audio can drive the wave ring. The current r2.dev endpoint is rate limited; use a custom domain for production. Existing saved games retain their original playlists and URLs; create a new quiz to use the migrated catalog.
 
 Optionally set `VITE_MUSIC_QUIZ_CATALOG_URL` in `.env.local` and the hosting environment to another public JSON catalog URL. Restart the development server after changing it.
 
@@ -16,7 +18,7 @@ The catalog must contain an array of songs with public HTTPS MP3 URLs:
 
 ```json
 [
-  { "artist": "Artist name", "title": "Song name", "category": "80s", "audio_url": "https://PROJECT.supabase.co/storage/v1/object/public/songs/80s/clip.mp3" }
+  { "artist": "Artist name", "title": "Song name", "category": "80s", "audio_url": "https://pub-082c7a4ec353488c8d34b6a1250cbee1.r2.dev/80s/clip.mp3" }
 ]
 ```
 

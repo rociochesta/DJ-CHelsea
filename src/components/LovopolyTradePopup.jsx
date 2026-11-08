@@ -1,6 +1,6 @@
+import LovopolyToken from './LovopolyToken';
 import {useEffect,useRef} from 'react';
 import {Gift, X} from 'lucide-react';
-import {LOVOPOLY_TOKENS} from '../utils/lovopolyBoard';
 import {describeTradeSide} from '../utils/lovopolyEconomy';
 export function TradeOffer({trade,game,me,act,busy,onCounter}) {
  const incoming=trade.to===me.id;
@@ -15,8 +15,7 @@ export default function LovopolyTradePopup({offers,game,onClose}) {
    {offers.map(trade=>{
      const gift=!(trade.receive.cash || trade.receive.cards || trade.receive.properties?.length);
      const sender=game.players[trade.from];
-     const token=LOVOPOLY_TOKENS.find(item=>item.id===sender?.token);
-     return <div className="lovo-announcement-item" key={trade.id}><div className="lovo-notification-icon" aria-hidden="true">{gift?<Gift size={30} strokeWidth={1.6}/>:<img src="/lovopoly/trade-notification.png" alt=""/>}<span/></div><div className="lovo-notification-copy"><small>{gift?'A little surprise':'New trade request'}</small><h3>{sender?.name || 'Your person'} {token && <span className="lovo-notification-token" style={{color:token.color}} aria-label={`${token.name} token`}>{token.symbol}</span>} <span>{gift?'sent you a gift!':'wants to trade!'}</span></h3><p>Waiting for you in the Trade tab.</p></div></div>;
+     return <div className="lovo-announcement-item" key={trade.id}><div className="lovo-notification-icon" aria-hidden="true">{gift?<Gift size={30} strokeWidth={1.6}/>:<img src="/lovopoly/trade-notification.png" alt=""/>}<span/></div><div className="lovo-notification-copy"><small>{gift?'A little surprise':'New trade request'}</small><h3>{sender?.name || 'Your person'} <LovopolyToken id={sender?.token} color={sender?.tokenColor} /> <span>{gift?'sent you a gift!':'wants to trade!'}</span></h3><p>Waiting for you in the Trade tab.</p></div></div>;
    })}
  </dialog>;
 }

@@ -33,6 +33,7 @@ test('host finishes any quiz without losing scores; subsequent actions cannot re
 test('every real category supports a quiz using its new folder URLs', () => {
   const songs = JSON.parse(readFileSync(new URL('../../public/music-quiz-catalog.json', import.meta.url), 'utf8'));
   const manifest = JSON.parse(readFileSync(new URL('../../scripts/music-quiz-files.json', import.meta.url), 'utf8'));
+  assert.ok(songs.every(song => new URL(song.audio_url).origin === 'https://pub-082c7a4ec353488c8d34b6a1250cbee1.r2.dev'));
   assert.equal(songs.length, Object.values(manifest).reduce((count, files) => count + files.length, 0));
   assert.deepEqual(musicQuizCategories(songs), ['00s', '10s', '40s', '50s', '60s', '70s', '80s', '90s']);
 
@@ -41,7 +42,7 @@ test('every real category supports a quiz using its new folder URLs', () => {
     assert.deepEqual(songs.filter(song => song.category === category).map(song => decodeURIComponent(song.audio_url.split('/').pop())).sort(), manifest[category].map(name => name.replace(/ actions$/,'')).sort());
     const quiz = createMusicQuiz(songs, Math.random, [category]);
     assert.equal(quiz.rounds.length, 20);
-    assert.ok(quiz.rounds.every(round => round.category === category && round.audioUrl.includes(`/songs/${category}/`)));
+    assert.ok(quiz.rounds.every(round => round.category === category && new URL(round.audioUrl).pathname.startsWith(`/${category}/`)));
   }
 });
 

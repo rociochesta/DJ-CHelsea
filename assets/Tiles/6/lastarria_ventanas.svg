@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="700" viewBox="0 0 400 700">
+<defs><linearGradient id="window" x1="0" x2="1"><stop stop-color="#FFE69A" stop-opacity="0"/><stop offset=".5" stop-color="#FFF8D3" stop-opacity=".65"/><stop offset="1" stop-color="#FFE69A" stop-opacity="0"/></linearGradient></defs>
+<rect x="17" y="576" width="18" height="33" rx="1" fill="url(#window)" opacity="0"><animate attributeName="opacity" values="0;.3;.12;.48;0" dur="8s" begin="0.0s" repeatCount="indefinite"/></rect>
+<rect x="68" y="579" width="16" height="43" rx="1" fill="url(#window)" opacity="0"><animate attributeName="opacity" values="0;.3;.12;.48;0" dur="8s" begin="0.47s" repeatCount="indefinite"/></rect>
+<rect x="87" y="579" width="17" height="44" rx="1" fill="url(#window)" opacity="0"><animate attributeName="opacity" values="0;.3;.12;.48;0" dur="8s" begin="0.94s" repeatCount="indefinite"/></rect>
+<rect x="175" y="578" width="14" height="47" rx="1" fill="url(#window)" opacity="0"><animate attributeName="opacity" values="0;.3;.12;.48;0" dur="8s" begin="1.41s" repeatCount="indefinite"/></rect>
+<rect x="354" y="481" width="7" height="22" rx="1" fill="url(#window)" opacity="0"><animate attributeName="opacity" values="0;.3;.12;.48;0" dur="8s" begin="1.88s" repeatCount="indefinite"/></rect>
+<rect x="328" y="497" width="7" height="22" rx="1" fill="url(#window)" opacity="0"><animate attributeName="opacity" values="0;.3;.12;.48;0" dur="8s" begin="2.3499999999999996s" repeatCount="indefinite"/></rect>
+<rect x="308" y="504" width="7" height="24" rx="1" fill="url(#window)" opacity="0"><animate attributeName="opacity" values="0;.3;.12;.48;0" dur="8s" begin="2.82s" repeatCount="indefinite"/></rect>
+<rect x="284" y="515" width="6" height="23" rx="1" fill="url(#window)" opacity="0"><animate attributeName="opacity" values="0;.3;.12;.48;0" dur="8s" begin="3.29s" repeatCount="indefinite"/></rect>
+</svg>

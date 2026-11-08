@@ -4,7 +4,8 @@ import LovopolyConfirm from './LovopolyConfirm';
 import {propertyRent} from '../utils/lovopolyLanding';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Dice5, Heart, X } from 'lucide-react';
-import { LOVOPOLY_GROUPS, LOVOPOLY_TILES, LOVOPOLY_TOKENS, lovopolyTileLayout } from '../utils/lovopolyBoard';
+import LovopolyToken, { premiumIcon } from './LovopolyToken';
+import { PREMIUM_TOKENS, TOKEN_COLORS, LOVOPOLY_GROUPS, LOVOPOLY_TILES, LOVOPOLY_TOKENS, lovopolyTileLayout } from '../utils/lovopolyBoard';
 import { QUICK_ROUNDS } from '../utils/lovopoly';
 import './Lovopoly.css';
 import LovopolyEconomy, { LovopolyNetWorth, LovopolyDebt } from './LovopolyEconomy';
@@ -20,17 +21,30 @@ const tokenById = id => LOVOPOLY_TOKENS.find(token => token.id === id) || LOVOPO
 const diceFaces = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 const typeLabels = { go: 'Starting corner', property: 'Property', station: 'Station', utility: 'Utility', chance: 'Love or Disaster', community: 'From Me to You', tax: 'Tax', detention: 'Kiss Detention / Just visiting', rest: 'Free parking corner', 'go-to-detention': 'Go to Kiss Detention' };
 
-function TokenPicker({ value, players, userId, disabled, onChange }) {
+function TokenPicker({ value, color, players, userId, disabled, onChange }) {
+  const selected = tokenById(value);
+  const [category, setCategory] = useState(selected.category);
   return <fieldset className="lovo-token-picker" disabled={disabled}>
     <legend>Choose your token</legend>
-    <div>{LOVOPOLY_TOKENS.map(token => {
+    <div className="lovo-category-switch" role="group" aria-label="Token category">
+      {['Love', 'Animal'].map(item => <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)}>{item}</button>)}
+    </div>
+    <div className="lovo-premium-grid">{PREMIUM_TOKENS.filter(item => item.category === category).map(token => {
       const taken = players.some(player => player.id !== userId && player.token === token.id);
-      return <button type="button" key={token.id} onClick={() => onChange(token.id)}
+      return <button type="button" key={token.id} onClick={() => onChange(token.id, color)}
         aria-pressed={value === token.id} aria-label={`${token.name}${taken ? ' · taken' : ''}`}
         disabled={taken || disabled} title={taken ? `${token.name} is taken` : token.name}>
-        <span aria-hidden="true">{token.symbol}</span><small>{token.name}</small>
+        <img className="lovo-premium-icon" src={premiumIcon(token)} alt="" loading="lazy" /><small>{token.name}</small>
       </button>;
     })}</div>
+    <section className="lovo-piece-preview" aria-label="Board token preview">
+      <LovopolyToken id={value} color={color} />
+      <div><small>Board preview</small><strong>{selected.name}</strong></div>
+    </section>
+    <div className="lovo-swatches" role="group" aria-label="Token color">{Object.entries(TOKEN_COLORS).map(([name, hex]) =>
+      <button type="button" key={name} aria-label={name} title={name} aria-pressed={name === color}
+        style={{ backgroundColor: hex }} onClick={() => onChange(value, name)}>{name === color ? '✓' : ''}</button>
+    )}</div>
   </fieldset>;
 }
 
@@ -117,10 +131,10 @@ export function LovopolyBoard({ players = [], onSelect, showNumbers = false, zoo
           onClick={() => onSelect(tile)} aria-label={`Space ${tile.id}: ${tile.name}${owner?`. Owned by ${owner.name}`:''}${level?`. ${level===5?'Love Castle':`${level} Love Nests`}`:''}${mortgaged?'. Mortgaged, no rent':''}${complete?'. Complete monopoly':''}${occupants.length ? `. ${occupants.map(player => player.name).join(' and ')} here` : ''}`}>
           <div className="lovo-board-art" style={{transform:`rotate(${rotation}deg)`}}><img src={tile.thumbnail} alt="" draggable="false"/>{tile.group && <span className="lovo-board-group-stripe" aria-hidden="true" style={{background:LOVOPOLY_GROUPS[tile.group]?.color}}/>}</div>
           <span className="lovo-tile-number" aria-hidden="true">{tile.id}</span>
-          {owner && <span className="lovo-owner-badge" title={`Owner: ${owner.name}`} aria-hidden="true">{tokenById(owner.token).symbol}</span>}
+          {owner && <span className="lovo-owner-badge" title={`Owner: ${owner.name}`} aria-hidden="true"><LovopolyToken id={owner.token} color={owner.tokenColor} /></span>}
           {level>0 && <span className="lovo-building-badge" title={level===5?'Love Castle':`${level} Love Nests`} aria-hidden="true">{level===5?'🏰':`🏠×${level}`}</span>}
           {mortgaged && <span className="lovo-mortgage-badge" title="Mortgaged — No Rent Collected" aria-hidden="true">🏦</span>}
-          {occupants.length > 0 && <span className="lovo-board-tokens">{occupants.map(player => <span className={player.id===turn?"lovo-token-active":""} key={player.id} title={player.name} style={{ borderColor: tokenById(player.token).color }} aria-hidden="true">{tokenById(player.token).symbol}</span>)}</span>}
+          {occupants.length > 0 && <span className="lovo-board-tokens">{occupants.map(player => <span className={player.id===turn?"lovo-token-active":""} key={player.id} title={player.name}  aria-hidden="true"><LovopolyToken id={player.token} color={player.tokenColor} /></span>)}</span>}
         </button>;
       })}
     </div>
@@ -135,6 +149,8 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
   const [confirmation,setConfirmation]=useState(null);
   const [mode, setMode] = useState('classic');
   const [roundLimit, setRoundLimit] = useState(20);
+  const [color, setColor] = useState('Blush');
+  const selectToken = (id, shade) => { setToken(id); setColor(shade); };
   const [token, setToken] = useState('heart');
   const [selectedTile, setSelectedTile] = useState(null);
   const [exploreTile, setExploreTile] = useState(null);
@@ -151,7 +167,7 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
   const creating = !game || cancelled;
   const joining = game?.status === 'setup' && !me;
   const openingRoll = game?.openingRolls?.[currentUser?.id];
-  const available = LOVOPOLY_TOKENS.filter(item => !players.some(player => player.id !== currentUser?.id && player.token === item.id));
+  const available = PREMIUM_TOKENS.filter(item => !players.some(player => player.id !== currentUser?.id && player.token === item.id));
   const chosenToken = creating ? token : available.some(item => item.id === token) ? token : available[0]?.id;
   const events = Object.values(game?.events || {}).sort((a, b) => b.at - a.at);
   const landingKey=`lovo-seen:${game?.id}:${currentUser?.id}`;
@@ -206,7 +222,7 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
     {error && <p className="lovo-error" role="alert">{error}</p>}
 
     {players.length > 0 && !cancelled && !['ready','playing','finished'].includes(game.status) && <div className="lovo-players">{players.map(player => <article key={player.id} className={player.id === game.turn ? 'lovo-player lovo-player-first' : 'lovo-player'}>
-      <span className="lovo-player-token" style={{ color: tokenById(player.token).color }}>{tokenById(player.token).symbol}</span>
+      <span className="lovo-player-token"><LovopolyToken id={player.token} color={player.tokenColor} /></span>
       <div><h3>{player.name}{player.id === currentUser?.id && <small> You</small>}</h3><p>${player.cash.toLocaleString()} · {player.hearts || 0} ❤️ <span>· {LOVOPOLY_TILES[player.position].name}</span></p></div>
       {game.status !== 'setup' && <div className="lovo-player-roll"><Dice values={game.openingRolls?.[player.id]?.dice} rolling={busy === 'opening-roll' && player.id === currentUser?.id} /><small>{game.firstPlayerId === player.id ? 'Goes first' : game.openingRolls?.[player.id] ? `Total ${game.openingRolls[player.id].total}` : 'Opening roll'}</small></div>}
     </article>)}{players.length === 1 && <div className="lovo-player lovo-player-empty"><Heart size={24} /><span>A place for your person.<small>They can join from this room whenever they return.</small></span></div>}</div>}
@@ -223,13 +239,12 @@ export default function LovopolyGame({ currentUser, game, onAction, onClose }) {
         <p>One starts. The other joins. No time limits.</p>
         <fieldset className="lovo-mode-picker" disabled={!!busy}><legend>Game mode</legend><label><input type="radio" name="lovopoly-mode" value="classic" checked={mode === 'classic'} onChange={() => setMode('classic')} /><span><strong>Classic</strong><small>Play until one player remains.</small></span></label><label><input type="radio" name="lovopoly-mode" value="quick" checked={mode === 'quick'} onChange={() => setMode('quick')} /><span><strong>Quick</strong><small>A set number of rounds.</small></span></label></fieldset>
         {mode === 'quick' && <label className="lovo-rounds">Number of rounds<select value={roundLimit} onChange={event => setRoundLimit(Number(event.target.value))} disabled={!!busy}>{QUICK_ROUNDS.map(rounds => <option key={rounds} value={rounds}>{rounds} rounds</option>)}</select></label>}
-        <TokenPicker value={token} players={[]} userId={currentUser?.id} disabled={!!busy} onChange={setToken} />
-        <p className="lovo-setup-summary">$1,500 each · $200 for passing Hello, Beautiful.</p>
-        <button type="button" className="lovo-button lovo-primary" disabled={!!busy || !currentUser?.id} onClick={() => act('create', { mode, roundLimit, token })}>Save match setup <Heart size={15} /></button>
+        <TokenPicker value={token} players={[]} userId={currentUser?.id} disabled={!!busy} color={color} onChange={selectToken} />
+        <button type="button" className="lovo-button lovo-primary" disabled={!!busy || !currentUser?.id} onClick={() => act('create', { mode, roundLimit, token, tokenColor: color })}>Save match setup <Heart size={15} /></button>
       </> : <>
-        {joining && <><p>{players[0]?.name} saved a place for you. Choose your token to accept these match settings.</p><TokenPicker value={chosenToken} players={players} userId={currentUser?.id} disabled={!!busy} onChange={setToken} /><button type="button" className="lovo-button lovo-primary" disabled={!!busy || !currentUser?.id} onClick={() => act('join', { token: chosenToken })}>Join setup</button></>}
+        {joining && <><p>{players[0]?.name} saved a place for you. Choose your token to accept these match settings.</p><TokenPicker value={chosenToken} players={players} userId={currentUser?.id} disabled={!!busy} color={color} onChange={selectToken} /><button type="button" className="lovo-button lovo-primary" disabled={!!busy || !currentUser?.id} onClick={() => act('join', { token: chosenToken, tokenColor: color })}>Join setup</button></>}
         {!me && !joining && <p>This saved setup already has two players. You can still explore the board.</p>}
-        {me && ['setup', 'opening'].includes(game.status) && !openingRoll && <TokenPicker value={me.token} players={players} userId={currentUser?.id} disabled={!!busy} onChange={selected => { if (selected !== me.token) act('token', { token: selected }); }} />}
+        {me && ['setup', 'opening'].includes(game.status) && !openingRoll && <TokenPicker value={me.token} players={players} userId={currentUser?.id} disabled={!!busy} color={me.tokenColor || 'Blush'} onChange={(selected, shade) => { if (selected !== me.token || shade !== (me.tokenColor || 'Blush')) act('token', { token: selected, tokenColor: shade }); }} />}
         {me && game.status === 'setup' && <div className="lovo-waiting"><img src="/lovopoly/love-envelope.svg" alt="" /><p>Your person can join here when they return.</p></div>}
         {me && game.status === 'opening' && <div className="lovo-opening">
           <h4>Who makes the first move?</h4><p>Each player rolls two dice. Highest total starts; ties roll again. These rolls do not move your tokens.</p>

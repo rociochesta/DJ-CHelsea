@@ -1,6 +1,6 @@
 import {createBoardLayout,getLovopolyTiles} from './lovopolyCatalog.js';
 import { ROMANCE_ACTIONS } from './lovopolyInbox.js';
-import { LOVOPOLY_TOKENS, LOVOPOLY_TILES } from './lovopolyBoard.js';
+import { TOKEN_COLORS, LOVOPOLY_TOKENS, LOVOPOLY_TILES } from './lovopolyBoard.js';
 import { economyAction, netWorth } from './lovopolyEconomy.js';
 import { ensureDecks, returnHeldCard } from './lovopolyCards.js';
 import { resolveLanding } from './lovopolyLanding.js';
@@ -39,8 +39,12 @@ function ensureToken(token, players = {}, userId) {
   if (Object.values(players).some(player => player.id !== userId && player.token === token)) throw new Error('That token is already taken. Choose another.');
 }
 
-function playerFor(user, token) {
-  return { id: user.id, name: String(user.name || 'Your person').slice(0, 80), token, cash: 1500, hearts: 0, position: 0 };
+function tokenColor(color) {
+  return Object.hasOwn(TOKEN_COLORS, color) ? color : 'Blush';
+}
+
+function playerFor(user, token, color) {
+  return { id: user.id, name: String(user.name || 'Your person').slice(0, 80), token, tokenColor: tokenColor(color), cash: 1500, hearts: 0, position: 0 };
 }
 
 function log(game, action, text) {
@@ -69,7 +73,7 @@ export function updateLovopoly(game, action) {
 
   if (type === 'new-game') {
     if (game?.status !== 'finished' || !game.players?.[user.id]) throw new Error('Only a player of the completed match can start a new game.');
-    const fresh=updateLovopoly({...game,status:'cancelled'}, {...action,type:'create',mode:game.mode,roundLimit:game.roundLimit,token:game.players[user.id].token});
+    const fresh=updateLovopoly({...game,status:'cancelled'}, {...action,type:'create',mode:game.mode,roundLimit:game.roundLimit,token:game.players[user.id].token,tokenColor:game.players[user.id].tokenColor});
     fresh.archives[game.id]={...game,archives:null};
     return fresh;
   }
@@ -83,7 +87,7 @@ export function updateLovopoly(game, action) {
     const next = {
       boardLayout:createBoardLayout(id), schemaVersion: 1, id, revision: 0, status: 'setup', createdAt: now,
       creatorId: user.id, mode: action.mode, roundLimit: action.mode === 'quick' ? action.roundLimit : 0,
-      players: { [user.id]: playerFor(user, action.token) },
+      players: { [user.id]: playerFor(user, action.token, action.tokenColor) },
       romanticInbox: game?.romanticInbox || {}, escapeProgress: game?.escapeProgress || {},
       openingRound: 1, openingRolls: {}, events: {}, lastCommandId: id,
       // Preserve cancelled setups as well; new setup never erases prior history.
@@ -105,7 +109,7 @@ export function updateLovopoly(game, action) {
       if(!next.rematch || (type==='rematch-withdraw' ? next.rematch.requestedBy!==user.id : next.rematch.requestedBy===user.id)) throw new Error('Only your partner can answer the rematch request; only its sender can withdraw it.');
       if(type==='rematch-accept') {
         const fresh={boardLayout:createBoardLayout(id),schemaVersion:1,id,revision:0,status:'opening',createdAt:now,creatorId:next.rematch.requestedBy,
-          mode:next.mode,roundLimit:next.roundLimit,players:Object.fromEntries(Object.values(next.players).map(p=>[p.id,playerFor(p,p.token)])),
+          mode:next.mode,roundLimit:next.roundLimit,players:Object.fromEntries(Object.values(next.players).map(p=>[p.id,playerFor(p,p.token,p.tokenColor)])),
           openingRound:1,openingRolls:{},events:{},lastCommandId:id,
           romanticInbox:next.romanticInbox || {},
           escapeProgress:next.escapeProgress || {},
@@ -133,7 +137,7 @@ export function updateLovopoly(game, action) {
     if (player) throw new Error('You have already joined this match.');
     if (next.status !== 'setup' || Object.keys(next.players).length !== 1) throw new Error('Lovopoly is for two players. This match is full.');
     ensureToken(action.token, next.players, user.id);
-    next.players[user.id] = playerFor(user, action.token);
+    next.players[user.id] = playerFor(user, action.token, action.tokenColor);
     next.status = 'opening';
     log(next, action, `${next.players[user.id].name} joined. Both players can roll to decide who starts.`);
   } else {
@@ -197,6 +201,7 @@ export function updateLovopoly(game, action) {
       if (!['setup', 'opening'].includes(next.status) || next.openingRolls[user.id]) throw new Error('Your token is locked after your opening roll.');
       ensureToken(action.token, next.players, user.id);
       player.token = action.token;
+      player.tokenColor = tokenColor(action.tokenColor ?? player.tokenColor);
       log(next, action, `${player.name} chose the ${LOVOPOLY_TOKENS.find(token => token.id === action.token).name} token.`);
     } else if (type === 'opening-roll') {
       if (next.status !== 'opening' || Object.keys(next.players).length !== 2) throw new Error('Both players must join before rolling.');

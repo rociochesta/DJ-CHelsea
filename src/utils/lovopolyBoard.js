@@ -80,14 +80,26 @@ export const LOVOPOLY_TILES = spaces.map(([name, type, group], id) => ({
   overlay: overlays[id] ? `/lovopoly/${overlays[id]}` : null,
 }));
 
-export const LOVOPOLY_TOKENS = [
-  { id: 'heart', name: 'Heart', symbol: '♥', color: '#e32670' },
-  { id: 'kiss', name: 'Kiss', symbol: '💋', color: '#bd294d' },
-  { id: 'ring', name: 'Ring', symbol: '💍', color: '#2189b6' },
-  { id: 'rose', name: 'Rose', symbol: '🌹', color: '#9a3b68' },
-  { id: 'plane', name: 'Plane', symbol: '✈', color: '#437bb6' },
-  { id: 'star', name: 'Star', symbol: '★', color: '#b77b12' },
-];
+export const TOKEN_COLORS = {
+  Blush: '#ffc3d8', Gold: '#ffdf96', Mint: '#9ae8c8',
+  Sky: '#a9d9ff', Lilac: '#d6bdff', Ivory: '#fff2dd',
+};
+
+const tokenSets = {
+  Love: 'Heart Lips Ring Rose Plane Star Arrow Bow Cherry Coffee Cupcake Gift Key Lovelock Phone',
+  Animal: 'Bat Bee Crab Fox Giraffe Hedge Jellyfish Lamb Panda Penguin Pig Sloth Snail Squid Turtle',
+};
+
+export const LOVOPOLY_TOKENS = Object.entries(tokenSets).flatMap(([category, names]) =>
+  names.split(' ').map(asset => ({
+    id: asset === 'Lips' ? 'kiss' : asset.toLowerCase(),
+    name: ({ Hedge: 'Hedgehog', Lovelock: 'Love lock' })[asset] || asset,
+    category,
+    asset: category + '_' + asset,
+  }))
+);
+
+export const PREMIUM_TOKENS = LOVOPOLY_TOKENS.filter(token => !['plane', 'jellyfish'].includes(token.id));
 
 // Board coordinates in a 1250-square: nine 100×175 spaces per edge.
 export function lovopolyTileLayout(id) {

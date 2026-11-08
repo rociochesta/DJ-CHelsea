@@ -1,17 +1,17 @@
+import LovopolyToken from './LovopolyToken';
 import {getLovopolyTiles,getLovopolyGroups} from '../utils/lovopolyCatalog';
 import LovopolyProperties from './LovopolyProperties';
 import LovopolyTradePopup, {TradeOffer} from './LovopolyTradePopup';
 import { useEffect, useState, useRef } from 'react';
-import { LOVOPOLY_TOKENS, LOVOPOLY_GROUPS, LOVOPOLY_TILES as tiles } from '../utils/lovopolyBoard';
+import { LOVOPOLY_GROUPS, LOVOPOLY_TILES as tiles } from '../utils/lovopolyBoard';
 import { netWorth, liquidationValue, describeTradeSide } from '../utils/lovopolyEconomy';
 
 export function LovopolyNetWorth({ game, userId }) {
   return <div className="lovo-match-players" aria-label="Players and net worth">
     {Object.values(game.players).map(player => {
-      const token = LOVOPOLY_TOKENS.find(item => item.id === player.token);
       const active = ['ready', 'playing'].includes(game.status) && game.turn === player.id;
       return <article key={player.id} className={`lovo-match-player${active ? ' is-active' : ''}`}>
-        <h4><span style={{color:token?.color}} title={token?.name}>{token?.symbol}</span><span>{player.name}</span></h4>
+        <h4><LovopolyToken id={player?.token} color={player?.tokenColor} /><span>{player.name}</span></h4>
         <strong className="lovo-match-cash">${player.cash.toLocaleString('en-US')}</strong>
         <small>Cash · Net worth ${netWorth(game, player.id).toLocaleString('en-US')}</small>
         <span className="lovo-match-turn">{game.status === 'finished' ? 'Match complete' : active ? player.id === userId ? '● Your turn' : '● Active turn' : 'Waiting'}</span>
